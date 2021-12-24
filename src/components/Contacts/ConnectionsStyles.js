@@ -33,5 +33,10 @@ export const useStyles = makeStyles(theme => ({
     width: 80,
     height: 80,
     marginRight: 16
+  },
+  loadMore: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: 16
   }
 }))

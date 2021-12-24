@@ -2,7 +2,7 @@ import React, { useState, useEffect, lazy } from 'react';
 import Header from './components/Header/Header.js'
 import NotFound from './components/NotFound/NotFound'
 import { useDispatch, useSelector } from 'react-redux'
-import { Switch, Route } from "react-router-dom";
+import { Switch, Route, useHistory } from "react-router-dom";
 import 'moment/locale/fr'
 import 'moment/locale/ru'
 import 'moment/locale/uk'
@@ -27,6 +27,7 @@ import Preloader from './components/Common/Preloader/Preloader.jsx';
 import Feed from './components/Feed/Feed.js';
 import Subscriptions from './components/Subscriptions/Subscriptions';
 import Search from './components/Search/Search';
+import { logOut } from './redux/auth_reducer';
 
 const Connections = lazy(() => import('./components/Contacts/Connections'))
 const Profile = lazy(() => import('./components/Profile/Profile.js'))
@@ -45,6 +46,7 @@ const App: React.FC = React.memo(props => {
   const [networkLost, setNetworkLost] = useState(false);
   const [networkAppears, setNetworkAppears] = useState(false)
   const { i18n } = useTranslation()
+  const history = useHistory()
 
   if (moment.locale() !== language) moment.locale(language)
 
@@ -59,11 +61,19 @@ const App: React.FC = React.memo(props => {
     window.addEventListener('offline', onoffline)
     window.addEventListener('online', ononline)
 
+    const handleInvalidToken = (e: any) => {
+      if (e.key === 'JWT' && e.oldValue && !e.newValue) {
+        dispatch(logOut(history))
+      }
+    }
+    window.addEventListener('storage', handleInvalidToken)
+
     dispatch(initializeApp())
 
     return () => {
       window.removeEventListener('offline', onoffline)
       window.removeEventListener('online', ononline)
+      window.removeEventListener('storage', handleInvalidToken)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

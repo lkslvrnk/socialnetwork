@@ -174,7 +174,6 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
           </>
         })
         : <div className={ classes.emptyList }>
-          <DeckIcon style={{width: 160, height: 160}} />
           <Typography variant='h5' >
             { isOwnProfile ? "У вас нет контактов" : "У пользователя пока нет контактов"}
           </Typography>
@@ -195,7 +194,6 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
         })
         :
         <div className={ classes.emptyList }>
-          <DeckIcon style={{width: 160, height: 160}} />
           <Typography variant='h5' >
             { "У вас нет общих контактов" }
           </Typography>
@@ -206,21 +204,25 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
 
   return (
     <div>
-      <Paper component='main' style={{marginBottom: 16}} >
+      <Paper component='main' >
         { header }
         { body }
       </Paper>
       
       { cursor &&
-        <div style={{display: 'flex', justifyContent: 'center', marginBottom: 16}} ref={loadMoreButton} >{
+        <div className={classes.loadMore} ref={loadMoreButton} >{
           tabNumber === 0
             ? (moreConnsLoading
               ? <Preloader />
-              : <Button onClick={handleLoadMoreConns} >{t('Load more')}</Button>
+              : <Button onClick={handleLoadMoreConns} >
+                  {t('Load more')}
+                </Button>
             )
             : (moreCommonContactsLoading
               ? <Preloader />
-              : <Button onClick={handleLoadMoreCommonContacts} >{t('Load more')}</Button>
+              : <Button onClick={handleLoadMoreCommonContacts} >
+                  {t('Load more')}
+                </Button>
             )
         }
       </div>
@@ -251,12 +253,15 @@ const CommonContact: React.FC<CommonContactPropsType> = React.memo((props: Commo
           src={contactPicture}
         />
 
-        <div style={{flexGrow: 1}}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Typography color='textPrimary' component={NavLink} to={contactLink} variant='body2' style={{marginBottom: 8}} >
-              <b>{ contactName }</b>
-            </Typography>
-          </div>
+        <div>
+          <Typography
+            color='textPrimary'
+            component={NavLink}
+            to={contactLink}
+            variant='body2'
+          >
+            { contactName }
+          </Typography>
         </div>
       </div>
       
