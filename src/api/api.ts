@@ -1,9 +1,9 @@
 import  axios from 'axios'
 import { ProfileType } from '../types/types';
 
-export const baseUrl = 'http://localhost:8001'
+export const baseUrl = 'https://social-network-back-lkslvrnk.vercel.app/api'
 
-export const imagesStorage = `${baseUrl}/images/for-photos/`
+export const imagesStorage = `${baseUrl}/images/forphotos/`
 let websocketUrl = 'ws://localhost:1234/'
 
 export const instance = axios.create({
