@@ -1,0 +1,17 @@
+form {
+    --border: 1px solid black;
+}
+
+#kekas {
+    --border: 1px solid black;
+}
+
+.formSummaryError {
+    padding: 5px;
+    color: red;
+}
+
+#login_page .horizontal_line {
+    background: red;
+    margin-top: 20px;
+}

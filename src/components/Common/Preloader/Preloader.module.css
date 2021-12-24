@@ -1,0 +1,13 @@
+#preloader {
+    position: absolute;
+    width: 70px;
+    --border: 2px solid yellow;
+    top: 20px;
+    --left: 500px;
+    height: 70px;
+    background-image: url('/images/standard/load.gif');
+    background-size: 70px;
+    background-repeat: no-repeat;
+    --background-position: center 200px;
+    z-index: 10000;
+}
