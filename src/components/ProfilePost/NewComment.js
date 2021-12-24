@@ -61,8 +61,6 @@ const NewComment = React.memo(props => {
   }
 
   const photoInput = React.useRef(null)
-  const videoInput = React.useRef(null)
-  const audioInput = React.useRef(null)
 
   const [attachment, setAttachment] = useState(editMode ? editingComment.attachment : null)
 
@@ -87,6 +85,7 @@ const NewComment = React.memo(props => {
     if(prevFocusTrigger !== null && focusTrigger !== prevFocusTrigger) {
       inputRef.current.focus()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusTrigger])
 
   let handleImageUpload = async (event) => {
@@ -328,6 +327,7 @@ const NewComment = React.memo(props => {
     { attachment &&
       <div style={{marginLeft: editMode ? 0 : 56, marginTop: 8, maxWidth: 150}}>
         <img
+          alt='comment-attachment'
           style={{width: '100%'}}
           src={`http://localhost:8001/images/for-photos/${attachment.versions
             ? attachment.versions[2] : attachment.src}`} />

@@ -42,6 +42,7 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
 
   useEffect(() => {
     document.title = t(tabNumber === 0 ? 'Incoming' : 'Outgoing')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabNumber])
 
   const header = (

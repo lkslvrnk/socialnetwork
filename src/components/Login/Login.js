@@ -10,7 +10,6 @@ import {logIn} from './../../redux/auth_reducer'
 import {makeStyles} from "@material-ui/core/styles";
 import Avatar from '@material-ui/core/Avatar';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-import Link from '@material-ui/core/Link';
 import { useTranslation } from 'react-i18next';
 import { Redirect } from 'react-router-dom'
 
@@ -60,8 +59,6 @@ const Login = React.memo( props => {
 
   let loginForm = React.useRef(null)
 
-  let facebookAuthHref = 'https://www.facebook.com/v6.0/dialog/oauth?client_id='
-    + '520867695227342&redirect_uri=http://localhost:1338/auth/fb&display=popup'
   const { t } = useTranslation();
 
   const isAuthenticated = useSelector((state) => state.auth.isAuth)

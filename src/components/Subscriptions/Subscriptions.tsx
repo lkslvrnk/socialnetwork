@@ -13,7 +13,6 @@ import { imagesStorage } from '../../api/api';
 import { actions } from '../../redux/users_reducer';
 import { subscriptionAPI } from '../../api/subscription_api';
 
-
 const Subscriptions: React.FC = React.memo((props) => {
   const classes = useStyles()
   const { t } = useTranslation()
@@ -38,6 +37,7 @@ const Subscriptions: React.FC = React.memo((props) => {
     return () => {
       (function() { dispatch(actions.clean()) })()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleLoadMoreSubscriptions = async () => {
@@ -112,10 +112,8 @@ type SubscriptionPropsType = {
 
 const Subscription: React.FC<SubscriptionPropsType> = React.memo((props: SubscriptionPropsType) => {
   const classes = useStyles()
-  const params: any = useParams()
   const { subscribed } = props
   const { t } = useTranslation()
-  const dispatch = useDispatch()
 
   const userPicture = subscribed.picture ? `${imagesStorage}/${subscribed.picture.versions.cropped_small}` : ''
   const userFullName = `${subscribed.firstName} ${subscribed.lastName}`

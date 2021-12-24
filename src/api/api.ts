@@ -1,5 +1,5 @@
-import  axios, { AxiosInstance } from 'axios'
-import { PhotoType, ProfileType } from '../types/types';
+import  axios from 'axios'
+import { ProfileType } from '../types/types';
 
 export const baseUrl = 'http://localhost:8001'
 

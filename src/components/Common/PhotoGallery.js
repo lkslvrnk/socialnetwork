@@ -1,6 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react'
 import { makeStyles } from "@material-ui/core/styles"
-import CloseIcon from '@material-ui/icons/Close'
 import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
 import CheckCircleIcon from '@material-ui/icons/CheckCircle'
 import CancelTwoToneIcon from '@material-ui/icons/CancelTwoTone'
@@ -28,7 +27,7 @@ const PhotoGallery = React.memo((props) => {
   const photos = useRef([])
   let location = useLocation();
   const [selectedPhotos, setSelectedPhotos] = useState([])
-  const [imageChangingCount, setImageChangingCount] = useState(0)
+  const [setImageChangingCount] = useState(0)
   const gallery = useRef(null)
 
   function getMeta(url) {
@@ -152,6 +151,7 @@ const PhotoGallery = React.memo((props) => {
     } else {
       setPhotosLoaded(true)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const [gridPhotos, setGridPhotos] = useState([])
@@ -209,6 +209,7 @@ const PhotoGallery = React.memo((props) => {
         }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [images.length])
 
   useEffect(() => {
@@ -523,7 +524,7 @@ const PhotoGallery = React.memo((props) => {
                           <img
                             width={'100%'} 
                             src={photo.img} 
-                            alt='image'
+                            alt='post-attachment'
                           />
                         </Link>
                       </div>

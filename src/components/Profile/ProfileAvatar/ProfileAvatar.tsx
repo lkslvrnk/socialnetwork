@@ -2,7 +2,7 @@ import React, { FC, memo, useEffect, useState } from 'react';
 import {makeStyles} from "@material-ui/core/styles";
 import MyAvatarEditor from './MyAvatarEditor.js'
 import MaterialAvatar from '@material-ui/core/Avatar';
-import { Link, useLocation, NavLink, withRouter, useParams } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Badge, IconButton } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 import PhotoCameraRoundedIcon from '@material-ui/icons/PhotoCameraRounded';
@@ -38,17 +38,17 @@ type PropsType = {
 const ProfileAvatar: FC<PropsType> = memo((props: PropsType) => {
   const { isOwnProfile, currentUserId, profilePhotosAlbumId } = props
   
-  const params: any = useParams()
-  
   const picture = useSelector(getProfilePicture)
   // @ts-ignore
   const pictureSrc: any = picture && `${imagesStorage}${picture.versions['cropped_medium']}`
 
   const classes = useStyles({ avatar: picture });
   const [showAvatarEditor, setShowAvatarEditor] = useState(false)
-  let location = useLocation();
+  let location = useLocation()
+
   useEffect(() => {
     if(showAvatarEditor) setShowAvatarEditor(false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [picture])
 
   let handleOpenEditor = () => {  

@@ -18,19 +18,20 @@ import Avatar from '@mui/material/Avatar';
 import { ImageList, ImageListItem, Stack } from '@mui/material';
 import { NavLink } from 'react-router-dom';
 import './Styles.css';
-import classNames from 'classnames';
-import { useStyles } from './RightProfilePanelStyles.js';import { useDispatch } from 'react-redux';
-import ProfileAvatar from '../ProfileAvatar/ProfileAvatar';
+import { useStyles } from './RightProfilePanelStyles.js';
 
-const RightProfilePanel = ({matchParams, profile, isLoading, isOwnProfile, currentUserId}) => {
+const RightProfilePanel = ({matchParams, profile, isLoading}) => {
   const classes = useStyles();
   const { t } = useTranslation();
   
   const showTitle = 'Показать подробную инфу';
-  let [showDetailed, changeShowDetailed] = useState(false);
-  let [title, changeTitle] = useState(showTitle);
+  let [changeShowDetailed] = useState(false);
+  let [changeTitle] = useState(showTitle);
 
-  useEffect(() => discard(),[matchParams])
+  useEffect(() => {
+    discard()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[matchParams])
 
   const discard = () => {
     changeTitle(showTitle);
@@ -53,18 +54,6 @@ const RightProfilePanel = ({matchParams, profile, isLoading, isOwnProfile, curre
     {src: "https://is1-ssl.mzstatic.com/image/thumb/Purple71/v4/c8/36/9f/c8369fa9-9dbb-fbb3-1ffc-542d95e019e9/source/256x256bb.jpg"},
     {src: "https://static-s.aa-cdn.net/img/gp/20600002404286/pRD2XG5X2KqiDoA4L1eNJFlN4_7ghS8cPiMux_wWEDVKzASYPJSsSMQ6580qan62ydRV=w300?v=1"}
   ]
-
-  const avatarAndNameSection = (
-    <Paper className={classNames(classes.section, classes.avatarAndName)}>
-      <div className={classes.avatar} >
-        {/*<ProfilePicture/>*/}
-        <ProfileAvatar isOwnProfile={isOwnProfile} currentUserId={currentUserId} />
-      </div>
-      <div className={classes.name} >
-        <Typography>{`${profile.firstName} ${profile.lastName}`}</Typography>
-      </div>
-    </Paper>
-  )
 
   const infoSection = (
     <Paper className={classes.section} >
@@ -119,7 +108,7 @@ const RightProfilePanel = ({matchParams, profile, isLoading, isOwnProfile, curre
                 <img
                   src={`${photo.src}?w=164&h=164&fit=crop&auto=format`}
                   srcSet={`${photo.src}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                  alt='user photo'
+                  alt='preview'
                   loading="lazy"
                 />
               </ImageListItem>

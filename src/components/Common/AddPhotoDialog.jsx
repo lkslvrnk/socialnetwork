@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const AddPhotoDialog = (props) => {
-  const {show, onUploadFromStorage, onCaptureFromCamera, handleClose, getAlbums, getPhotos, albums, photos, photosAreLoaded, onDone} = props
+  const {show, onUploadFromStorage, onCaptureFromCamera, handleClose, albums, photos, photosAreLoaded, onDone} = props
   const { t } = useTranslation();
   const classes = useStyles();
   const theme = useTheme();

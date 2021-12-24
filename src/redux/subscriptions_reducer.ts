@@ -34,7 +34,7 @@ export let getSubscriptionsOfUser = (userId: string, count: number, cursor: stri
     let response = await subscriptionAPI.getSubscriptionsfUser(userId, count, cursor)
 
     if(response.status === HttpStatusCode.OK) {
-      const responseData = response.data
+      // const responseData = response.data
     }
   }
 }

@@ -1,16 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { NavLink} from 'react-router-dom'
 import Typography from '@material-ui/core/Typography'
 import {useDispatch, useSelector} from 'react-redux'
 import { useTranslation } from 'react-i18next';
 import { useStyles } from './FeedStyles.js'
-import { Box, Button, IconButton, Paper } from '@material-ui/core'
+import { Button, Paper } from '@material-ui/core'
 import ProfilePost from '../ProfilePost/ProfilePost.js';
 import { getFeedPosts, getMoreFeedPosts, cleanProfilePosts } from '../../redux/profile_posts_reducer';
 import Preloader from '../Common/Preloader/Preloader.jsx';
-import { isAbsolute } from 'path';
 import StickyPanel from '../Common/StickyPanel.js';
-import { Skeleton } from '@material-ui/lab';
 import PostSkeleton from '../Common/PostSkeleton.js';
 
 const Feed = React.memo( props => {
@@ -27,6 +24,7 @@ const Feed = React.memo( props => {
     document.title = t('Feed')
     dispatch(getFeedPosts(5))
     return () => dispatch(cleanProfilePosts())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleLoadMorePosts = useCallback( async () => {
@@ -35,6 +33,7 @@ const Feed = React.memo( props => {
       await dispatch(getMoreFeedPosts(5, cursor))
       setMorePostsLoading(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [morePostsLoading, loaded, cursor])
 
   const panel = <div className={classes.panel}>

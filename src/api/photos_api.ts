@@ -56,7 +56,6 @@ export const photosAPI = {
     let formData = new FormData()
     formData.append('photo', photo)
 
-    let options = {}
     let config = {
       headers: {
         'Content-Type': 'multipart/form-data'

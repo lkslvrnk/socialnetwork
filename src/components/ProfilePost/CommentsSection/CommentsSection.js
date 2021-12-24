@@ -23,7 +23,7 @@ const CommentsSection = React.memo(props => {
   const currentUserPicture = `${baseUrl}/images/for-photos/${picture}`
 
   const [qwe, setQwe] = useState(false)
-  const [commentsAreHidden, setCommentsAreHidden] = useState(false)
+  const [commentsAreHidden] = useState(false)
   const [commentWithReplyFieldId, setCommentWithReplyFieldId] = useState(null)
   const reversed = [...comments].reverse()
 
@@ -43,8 +43,6 @@ const CommentsSection = React.memo(props => {
     let offsetId = comments[comments.length - 1].id
     dispatch(getComments(currentUserId, postId, offsetId, 5, 'DESC'))
   }
-
-  const [anchor, setAnchor] = useState(null)
 
   const createCommentCallback = async (text) => {
     return dispatch(createComment(postId, text, null, null))

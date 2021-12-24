@@ -70,7 +70,7 @@ const ProfilePost = React.memo(props => {
 
   useEffect(() => {
     let photos = []
-    postData.attachments.map(p => {
+    postData.attachments.forEach(p => {
       photos.push({
         id: p.id,
         src: `${imagesStorage}${p.versions[2]}`
@@ -134,13 +134,8 @@ const ProfilePost = React.memo(props => {
   }
 
   const toggleCommenting = () => {
-    let value = postData.commentingIsDisabled ? 0 : 1
     setMenuDisabled(true)
     setCommentingIsToggling(true)
-    const onEnd = () => {
-      setMenuDisabled(false)
-      setCommentingIsToggling(false)
-    }
   }
 
   const handleDelete = () => {
@@ -233,10 +228,9 @@ const ProfilePost = React.memo(props => {
     </Dialog>
   )
 
-  const renderEmbedded = null
+  let renderEmbedded = null
 
   if(embeddedPost) {
-    const hasMedia = Boolean(embeddedPost.photos.length) || Boolean(embeddedPost.videos.length) 
     const photos = []
     embeddedPost.photos.map(p => photos.push({img: baseUrl + p}))
 

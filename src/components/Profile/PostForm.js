@@ -1,6 +1,6 @@
-import { Button, Card, CardActions, Checkbox, ClickAwayListener, IconButton, MenuItem, MenuList, Paper, Popper, TextField, useTheme } from '@material-ui/core'
-import React, { useState, useRef, useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { Button, CardActions, Checkbox, ClickAwayListener, IconButton, MenuItem, MenuList, Paper, Popper, TextField, useTheme } from '@material-ui/core'
+import React, { useState, useRef } from 'react'
+import { useDispatch } from 'react-redux'
 import { createPostPhoto, getPostPhoto } from '../../redux/profile_posts_reducer'
 import PhotoGallery from '../Common/PhotoGallery'
 import { useStyles } from './PostFormStyles'
@@ -9,7 +9,6 @@ import { useTranslation } from 'react-i18next'
 import AddAPhotoIcon from '@material-ui/icons/AddAPhoto'
 import LinearProgress from '@material-ui/core/LinearProgress'
 import SettingsIcon from '@material-ui/icons/Settings'
-import MoreHorizIcon from '@material-ui/icons/MoreHoriz'
 import EmojiPicker from '../Common/EmojiPicker'
 import SentimentSatisfiedRoundedIcon from '@material-ui/icons/SentimentSatisfiedRounded'
 import { imagesStorage } from '../../api/api'
@@ -25,20 +24,17 @@ const PostForm = props => {
   const [postText, setPostText] = useState(editMode ? text : '')
 
   const theme = useTheme()
-  const [error, setError] = useState('')
   const photoInput = React.useRef(null)
   const [addedPhotos, setAddedPhotos] = React.useState([])
   const [showAddPhotoDialog, setShowAddPhotoDialog] = useState(false)
   const dispatch = useDispatch();
   const [images, setImages] = React.useState([])
-  const newPostForm = useSelector(state => state.profile.newPostForm)
   const classes = useStyles({ 'matches800': true })
   const { t } = useTranslation();
   const [progressObjects, setProgressObjects] = useState([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [publicCheckboxIsChecked, setPublicCheckboxIsChecked] = useState(editMode ? isPublic : true)
   const [disableComments, setDisableComments] = useState(editMode ? commentingIsDisabled : false)
-  const [cleanFieldTrigger, setCleanFieldTrigger] = useState(false)
 
   let handleImageUpload = async (event) => {
     const files = event.target.files
@@ -113,7 +109,6 @@ const PostForm = props => {
           setAttachments([])
           setIsSubmitting(false)
           setPostText('')
-          setCleanFieldTrigger(prev => !prev)
         }
       )
   }
@@ -276,14 +271,13 @@ const PostForm = props => {
 
         <div style={{ marginBottom: 8}}>
           { progressObjects.map(e => {
-            console.log(e)
             let percents = 0
             
             if(e.total > -1 && e.loaded) {
               percents = Math.floor((e.loaded / e.total) * 100)
             }
             if(percents === 100) {
-              return
+              return undefined
             }
             return <div style={{display: 'flex', alignItems: 'center', marginBottom: 8}}>
               <div style={{ marginRight: 16}} >{e.filename}</div>

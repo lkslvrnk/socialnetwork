@@ -1,8 +1,6 @@
 import { AxiosError } from 'axios'
 import { ThunkAction } from 'redux-thunk'
-import { usersAPI } from '../api/api'
 import { connectionAPI } from '../api/connection_api'
-import { subscriptionAPI } from '../api/subscription_api'
 import { ConnectionType, ProfileType, SubscriptionType } from '../types/types'
 import { AppStateType, InferActionsTypes } from './redux_store'
 

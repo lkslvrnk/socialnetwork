@@ -14,38 +14,29 @@ import AddIcon from '@material-ui/icons/Add';
 import RemoveIcon from '@material-ui/icons/Remove';
 import YesCancelDialog from '../../Common/YesCancelDialog.js';
 import { useTranslation } from 'react-i18next';
-
 import AvatarEditor from 'react-avatar-editor'
-import { makeStyles } from '@material-ui/core';
-
-const useStyles = makeStyles(theme => ({
-  root: {
-    ...theme.styles.flexColumnScratch,
-  },
-}));
 
 const MyAvatarEditor = props => {
   let [selectedImage, setSelectedImage] = React.useState(null)
   let [showCancelDialog, setShowCancelDialog] = React.useState(false)
   let [scaleValue, setScaleValue] = React.useState(1)
-  let classes = useStyles()
   const { t } = useTranslation();
   const dispatch = useDispatch()
 
-  function dataURItoBlob (dataURI) {
-    var byteString;
-    if (dataURI.split(',')[0].indexOf('base64') >= 0) {
-      byteString = atob(dataURI.split(',')[1]);
-    } else {
-      byteString = unescape(dataURI.split(',')[1]);
-    }
-    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-    var ia = new Uint8Array(byteString.length);
-    for (var i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-    return new Blob([ia], {type: mimeString});
-  }
+  // function dataURItoBlob (dataURI) {
+  //   var byteString;
+  //   if (dataURI.split(',')[0].indexOf('base64') >= 0) {
+  //     byteString = atob(dataURI.split(',')[1]);
+  //   } else {
+  //     byteString = unescape(dataURI.split(',')[1]);
+  //   }
+  //   var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+  //   var ia = new Uint8Array(byteString.length);
+  //   for (var i = 0; i < byteString.length; i++) {
+  //     ia[i] = byteString.charCodeAt(i);
+  //   }
+  //   return new Blob([ia], {type: mimeString});
+  // }
 
   const onScaleChange = (event, newValue) => {
     setScaleValue(newValue)
@@ -55,7 +46,7 @@ const MyAvatarEditor = props => {
     const file = event.target.files[0]
     if(file) {
       const {type} = file
-      if(type && type.endsWith('jpeg') || type.endsWith('png') || type.endsWith('jpg')) {
+      if(type && (type.endsWith('jpeg') || type.endsWith('png') || type.endsWith('jpg'))) {
         setSelectedImage(file)
       }
     }
@@ -93,7 +84,6 @@ const MyAvatarEditor = props => {
 
   const onCrop = () => {
     if(editorRef.current !== null) {
-      const url = editorRef.current.getImageScaledToCanvas().toDataURL()
       let rect = editorRef.current.getCroppingRect()
 
       let img = new Image()

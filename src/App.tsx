@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, lazy } from 'react';
+import React, { useState, useEffect, lazy } from 'react';
 import Header from './components/Header/Header.js'
 import NotFound from './components/NotFound/NotFound'
 import { useDispatch, useSelector } from 'react-redux'
@@ -9,7 +9,7 @@ import 'moment/locale/uk'
 import 'moment/locale/de'
 import moment from 'moment'
 import Button from '@material-ui/core/Button';
-import { CssBaseline, Snackbar, IconButton, useMediaQuery } from "@material-ui/core";
+import { CssBaseline, Snackbar, IconButton } from "@material-ui/core";
 import {
   createMuiTheme, responsiveFontSizes
 } from '@material-ui/core/styles';
@@ -22,7 +22,6 @@ import { AppStateType } from './redux/redux_store';
 import PostPage from './PostPage.js';
 import LeftNavigation from './components/LeftNavigation/LeftNavigation.js';
 import { useTranslation } from 'react-i18next';
-import { usePrevious } from './hooks/hooks.js';
 import './App.css'
 import Preloader from './components/Common/Preloader/Preloader.jsx';
 import Feed from './components/Feed/Feed.js';
@@ -42,19 +41,12 @@ const App: React.FC = React.memo(props => {
   const isAuthenticated = useSelector((state: AppStateType) => state.auth.isAuth)
   const classes = useStyles({ matches: true });
   const dispatch = useDispatch()
-  const [dialogueInfo, setDialogueInfo] = useState(false)
+  const [dialogueInfo] = useState(false)
   const [networkLost, setNetworkLost] = useState(false);
   const [networkAppears, setNetworkAppears] = useState(false)
-  const { t, i18n } = useTranslation()
-  const qwe = useMediaQuery('(max-width: 1300px)')
-
-  const prevIsAuthenticated = usePrevious(isAuthenticated)
+  const { i18n } = useTranslation()
 
   if (moment.locale() !== language) moment.locale(language)
-
-  const loadAppData = useCallback(() => {
-    dispatch(initializeApp())
-  }, [])
 
   useEffect(() => {
     function onoffline() {
@@ -64,16 +56,17 @@ const App: React.FC = React.memo(props => {
       setNetworkLost(false)
       setNetworkAppears(true)
     }
-    window.addEventListener('offline', onoffline)//'Network connection has been lost'))
+    window.addEventListener('offline', onoffline)
     window.addEventListener('online', ononline)
 
-    loadAppData()
+    dispatch(initializeApp())
 
     return () => {
       window.removeEventListener('offline', onoffline)
       window.removeEventListener('online', ononline)
     }
-  }, [loadAppData])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   let theObj: any = getThemeObject(Boolean(appearance))
   let themeConfig = responsiveFontSizes(createMuiTheme(theObj))

@@ -43,6 +43,7 @@ const Search: React.FC = React.memo((props) => {
         setIsSearching(false)
       }
     })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [textFromQuery])
 
   useEffect(() => {
@@ -50,6 +51,7 @@ const Search: React.FC = React.memo((props) => {
     return () => {
       dispatch(actions.clean())
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const handleLoadMore = async () => {
@@ -70,7 +72,7 @@ const Search: React.FC = React.memo((props) => {
   }
 
   const handleSearch = async (e: any) => {
-    if(e.keyCode == 13) {
+    if(e.keyCode === 13) {
       history.push(`/search?query=${fieldText}`)
     }
   }

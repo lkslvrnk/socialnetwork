@@ -1,15 +1,14 @@
-import React, {Fragment, useState, useEffect, useRef, useCallback} from 'react'
+import React, {useState, useEffect, useCallback} from 'react'
 import { useTranslation } from 'react-i18next'
-import {NavLink, useHistory} from 'react-router-dom'
+import {NavLink} from 'react-router-dom'
 import { useStyles } from './SearchStyles.js'
 import { ClickAwayListener, Divider } from '@material-ui/core'
 import Typography from "@material-ui/core/Typography"
 import Paper from "@material-ui/core/Paper"
 import SearchIcon from "@material-ui/icons/Search"
-import { Avatar, FormControl, InputBase, Select } from '@material-ui/core'
+import { Avatar, InputBase } from '@material-ui/core'
 import { debounce } from '../../helper/helperFunctions.js'
 import { appAPI, imagesStorage } from '../../api/api'
-import BeachAccessIcon from '@material-ui/icons/BeachAccess'
 import Preloader from '../Common/Preloader/Preloader.jsx'
 
 const Search = React.memo(props => {
@@ -29,6 +28,7 @@ const Search = React.memo(props => {
     if(searchText) {
       makeSearch(searchText)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText])
 
   const makeSearch = useCallback(debounce(async (text) => {

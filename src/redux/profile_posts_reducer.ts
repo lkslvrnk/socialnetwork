@@ -728,7 +728,7 @@ export let getReplies = (
     }
   } catch(e) {
     const error = e as AxiosError
-    console.log(e)
+    console.log(error)
   }
 }
 

@@ -1,6 +1,6 @@
 import { Paper } from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
-import React, {useState, useEffect, useRef} from 'react';
+import React from 'react';
 
 const PostSkeleton = (props) => {
 

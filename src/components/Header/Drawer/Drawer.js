@@ -1,7 +1,6 @@
-import React from 'react';
-import {compose} from 'redux'
+import React from 'react'
 import {NavLink} from 'react-router-dom'
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next'
 import SwipeableDrawer from '@material-ui/core/SwipeableDrawer'
 import List from '@material-ui/core/List'
 import ListItem from '@material-ui/core/ListItem'
@@ -14,11 +13,11 @@ import FormControl from '@material-ui/core/FormControl'
 import Select from '@material-ui/core/Select'
 import LanguageIcon from '@material-ui/icons/Language'
 import { makeStyles } from '@material-ui/core/styles'
-import ViewStreamIcon from '@material-ui/icons/ViewStream';
-import SubscriptionsIcon from '@material-ui/icons/Subscriptions';
-import HomeIcon from '@material-ui/icons/Home';
-import PeopleIcon from '@material-ui/icons/People';
-import { useSelector } from 'react-redux';
+import ViewStreamIcon from '@material-ui/icons/ViewStream'
+import SubscriptionsIcon from '@material-ui/icons/Subscriptions'
+import HomeIcon from '@material-ui/icons/Home'
+import PeopleIcon from '@material-ui/icons/People'
+import { useSelector } from 'react-redux'
 import { getCurrentUserUsername } from '../../../redux/auth_selectors';
 
 const useStyles = makeStyles((theme) => ({

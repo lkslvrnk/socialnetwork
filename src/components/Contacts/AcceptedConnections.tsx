@@ -29,14 +29,13 @@ type PropsType = {
 const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) => {
   const classes = useStyles();
 
-  const { connections, commonContacts, connectionsCount, commonContactsCount, currentUserUsername, handleDelete, isOwnProfile, handleLoadMore, cursor, loadMoreCommonContacts } = props
+  const { connections, commonContacts, connectionsCount, commonContactsCount, handleDelete, isOwnProfile, handleLoadMore, cursor, loadMoreCommonContacts } = props
   const { t } = useTranslation()
   const [moreConnsLoading, setMoreConnsLoading] = useState(false)
   const [moreCommonContactsLoading, setMoreCommonContactsLoading] = useState(false)
 
   const loadMoreButton = useRef(null)
   const params: any = useParams()
-  const usernameFromParams = params.username
   const location = useLocation()
 
   let queryParams = new URLSearchParams(location.search);
@@ -77,6 +76,7 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
         observer.disconnect() 
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connections, cursor])
 
   const handleLoadMoreConns = async () => {

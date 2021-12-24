@@ -17,7 +17,7 @@ import Preloader from '../../Common/Preloader/Preloader';
 import { createCommentReaction, deleteComment, deleteCommentReaction, editCommentReaction, restoreComment } from '../../../redux/profile_posts_reducer'
 import { nFormatter } from '../../../helper/helperFunctions.js'
 import { NavLink } from 'react-router-dom';
-import { baseUrl, imagesStorage } from '../../../api/api';
+import { imagesStorage } from '../../../api/api';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 
 const Comment = React.memo(props => {
@@ -109,6 +109,7 @@ const Comment = React.memo(props => {
     if(prevCommentingIsDisabled !== commentingIsDisabled) {
       setShowReplyField(false)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [commentingIsDisabled])
 
   let likesInfo = commentData.reactionsCount.find(element => element.type === 1)
@@ -296,6 +297,7 @@ const Comment = React.memo(props => {
         <div style={{marginTop: commentData.text ? 8 : 0, maxWidth: 150}} >
           { commentData.attachment && 
             <img
+              alt='comment-attachment'
               style={{width: '100%'}}
               src={`${imagesStorage}/${commentData.attachment.src}`}
             />

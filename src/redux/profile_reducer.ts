@@ -1,7 +1,7 @@
 
 import { profileAPI } from '../api/profile_api'
 import { stopSubmit } from 'redux-form'
-import { ProfileType, PostType, PhotoType, ConnectionType, ProfilePictureType, SubscriptionType } from '../types/types'
+import { ProfileType, PostType, PhotoType, ConnectionType, SubscriptionType } from '../types/types'
 import { ThunkAction } from 'redux-thunk'
 import { AppStateType, InferActionsTypes } from './redux_store'
 import { connectionAPI } from '../api/connection_api'
@@ -16,7 +16,6 @@ const CLEAN_PROFILE = 'profile/CLEAN-PROFILE';
 const SET_CONNECTION = 'profile/SET-CONNECTION'
 const ACCEPT_CONNECTION = 'profile/ACCEPT-CONNECTION'
 const SET_SUBSCRIPTION = 'profile/SET-SUBSCRIPTION'
-const SET_PICTURE = 'profile/SET-PICTURE'
 
 let initialState = {
   profileExists: null,
@@ -32,14 +31,6 @@ let initialState = {
 
 const profileReducer = (state: InitialStateType = initialState, action: ActionsType): InitialStateType => {
   switch (action.type) {
-    case SET_PICTURE: {
-      let profile = state.profile
-      if(profile) {
-        profile.picture = action.picture
-        let profileUpdated: ProfileType = {...profile}
-      }
-      return {...state}
-    }
     case ACCEPT_CONNECTION: {
       if(state.profile) {
         if(state.profile.connection) {
@@ -86,8 +77,7 @@ export const actions = {
   cleanProfile: () => ({ type: CLEAN_PROFILE } as const),
   setConnection: (connection: ConnectionType | null) => ({type: SET_CONNECTION, connection} as const),
   acceptConnection: () => ({type: ACCEPT_CONNECTION} as const),
-  setSubscription: (subscription: SubscriptionType | null) => ({type: SET_SUBSCRIPTION, subscription} as const),
-  setPicture: (picture: ProfilePictureType) => ({type: SET_PICTURE, picture} as const)
+  setSubscription: (subscription: SubscriptionType | null) => ({type: SET_SUBSCRIPTION, subscription} as const)
 }
 export let cleanProfile = (): ThunkType => {
   return async (dispatch) => {
@@ -106,7 +96,7 @@ export let getProfilePicture = (pictureId: string): ThunkType => async (dispatch
   }
   catch (e) {
     const error = e as AxiosError
-    console.log(e)
+    console.log(error)
   }
 }
 
@@ -223,6 +213,7 @@ export let createSubscription = (
     }
     catch (e) {
       const error = e as AxiosError
+      console.log(error)
     }
   }
 }

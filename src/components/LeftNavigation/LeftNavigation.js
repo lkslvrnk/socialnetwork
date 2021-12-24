@@ -6,9 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { useStyles } from './LeftNavigationStyles.js'
 import { Box, IconButton, Paper, useMediaQuery } from '@material-ui/core'
 import HomeIcon from '@material-ui/icons/Home';
-import QuestionAnswerIcon from '@material-ui/icons/QuestionAnswer';
-import SettingsIcon from '@material-ui/icons/Settings';
-import BookmarksIcon from '@material-ui/icons/Bookmarks';
 import PeopleIcon from '@material-ui/icons/People';
 import { getCurrentUserUsername } from '../../redux/auth_selectors';
 import ViewStreamIcon from '@material-ui/icons/ViewStream';

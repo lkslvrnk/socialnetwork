@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react'
-import { NavLink, useParams} from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import Typography from '@material-ui/core/Typography'
 import {useDispatch} from 'react-redux'
 import { useTranslation } from 'react-i18next';
@@ -16,7 +16,6 @@ type SearchResultItemType = {
 
 const SearchResultItem: React.FC<SearchResultItemType> = React.memo((props: SearchResultItemType) => {
   const classes = useStyles()
-  const params: any = useParams()
   const { found } = props
   const { t } = useTranslation()
   const dispatch = useDispatch()

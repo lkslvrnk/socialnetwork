@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import {Field, reduxForm, SubmissionError} from "redux-form"
+import {Field, reduxForm} from "redux-form"
 import {maxLengthCreator, minLengthCreator, required} from "../../utils/validators/validators"
-import {DateInput, OutlinedTextInput} from "../FormControls/FormControls.js"
+import {OutlinedTextInput} from "../FormControls/FormControls.js"
 import Button from '@material-ui/core/Button'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
@@ -10,7 +10,6 @@ import {signUp} from '../../redux/auth_reducer'
 import {makeStyles} from "@material-ui/core/styles";
 import Avatar from '@material-ui/core/Avatar';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-import Link from '@material-ui/core/Link';
 import { useTranslation } from 'react-i18next';
 import { Redirect } from 'react-router-dom'
 
@@ -65,9 +64,6 @@ const SignUp = React.memo( props => {
   }
 
   let signUpForm = React.useRef(null)
-
-  let facebookAuthHref = 'https://www.facebook.com/v6.0/dialog/oauth?client_id='
-    + '520867695227342&redirect_uri=http://localhost:1338/auth/fb&display=popup'
   const { t } = useTranslation();
 
   const isAuthenticated = useSelector((state) => state.auth.isAuth)
@@ -147,7 +143,7 @@ const birthdayValidator = (value) => {
     }
     let exploded = value.split('-')
     let year = exploded[0]
-    if(exploded[0] > 2005) {
+    if(year > 2005) {
       return 'Вам должно быть минимум 16 лет'
     }
     else if(exploded[0] < 1890) {

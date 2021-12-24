@@ -305,6 +305,7 @@ const Connections: React.FC = React.memo((props) => {
         }
       }
     })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usernameFromParams])
 
   useEffect(() => {
@@ -332,6 +333,7 @@ const Connections: React.FC = React.memo((props) => {
         console.log(err)
       }
     })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sectionNumber])
 
   const deleteAccepted = async (connection: ConnectionType, type: string) => {
@@ -380,6 +382,7 @@ const Connections: React.FC = React.memo((props) => {
     if(!mobile && Boolean(menuAnchor)) {
       closeMenu() 
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mobile])
 
   let body = null

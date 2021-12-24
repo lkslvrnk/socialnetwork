@@ -75,6 +75,7 @@ const Profile = React.memo(props => {
     if(!!profile) {
       document.title = ownerFullName
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile])
 
   useEffect(() => {
@@ -83,6 +84,7 @@ const Profile = React.memo(props => {
     return () => {
       dispatch(cleanProfile())
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
@@ -94,6 +96,7 @@ const Profile = React.memo(props => {
         dispatch(getUserById(usernameFromUrl))
       }
     })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usernameFromUrl])
 
   useEffect(() => {
@@ -582,7 +585,7 @@ const Profile = React.memo(props => {
         { !!profile && postsCount === 0 &&
           <Paper className={classes.noPosts} >
             {/* <LocalFloristIcon style={{width: 150, height: 150}} /> */}
-            <div style={{ fontSize: '130px' }}><span>🐮</span></div>
+            <div style={{ fontSize: '130px' }}><span role="img">🐮</span></div>
             <Typography variant='h6' >
               {t('Публикаций пока нет')}
             </Typography>

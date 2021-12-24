@@ -1,10 +1,6 @@
 import { ThunkAction } from "redux-thunk"
-import { profileAPI } from "../api/profile_api"
-import HttpStatusCode from "../api/HttpStatusCode"
-import { me } from "./auth_reducer"
 import { AppStateType, InferActionsTypes } from "./redux_store"
 import { ConnectionType } from "../types/types"
-import { connectionAPI } from '../api/connection_api'
 
 const SET_CONNECTIONS = 'connections/SET-CONNECTIONS'
 const ADD_ACCEPTED_CONNECTIONS = 'connections/ADD-ACCEPTED-CONNECTIONS'
