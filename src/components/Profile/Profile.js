@@ -587,7 +587,7 @@ const Profile = React.memo(props => {
             {/* <LocalFloristIcon style={{width: 150, height: 150}} /> */}
             <div style={{ fontSize: '130px' }}><span role="img">🐮</span></div>
             <Typography variant='h6' >
-              {t('Публикаций пока нет')}
+              {t('No posts yet')}
             </Typography>
           </Paper>
         }
@@ -595,7 +595,9 @@ const Profile = React.memo(props => {
         { postsLoaded && !!profile && !!postsCursor &&     
             (morePostsLoading
               ? <Preloader />
-              : <Button onClick={handleLoadMorePosts} >Загрузить ещё</Button>)
+              : <Button onClick={handleLoadMorePosts} >
+                  Загрузить ещё
+                </Button>)
         }
         </div>
       </div>

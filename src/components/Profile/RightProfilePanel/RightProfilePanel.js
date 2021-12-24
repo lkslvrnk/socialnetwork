@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React from 'react';
 import './RightProfilePanel.css'
 import Paper from "@material-ui/core/Paper";
 import WcIcon from '@material-ui/icons/Wc';
@@ -23,20 +23,6 @@ import { useStyles } from './RightProfilePanelStyles.js';
 const RightProfilePanel = ({matchParams, profile, isLoading}) => {
   const classes = useStyles();
   const { t } = useTranslation();
-  
-  const showTitle = 'Показать подробную инфу';
-  let [changeShowDetailed] = useState(false);
-  let [changeTitle] = useState(showTitle);
-
-  useEffect(() => {
-    discard()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[matchParams])
-
-  const discard = () => {
-    changeTitle(showTitle);
-    changeShowDetailed(false);
-  }
 
   const iconSkeleton = <StyledSkeleton variant="circle" width={24} height={24} />
   const textSkeleton = <StyledSkeleton height={20} /> 

@@ -48,7 +48,7 @@ const Feed = React.memo( props => {
         {/* <LocalFloristIcon style={{width: 150, height: 150}} /> */}
         <div style={{ fontSize: '130px' }}>🐮</div>
         <Typography variant='h6' >
-          {t('Публикаций пока нет')}
+          {t('No posts yet')}
         </Typography>
       </Paper>
       { panel }

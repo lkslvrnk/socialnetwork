@@ -12,6 +12,7 @@ import { ProfileType } from '../../types/types.js';
 import { imagesStorage } from '../../api/api';
 import { actions } from '../../redux/users_reducer';
 import { subscriptionAPI } from '../../api/subscription_api';
+import { getCurrentUserUsername } from '../../redux/auth_selectors';
 
 const Subscriptions: React.FC = React.memo((props) => {
   const classes = useStyles()
@@ -22,6 +23,10 @@ const Subscriptions: React.FC = React.memo((props) => {
   const loadMoreButton = useRef(null)
   const [moreSubscriptionsLoading, setMoreSubscriptionsLoading] = useState(false)
   const params: any = useParams()
+
+  const usernameFromParams = params.username
+  const currentUserUsername: string | null = useSelector(getCurrentUserUsername)
+  const isOwnSubscriptions = currentUserUsername === usernameFromParams
 
   useEffect(() => {
     (async function() {
@@ -75,7 +80,10 @@ const Subscriptions: React.FC = React.memo((props) => {
       <Paper style={{flexGrow: 1, display: 'flex', justifyContent: 'center', marginRight: 16}}>
         <div style={{ fontSize: '130px' }}>🐮</div>
         <Typography variant='h6' >
-          {t('Подписок нет')}
+          { isOwnSubscriptions
+            ? t("You have no subscriptions")
+            : t("User has no subscriptions")
+          }
         </Typography>
       </Paper>
       { panel }
@@ -120,7 +128,8 @@ const Subscription: React.FC<SubscriptionPropsType> = React.memo((props: Subscri
   const userLink = `/i/${subscribed.username}`
 
   const subscription = subscribed.subscription
-  const subscriptionButtonText = !!subscription ? t('Unsubscribe') : t('Subscribe')
+  const subscriptionButtonText = !!subscription
+    ? t('Unsubscribe') : t('Subscribe')
 
   return (
     <Paper className={ classes.subscription } >

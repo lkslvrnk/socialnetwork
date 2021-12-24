@@ -471,7 +471,7 @@ const Connections: React.FC = React.memo((props) => {
             variant='caption'
             color='textSecondary'
           >
-            { t('К профилю') }
+            { t('To profile') }
           </Typography>
         </NavLink>
       </>

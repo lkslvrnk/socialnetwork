@@ -85,7 +85,9 @@ const Drawer = React.memo((
         >
         {languages.map(item => {
           return (
-            <MenuItem key={item.short} value={item.short}>{`${item.flag} ${item.name}`}</MenuItem>
+            <MenuItem key={item.short} value={item.short}>
+              {item.name}
+            </MenuItem>
         )})}
         </Select>
       </FormControl>
