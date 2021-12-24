@@ -20,6 +20,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getCurrentUserPicture } from '../../redux/auth_selectors';
 import PostForm from '../Profile/PostForm.js';
 import StyledNavLink from '../Common/StyledNavLink.jsx';
+import PopperMenu2 from '../Common/PopperMenu2.jsx';
+import MenuListItemWithProgress from '../Common/MenuListItemWithProgress.jsx';
 
 const ProfilePost = React.memo(props => {
   const {
@@ -303,10 +305,9 @@ const ProfilePost = React.memo(props => {
       setPostMenuAnchor(null)
     }
   }
-  
 
   const postMenu = (
-    <ClickAwayListener onClickAway={ handleClickAwayMenu } >
+    <ClickAwayListener onClickAway={handleClickAwayMenu} >
       <div>
         <IconButton
           size='small'
@@ -315,46 +316,34 @@ const ProfilePost = React.memo(props => {
           <MoreHorizIcon color='action' />
         </IconButton>
 
-        <Popper
-          open={!!postMenuAnchor}
-          anchorEl={postMenuAnchor}
-          transition
-        >
-          <Paper elevation={3} style={{minWidth: 200}} >
-            <MenuList dense >
-
-            {onOwnWall ?
-              <>
-                { isEditable &&
-                <MenuItem disabled={menuDisabled} onClick={onEditClick} >
-                  {t('Edit')}
-                </MenuItem>
-                }
-                <MenuItem disabled={menuDisabled} onClick={handleDelete} >
-                  {t('Delete')}
-                  { isDeleting && menuItemPreloader }
-                </MenuItem>
-
-                <MenuItem disabled={menuDisabled} onClick={toggleCommenting} >
-                  { t(postData.commentingIsDisabled ? 'Enable comments' : 'Disable comments') }
-                  { commentingIsToggling && menuItemPreloader }
-                </MenuItem>
-              </>
-              :
-              <>
-                <MenuItem disabled={menuDisabled} >
-                  {t('Complain')}
-                </MenuItem>
-              </> }
-              
-              <MenuItem disabled={true} >
-                {t('Add to bookmarks')}
+        <PopperMenu2 open={!!postMenuAnchor} anchorEl={postMenuAnchor} dense>
+          {onOwnWall ?
+            <>
+            { isEditable &&
+              <MenuItem disabled={menuDisabled} onClick={onEditClick} >
+                {t('Edit')}
               </MenuItem>
-
-            </MenuList>
-
-          </Paper>
-          </Popper>
+              }
+              <MenuListItemWithProgress
+                children={t('Delete')} onClick={handleDelete}
+                disabled={menuDisabled} enableProgress={isDeleting}
+                progressSize={32}
+                
+              />
+              <MenuListItemWithProgress
+                children={t(postData.commentingIsDisabled ? 'Enable comments' : 'Disable comments')}
+                disabled={menuDisabled} enableProgress={commentingIsToggling}
+                progressSize={32} onClick={toggleCommenting}
+              />
+            </>
+            :
+            <>
+              <MenuItem disabled={menuDisabled} >
+                {t('Complain')}
+              </MenuItem>
+            </>
+          }
+        </PopperMenu2>
       </div>
     </ClickAwayListener>
   )

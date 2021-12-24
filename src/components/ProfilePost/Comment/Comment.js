@@ -19,6 +19,8 @@ import { nFormatter } from '../../../helper/helperFunctions.js'
 import { NavLink } from 'react-router-dom';
 import { imagesStorage } from '../../../api/api';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
+import PopperMenu2 from '../../Common/PopperMenu2';
+import MenuListItemWithProgress from '../../Common/MenuListItemWithProgress';
 
 const Comment = React.memo(props => {
   const {
@@ -187,48 +189,36 @@ const Comment = React.memo(props => {
     }
   }
 
+  const handleEditClick = () => {
+    setEditMode(true)
+    setMenuAnchor(null)
+  }
+
+  const openMenu = (e) => setMenuAnchor(e.currentTarget)
+
   const menu = (
-    <ClickAwayListener onClickAway={ handleClickAwayMenu } >
+    <ClickAwayListener onClickAway={handleClickAwayMenu} >
       <div>
-        <IconButton
-          size='small'
-          onClick={ (e) => setMenuAnchor(e.currentTarget) }
-        >
-          <MoreVertIcon color='action' />
+        <IconButton size='small' onClick={openMenu}>
+          <MoreVertIcon />
         </IconButton>
 
-        <Popper
-          open={Boolean(menuAnchor)}
-          anchorEl={menuAnchor}
-          transition
-        >
-          <Paper elevation={3} className={classes.menuRoot} >
-            <MenuList dense >
-              { !isOwnComment &&
-              <MenuItem disableRipple >
-                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
-                  <div>{t('Complain')}</div>
-                </div>
-              </MenuItem>
-              }
-              { isOwnComment &&
-              <MenuItem onClick={ () => { setEditMode(true); setMenuAnchor(null) }} disableRipple >
-                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
-                  <div>{t('Edit')}</div>
-                </div>
-              </MenuItem>
-              }
-              {(isOwnPost || isOwnComment) &&
-              <MenuItem onClick={handleDelete} disableRipple >
-                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%'}}>
-                  <div>{t('Delete')}</div>
-                  <div style={{width: 40, display: 'flex', flexDirection: 'row-reverse'}} >{ isDeleting && <Preloader size={20} color='secondary' /> }</div>
-                </div>
-              </MenuItem>
-              }
-            </MenuList>
-          </Paper>
-        </Popper>
+        <PopperMenu2 open={!!menuAnchor} anchorEl={menuAnchor} dense>
+          { isOwnComment &&
+            <MenuItem
+              disabled={isDeleting}
+              onClick={handleEditClick}
+              children={t('Edit')}
+            />
+          }
+          {(isOwnPost || isOwnComment) &&
+            <MenuListItemWithProgress
+              children={t('Delete')} onClick={handleDelete}
+              disabled={isDeleting} enableProgress={isDeleting}
+              progressSize={32}
+            />
+          }
+        </PopperMenu2>
       </div>
     </ClickAwayListener>
   )

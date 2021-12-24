@@ -80,6 +80,10 @@ let themeObject = {
       display: 'flex',
       justifyContent: 'center',
     },
+    flexCenterHoriz: {
+      display: 'flex',
+      justifyContent: 'center',
+    },
     flexRowAlignCenter: {
       display: 'flex',
       alignItems: 'center'

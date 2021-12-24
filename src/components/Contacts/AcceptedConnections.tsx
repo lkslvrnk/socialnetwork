@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom'
 import { ConnectionType, ContactType } from '../../types/types';
 import Preloader from '../Common/Preloader/Preloader';
-import { Avatar, Button, CircularProgress, Divider, MenuItem, MenuList, Paper, Tab, Tabs, Typography } from '@material-ui/core';
+import { Avatar, Button, CircularProgress, ClickAwayListener, Divider, IconButton, MenuItem, MenuList, Paper, Popper, Tab, Tabs, Typography } from '@material-ui/core';
 import { imagesStorage } from '../../api/api';
 import { Skeleton } from '@material-ui/lab';
 import { useStyles } from './ConnectionsStyles';
@@ -12,6 +12,8 @@ import ConnectionSkeleton from './ConnectionSkeleton';
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import PopperMenu from '../Common/PopperMenu';
 import DeckIcon from '@material-ui/icons/Deck';
+import MenuListItemWithProgress from '../Common/MenuListItemWithProgress';
+import PopperMenu2 from '../Common/PopperMenu2';
 
 type PropsType = {
   connections: Array<ConnectionType> | null
@@ -253,16 +255,14 @@ const CommonContact: React.FC<CommonContactPropsType> = React.memo((props: Commo
           src={contactPicture}
         />
 
-        <div>
-          <Typography
-            color='textPrimary'
-            component={NavLink}
-            to={contactLink}
-            variant='body2'
-          >
-            { contactName }
-          </Typography>
-        </div>
+        <Typography
+          color='textPrimary'
+          component={NavLink}
+          to={contactLink}
+          variant='body2'
+        >
+          <b>{ contactName }</b>
+        </Typography>
       </div>
       
     </div>
@@ -302,11 +302,8 @@ const AcceptedConnection: React.FC<AcceptedConnectionPropsType> = React.memo((pr
   const menuButton = useRef(null)
   const [menuAnchor, setMenuAnchor] = useState(null)
 
-  const openMenu = (event: any) => {
-    if(Boolean(menuAnchor)) {
-      return
-    }
-    setMenuAnchor(event.currentTarget)
+  const toggleMenu = (event: any) => {
+    setMenuAnchor(prev => !!prev ? null : event.currentTarget)
   }
 
   const onClickAway = (event: any) => {
@@ -328,53 +325,49 @@ const AcceptedConnection: React.FC<AcceptedConnectionPropsType> = React.memo((pr
   const contactDeleted = connection.deleted
 
   return (
-    <div className={ classes.connection } key={ connection.id } >
+    <div className={classes.connection} key={connection.id} >
       <Avatar
-        component={ NavLink }
-        to={ userLink }
-        className={ classes.avatar }
-        src={ userPicture }
+        component={NavLink} to={userLink}
+        className={classes.avatar}
+        src={userPicture}
       />
 
-      <div style={{ flexGrow: 1 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div className={classes.grow}>
+        <div className={classes.nameAndMenu} >
           <Typography
             component={NavLink}
             to={userLink}
             variant='body2'
-            style={{ marginBottom: 8 }}
-            color={ contactDeleted ? "textSecondary" : "textPrimary" }
+            color={contactDeleted ? "textSecondary" : "textPrimary"}
           >
-            <b>{ userFullName }</b>
+            <b>{userFullName}</b>
           </Typography>
           
           { isOwnProfile && !contactDeleted &&
-            <>
-            <div style={{ cursor: 'pointer' }} onClick={ openMenu } >
-              <MoreHorizIcon ref={ menuButton } />
-            </div>
+            <ClickAwayListener onClickAway={onClickAway} >
+              <div>
+              <IconButton size='small' onClick={toggleMenu} >
+                <MoreHorizIcon ref={menuButton} />
+              </IconButton>
 
-            <PopperMenu anchor={ menuAnchor } onClickAway={ onClickAway } >
-              <MenuList dense>
-                <MenuItem disableRipple disabled={ isDeleting } onClick={ onDelete } >
-                  <div style={{ position: 'relative' }} >
-                    <div>Delete from contacts</div>
-                  </div>
-                  { isDeleting && 
-                    <div style={{ position: 'absolute', width: 32, top: '0', left: 0, right: 0, margin: '0 auto' }} >
-                      <CircularProgress color='secondary' size={ 32 } />
-                    </div>
-                  }
-                  
-                </MenuItem>
-              </MenuList>
-            </PopperMenu>
-            </>
+              <PopperMenu2 dense open={!!menuAnchor} anchorEl={menuAnchor}>
+                <MenuListItemWithProgress
+                  children={'Delete from contacts'}
+                  enableProgress={isDeleting}
+                  progressSize={32}
+                  onClick={onDelete}
+                  disabled={isDeleting}
+                />
+              </PopperMenu2>
+              </div>
+            </ClickAwayListener>
           }
         </div>
 
         { contactDeleted &&
-          <Typography variant='body2' color='textSecondary' >{ t('Contact deleted') }</Typography>
+          <Typography variant='body2' color='textSecondary' >
+            { t('Contact deleted') }
+          </Typography>
         }
       </div>
     </div>
