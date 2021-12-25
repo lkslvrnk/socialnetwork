@@ -14,13 +14,24 @@ export const useStyles = makeStyles(theme => ({
   coverContainer: {
     display: 'flex'
   },
-  profileHeader: {
+  headerRoot: {
     flexGrow: 1,
     marginBottom: 16,
     overflow: 'hidden'
   },
+  header: {
+    position: 'relative',
+    height: 180,
+    display: 'flex',
+    padding: 16
+  },
   buttonsSection: {
-    flexGrow: 1, alignSelf: 'end', display: 'flex', alignItems: 'end',  flexDirection: 'column', marginLeft: 'auto',
+    flexGrow: 1,
+    alignSelf: 'end',
+    display: 'flex',
+    alignItems: 'end', 
+    flexDirection: 'column',
+    marginLeft: 'auto',
     '& > div': {
       marginTop: 8
     },
@@ -136,12 +147,25 @@ export const useStyles = makeStyles(theme => ({
     display: 'none'
   },
   photosMobile: {
+    display: 'flex',
+    justifyContent: 'center',
     '& > div': {
       marginRight: 8
     },
     '& div:last-child': {
       marginRight: 0
     },
+  },
+  postFormSkeleton: {
+    padding: 8
+  },
+  postFormSkeletonInput: {
+    marginBottom: 8,
+    display: 'flex',
+    justifyContent: 'space-between'
+  },
+  loadMore: {
+    display: 'flex', justifyContent: 'center'
   },
   resize: theme.typography.body2
 }))

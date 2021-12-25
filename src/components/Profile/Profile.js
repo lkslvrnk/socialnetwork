@@ -6,11 +6,15 @@ import { useTranslation } from 'react-i18next';
 import { useStyles } from './ProfileStyles';
 import 'emoji-mart/css/emoji-mart.css'
 import { change } from 'redux-form'
-import { cleanProfile, getUserById, createSubscription, deleteSubscription } from '../../redux/profile_reducer'
-import { getPosts, createPost, deletePost, addPostPhoto, removeNewPostPhoto, cleanNewPostPhotos, getMorePosts, restorePost } from '../../redux/profile_posts_reducer'
-import { createConnection, deleteConnection, acceptConnection } from '../../redux/profile_reducer';
+import { cleanProfile, getUserById} from '../../redux/profile_reducer'
+import {
+  getPosts, createPost, deletePost, addPostPhoto,
+  removeNewPostPhoto, cleanNewPostPhotos, getMorePosts, restorePost
+} from '../../redux/profile_posts_reducer'
 import { addPhoto } from '../../redux/photos_reducer'
-import { Avatar, Button, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Paper } from '@material-ui/core';
+import {
+  Avatar, Button, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Paper
+} from '@material-ui/core';
 import { usePrevious } from '../../hooks/hooks.js';
 import PostForm from './PostForm.js';
 import Preloader from '../Common/Preloader/Preloader.jsx';
@@ -22,18 +26,17 @@ import moment from 'moment';
 import { Divider } from '@material-ui/core';
 import { NavLink, useParams } from 'react-router-dom';
 import { AvatarGroup } from '@material-ui/lab';
-import MessageIcon from '@material-ui/icons/Message';
-import PersonAddIcon from '@material-ui/icons/PersonAdd';
-import Tooltip from '@material-ui/core/Tooltip';
 import EditIcon from '@material-ui/icons/Edit';
 import Skeleton from '@material-ui/lab/Skeleton';
 import { getCurrentUserUsername } from '../../redux/auth_selectors';
-import { baseUrl } from '../../api/api';
+import { imagesStorage } from '../../api/api';
 import WcIcon from '@material-ui/icons/Wc';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import CakeIcon from '@material-ui/icons/Cake';
 import ProfilePost from '../ProfilePost/ProfilePost.js';
 import PostSkeleton from '../Common/PostSkeleton.js';
+import Communication from './Communication.js';
+import PhotosSectionMobile from './PhotosSectionMobile.js';
 import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress.jsx';
 
 const Profile = React.memo(props => {
@@ -41,15 +44,14 @@ const Profile = React.memo(props => {
   const { postsLoaded, deletePost, restorePost, posts, currentUserId, profile, postsCursor, postsCount } = props
   
   const mobile = useMediaQuery('(max-width: 860px)')
-  const xs = useMediaQuery('(max-width: 500px)')
+  
   const params = useParams()
   const dispatch = useDispatch()
   const classes = useStyles({ 'matches800': true })
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   let wall = React.useRef(null)
   const [morePostsLoading, setMorePostsLoading] = useState(false)
-  const [connectionActionInProgress, setConnectionActionInProgress] = useState(false)
-  const [subscriptionActionInProgress, setSubscriptionActionInProgress] = useState(false)
+
   const usernameFromUrl = params.username
   const ownerFullName = !!profile && `${profile.firstName} ${profile.lastName}`
   const profileLoaded = !!profile && profile.username === usernameFromUrl
@@ -61,8 +63,6 @@ const Profile = React.memo(props => {
   const prevProfileId = usePrevious(profile ? profile.id : undefined)
 
   const onOwnWall = currentUserId === (profile ? profile.id : '-1')
-
-  const loadMorePostsButton = useRef(null)
 
   const handleLoadMorePosts = async () => {
     if(!morePostsLoading && postsLoaded && !!profile && postsCursor) {
@@ -101,25 +101,6 @@ const Profile = React.memo(props => {
   }, [usernameFromUrl])
 
   useEffect(() => {
-    var options = {
-      root: null,
-      rootMargin: '100px',
-      threshold: 0.1
-    }
-    var callback = function(entries, observer) {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          handleLoadMorePosts()
-        }
-      })
-    };
-    var observer = new IntersectionObserver(callback, options);
-    observer.observe(loadMorePostsButton.current)
-
-    return () => observer.disconnect()
-  })
-
-  useEffect(() => {
     if((!postsLoaded || (!!profile && profile.id !== prevProfileId))
       && (!!profile && profile.postsCount)
     ) {
@@ -148,12 +129,11 @@ const Profile = React.memo(props => {
     return dispatch(createPost(text, attachments, isPublic, disableComments, 0, null))
   }
 
-  let buttonsSection = null
   let buttonsSectionClass = mobile ? classes.buttonsSectionMobile : classes.buttonsSection
-  let buttonSkeletonHeight = 36
 
-  if(profileLoaded && isOwnProfile) {
-    buttonsSection = (
+  let editProfileButton = isOwnProfile &&
+    (profileLoaded
+      ? 
       <div className={buttonsSectionClass}>
         <Button
           disabled
@@ -163,143 +143,16 @@ const Profile = React.memo(props => {
           {t('Edit profile')}
         </Button>
       </div>
-    )
-  }
-  else if(profileLoaded && !isOwnProfile) {
-    const connection = profile.connection
-    const areConnected = connection && connection.isAccepted
-    const currentUserInitiatorOfConnection = connection && connection.initiator.id === currentUserId
-    const ownerOfProfileInitiatorOfConnection = connection && connection.initiator.id === profile.id
-  
-    const connectRequest = async () => {
-      if(!connection) {
-        return dispatch(createConnection(profile.id))
-      }
-      else if(!!connection && !areConnected && currentUserInitiatorOfConnection) {
-        return dispatch(deleteConnection(connection.id))
-      }
-      else if(!!connection && !areConnected && ownerOfProfileInitiatorOfConnection) {
-        return dispatch(acceptConnection(connection.id))
-      }
-      else if(!!connection && areConnected) {
-        return dispatch(deleteConnection(connection.id))
-      }
-      return null
-    }
-
-    const subscription = profile.subscription
-
-    const subscriptionRequest = async () => {
-      if(!subscription) {
-        return dispatch(createSubscription(profile.id))
-      }
-      else {
-        return dispatch(deleteSubscription(subscription.id))
-      }
-    }
-  
-    const onConnectButtonClick = () => {
-      if(connectionActionInProgress) {
-        return
-      }
-      setConnectionActionInProgress(true)
-      connectRequest()
-        .then(() => setConnectionActionInProgress(false), () => setConnectionActionInProgress(false))
-    }
-
-    const onSubscriptionButtonClick = () => {
-      if(subscriptionActionInProgress) {
-        return
-      }
-      setSubscriptionActionInProgress(true)
-      subscriptionRequest()
-        .then(() => setSubscriptionActionInProgress(false), () => setSubscriptionActionInProgress(false))
-    }
-  
-    let connectButtonTitle = ''
-    let tooltipTitle = ''
-  
-    if(!!connection && areConnected) {
-      connectButtonTitle = t('Delete from contacts')
-    }
-    else if(Boolean(connection) && !areConnected && currentUserInitiatorOfConnection) {
-      connectButtonTitle = t('Cancel request')
-      tooltipTitle = t('You offered to set up a contact, press if you want to cancel')
-    }
-    else if(Boolean(connection) && !areConnected && ownerOfProfileInitiatorOfConnection) {
-      connectButtonTitle = t('Accept request')
-      tooltipTitle = t('You have been offered to set up a contact, press if you want to refuse')
-    }
-    else if(!Boolean(connection)) {
-      connectButtonTitle = t('Offer contact')
-    }
-
-    let subscribeButtonTitle = ''
-    if(!!subscription) {
-      subscribeButtonTitle = t('Unsubscribe')
-    } else {
-      subscribeButtonTitle = t('Subscribe')
-    }
-  
-    buttonsSection = (
+      :
       <div className={buttonsSectionClass} >
-        <Button color='primary' variant="contained" startIcon={<MessageIcon />}>
-          {t('Message')}
-        </Button>
-
-        <div id='subscription' >
-          <ButtonWithCircularProgress
-            color='secondary' variant='contained'
-            startIcon={<EditIcon />}
-            children={subscribeButtonTitle}
-            onClick={onSubscriptionButtonClick}
-            enableProgress={subscriptionActionInProgress}
-            disabled={subscriptionActionInProgress}
-          />
-        </div>
-        <div id='connection' >
-          <Tooltip  title={tooltipTitle} arrow>
-            <ButtonWithCircularProgress
-              variant='contained'
-              startIcon={<PersonAddIcon />}
-              children={connectButtonTitle}
-              onClick={onConnectButtonClick}
-              enableProgress={connectionActionInProgress}
-              disabled={connectionActionInProgress}
-            />
-          </Tooltip>
-        </div>
+        <Skeleton
+          className={classes.buttonSkeleton}
+          variant='rect'
+          width={150}
+          height={36}
+        />
       </div>
     )
-  }
-  else if(!profileLoaded && isOwnProfile) {
-    buttonsSection = <div className={buttonsSectionClass} >
-      <Skeleton
-        className={classes.buttonSkeleton}
-        variant='rect'
-        width={150}
-        height={buttonSkeletonHeight}
-      />
-    </div>
-  }
-  else if(!profileLoaded && !isOwnProfile) {
-    buttonsSection = (
-      <div className={buttonsSectionClass}>
-        { [150, 120, 170].map(width => {
-          return (
-            <div>
-              <Skeleton
-                className={classes.buttonSkeleton}
-                variant='rect'
-                width={width}
-                height={buttonSkeletonHeight}
-              />
-            </div>
-          )
-        })}
-      </div>
-    )
-  }
 
   const avatar = (
     mobile
@@ -329,8 +182,7 @@ const Profile = React.memo(props => {
     <div
       className={classes.cover}
       style={{
-        backgroundImage: profileLoaded
-          ? `url(${coverSrc})` : 'none',
+        backgroundImage: profileLoaded ? `url(${coverSrc})` : 'none',
       }}
     >
     { !profileLoaded &&
@@ -347,11 +199,19 @@ const Profile = React.memo(props => {
     </div>
   )
 
+  const communication = !isOwnProfile &&
+    <Communication
+      currentUserId={currentUserId}
+      profile={profile}
+      profileLoaded={profileLoaded}
+    />
+
   const profileHeader = (
-    <Paper className={classes.profileHeader} >
+    <Paper className={classes.headerRoot} >
+
       { cover }
 
-      <div style={{ position: 'relative', height: 180, display: 'flex', padding: 16 }} >
+      <section className={classes.header} >
         <div className={classes.avatarSection}>
           <div className={classes.avatarContainer} >
             { profileLoaded ? avatar : avatarSkeleton }
@@ -360,15 +220,18 @@ const Profile = React.memo(props => {
         
         <div>
           <div className={ classes.name}>
-            { profileLoaded ?
-              <Typography variant='h5' >{ ownerFullName }</Typography>
+            { profileLoaded
+              ? <Typography variant='h5' >{ ownerFullName }</Typography>
               : <Skeleton variant='text' width={250} height={40} />
             }
           </div>
 
           { profileLoaded ?
             <>
-              <Typography variant='body1' color='textSecondary' >Черкассы, Украина</Typography>
+              <Typography variant='body1' color='textSecondary' >
+                Черкассы, Украина
+              </Typography>
+
               <Typography variant='body1' color='textSecondary' >
                 Контактов:&nbsp;
                 <NavLink
@@ -386,8 +249,11 @@ const Profile = React.memo(props => {
             <div style={{position: 'relative', zIndex: 0}} >
             <AvatarGroup max={6}>
               { profile.acceptedConnections.map(conn => {
-                let contactPicture = `${baseUrl}/images/for-photos/${conn.initiator.id === profile.id ? conn.target.picture : conn.initiator.picture}`
-                let contactLink = `/i/${conn.initiator.id === profile.id ? conn.target.username : conn.initiator.username}`
+                let pictureSrc = conn.initiator.id === profile.id
+                  ? conn.target.picture : conn.initiator.picture
+                let contactPicture = `${imagesStorage}/${pictureSrc}`
+                let contactLink = `/i/${conn.initiator.id === profile.id
+                  ? conn.target.username : conn.initiator.username}`
 
                 return <Avatar
                   component={NavLink}
@@ -401,9 +267,20 @@ const Profile = React.memo(props => {
           }
         </div>
 
-        { !mobile && buttonsSection }
-      </div>
-      { mobile && buttonsSection }
+        { !mobile &&
+          <>
+            {editProfileButton}
+            {communication}
+          </>
+        }
+      </section>
+
+      { mobile &&
+        <>
+          {editProfileButton}
+          {communication}
+        </>
+      }
     </Paper>
   )
 
@@ -423,10 +300,18 @@ const Profile = React.memo(props => {
     </div>
   )
 
-  let mainInfo = [
-    {key: 0, icon: <LocationOnIcon />, text: !!profile ? profile.city + ', ' + profile.country : null }, 
-    {key: 1, icon: <WcIcon />, text: !!profile ? profile.gender : null},
-    {key: 2, icon: <CakeIcon />, text: !!profile ? moment(profile.birthday).format("DD MMMM YYYY") : null} 
+  let mainInfo = [{
+      key: 0, icon: <LocationOnIcon />,
+      text: !!profile ? profile.city + ', ' + profile.country : null
+    }, 
+    {
+      key: 1, icon: <WcIcon />,
+      text: !!profile ? profile.gender : null
+    },
+    {
+      key: 2, icon: <CakeIcon />,
+      text: !!profile ? moment(profile.birthday).format("DD MMMM YYYY") : null
+    }
   ]
 
   const mobileInfoSection = ( mobile ?
@@ -462,84 +347,12 @@ const Profile = React.memo(props => {
     null
   )
 
-  let photos = [
-    {src: "https://is3-ssl.mzstatic.com/image/thumb/Purple113/v4/26/5c/c9/265cc9b2-2dc6-2499-9728-f1fd5c837184/source/256x256bb.jpg"},
-    {src: "https://is1-ssl.mzstatic.com/image/thumb/Purple71/v4/c8/36/9f/c8369fa9-9dbb-fbb3-1ffc-542d95e019e9/source/256x256bb.jpg"},
-    {src: "https://static-s.aa-cdn.net/img/gp/20600002404286/pRD2XG5X2KqiDoA4L1eNJFlN4_7ghS8cPiMux_wWEDVKzASYPJSsSMQ6580qan62ydRV=w300?v=1"},
-    {src: "https://s9.travelask.ru/uploads/post/000/005/876/main_image/full-a04f69d2e8e7a0364ea5805bb21a9117.jpg"},
-    {src: "http://forumsmile.ru/u/1/4/f/14fd113eac8b7e6f9381b2653e4badf1.jpg"},
-  ]
-
-  if(xs) {
-    photos = [
-      {src: "https://is3-ssl.mzstatic.com/image/thumb/Purple113/v4/26/5c/c9/265cc9b2-2dc6-2499-9728-f1fd5c837184/source/256x256bb.jpg"},
-      {src: "https://is1-ssl.mzstatic.com/image/thumb/Purple71/v4/c8/36/9f/c8369fa9-9dbb-fbb3-1ffc-542d95e019e9/source/256x256bb.jpg"},
-      {src: "https://static-s.aa-cdn.net/img/gp/20600002404286/pRD2XG5X2KqiDoA4L1eNJFlN4_7ghS8cPiMux_wWEDVKzASYPJSsSMQ6580qan62ydRV=w300?v=1"},
-      {src: "https://s9.travelask.ru/uploads/post/000/005/876/main_image/full-a04f69d2e8e7a0364ea5805bb21a9117.jpg"},
-    ]
-  }
-
-  const mobileMediaSectionSkeleton = (
-    mobile ?
-    <Paper style={{padding: 16, marginBottom: 16}}>
-      <div style={{marginBottom: 16}}>
-        <Skeleton variant='text' height={20} width={100} />
-      </div>
-
-      <div className={classes.photosMobile} style={{display: 'flex', justifyContent: 'center'}} >
-        {(xs ? [0,1,2,3] : [0,1,2,3,4]).map((photo) => (
-          <Skeleton
-            key={photo}
-            variant='rect'
-            component='div'
-            width={(mobile && !xs) ? '19%' : '24%'}
-          
-            style={{
-              flexShrink: 0,
-              paddingBottom: (mobile && !xs) ? '19%' : '24%',
-              borderRadius: 4,
-              overflow: 'hidden',
-            }}
-          />
-        ))}
-      </div>
-    </Paper>
-    :
-    null
-  )
-
-  const mobilePhotosSection = (mobile &&
-    ( !!profile ?
-      <Paper style={{padding: 0, marginBottom: 16}} >
-          <ListSubheader disableSticky={true}>
-            {t('Photos')}
-          </ListSubheader>
-
-          <div className={classes.photosMobile} style={{padding: '0 16px 16px 16px', display: 'flex', justifyContent: 'center'}} >
-            {photos.map((photo, index) => (
-              <div key={index}
-                style={{
-                  flexShrink: 0,
-                  backgroundImage: `url(${photo.src})`,
-                  backgroundSize: 'cover',
-                  width: (mobile && !xs) ? '19%' : '24%',
-                  paddingBottom: (mobile && !xs) ? '19%' : '24%',
-                  borderRadius: 4,
-                  overflow: 'hidden'
-                }}
-              />
-            ))}
-          </div>
-      </Paper>
-      :
-      mobileMediaSectionSkeleton
-    )
-  )
-
   const profileBody = (
     <div className={ classes.profileBody } >
       { mobileInfoSection }
-      { mobilePhotosSection }
+      { mobile &&
+        <PhotosSectionMobile profileLoaded={profileLoaded} />
+      }
 
       <div ref={ wall } className={ classes.wall }  >
         { isOwnProfile && profileLoaded &&
@@ -548,8 +361,8 @@ const Profile = React.memo(props => {
           </Paper>
         }
         { isOwnProfile && !profileLoaded &&
-          <Paper style={{padding: 8}}>
-            <div style={{marginBottom: 8, display: 'flex', justifyContent: 'space-between'}}>
+          <Paper className={classes.postFormSkeleton} >
+            <div className={classes.postFormSkeletonInput} >
               <Skeleton variant='text' width={200} />
               <Skeleton variant='circle' width={20} height={20} />
             </div>
@@ -566,21 +379,22 @@ const Profile = React.memo(props => {
         }
         { !!profile && postsCount === 0 &&
           <Paper className={classes.noPosts} >
-            {/* <LocalFloristIcon style={{width: 150, height: 150}} /> */}
             <div style={{ fontSize: '130px' }}><span role="img">🐮</span></div>
             <Typography variant='h6' >
               {t('No posts yet')}
             </Typography>
           </Paper>
         }
-        <div style={{display: 'flex', justifyContent: 'center'}} ref={loadMorePostsButton} >
-        { postsLoaded && !!profile && !!postsCursor &&     
-            (morePostsLoading
-              ? <Preloader />
-              : <Button onClick={handleLoadMorePosts} >
-                  Загрузить ещё
-                </Button>)
-        }
+        <div className={classes.loadMore} >
+          { postsLoaded && !!profile && !!postsCursor &&
+            <ButtonWithCircularProgress
+              onClick={handleLoadMorePosts}
+              enableProgress={morePostsLoading}
+              disabled={morePostsLoading}
+              variant='contained'
+              children={t('Load more')}
+            />
+          }
         </div>
       </div>
 

@@ -45,8 +45,10 @@ const App: React.FC = React.memo(props => {
   const [dialogueInfo] = useState(false)
   const [networkLost, setNetworkLost] = useState(false);
   const [networkAppears, setNetworkAppears] = useState(false)
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const history = useHistory()
+
+  console.log(language, i18n.language)
 
   if (moment.locale() !== language) moment.locale(language)
 
@@ -85,8 +87,8 @@ const App: React.FC = React.memo(props => {
   if (!isInitialized) return loadingDisplay
 
   if (language !== i18n.language) {
-    if (language) setTimeout(() => i18n.changeLanguage(language), 100)
-    return loadingDisplay
+    if (language) i18n.changeLanguage(language)
+    //return loadingDisplay
   }
 
   let networkLostSnakbar = <Snackbar

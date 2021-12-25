@@ -2,8 +2,6 @@ import React, {Fragment, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {connect} from 'react-redux'
 import {compose} from 'redux'
-import SmallListItemIcon from '../../Common/SmallListItemIcon.js'
-
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -20,6 +18,14 @@ const useStyles = makeStyles(theme => ({
   rightMenu: {
     minWidth: '250px'
   },
+  languageSelectorHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: 8,
+    "& > :first-child": {
+      marginRight: theme.spacing(1)
+    }
+  }
 }));
 
 const RightMenu = React.memo((
@@ -27,15 +33,19 @@ const RightMenu = React.memo((
 ) => {
   const { t } = useTranslation();
   const classes = useStyles();
-  const [showLanguageMenu, setShowLanguageMenu] = useState(false);
+  const [section, setSection] = useState(0) // Это свойство определяет что должно отображаться в окне
 
   const renderMainMenuButtons = (
     <List>
       {appearanceSwitcher}
-      <ListItem button onClick={() => setShowLanguageMenu(true)}>
+      
+      <ListItem button onClick={() => setSection(1)}>
         <ListItemIcon><TranslateIcon /></ListItemIcon>
-        <ListItemText>{t('Change language')}</ListItemText>
+        <ListItemText>
+          {t('Change language')}
+        </ListItemText>
       </ListItem>
+
       {renderExitListItem}
     </List>
   );
@@ -43,11 +53,19 @@ const RightMenu = React.memo((
   const renderLanguageSelector = (
     <Fragment>
       <RightMenuHeader>
-        <IconButton button onClick={() => setShowLanguageMenu(false)}>
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant='body2' >{t('Change language')}</Typography>
+        <div className={classes.languageSelectorHeader} style={{}}>
+          <IconButton
+            size='small'
+            onClick={() => setSection(0)}
+          >
+            <ArrowBackIcon />
+          </IconButton>
+          <Typography>
+            {t('Change language')}
+          </Typography>
+        </div>
       </RightMenuHeader>
+
       <Divider />
       <List dense style={{paddingTop: 0}}>
       {languages.map(item => {
@@ -57,15 +75,20 @@ const RightMenu = React.memo((
             button onClick={() => onSetLanguage(item.short)}
             selected={language === item.short}
           >
-            <SmallListItemIcon children={<Typography variant='h5' >{item.flag}</Typography>}/>
             <ListItemText>
-              <Typography variant='body2' >{item.name}</Typography>
+              <Typography>{item.name}</Typography>
             </ListItemText>
+
           </ListItem>
         )})}
       </List>
     </Fragment>
   )
+
+  let renderedContent = renderMainMenuButtons
+  if(section === 1) {
+    renderedContent = renderLanguageSelector
+  }
   
   return (
     <Popover
@@ -76,11 +99,9 @@ const RightMenu = React.memo((
       transformOrigin={{ vertical: "top", horizontal: "left" }}
       open={Boolean(anchor)}
       onClose={toggleRightMenu}
-      
-      disableScrollLock
     >
       <div className={classes.rightMenu}>
-        {!showLanguageMenu ? renderMainMenuButtons : renderLanguageSelector}
+        {renderedContent}
       </div>
     </Popover>
   );

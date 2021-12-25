@@ -5,6 +5,7 @@ import { ConnectionType } from '../../types/types';
 import { Avatar, Button, CircularProgress,Typography } from '@material-ui/core';
 import { imagesStorage } from '../../api/api';
 import { useStyles } from './ConnectionsStyles';
+import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress';
 
 type OutgoingConnectionPropsType = {
   connection: ConnectionType
@@ -39,25 +40,27 @@ const OutgoingConnection: React.FC<OutgoingConnectionPropsType> = React.memo((pr
         src={userPicture}
       />
 
-      <div style={{flexGrow: 1}}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Typography color='textPrimary' component={NavLink} to={userLink} variant='body2' style={{marginBottom: 8}} >
-            <b>{ userFullName }</b>
-          </Typography>
+      <div className={classes.grow} >
+        <div className={classes.nameAndMenu}>
+          <Typography
+            color='textPrimary'
+            component={NavLink}
+            to={userLink}
+            variant='body2'
+            children={<b>{ userFullName }</b>}
+          />
         </div>
 
         { connection.deleted ?
-          'Запрос был отменён'
+          t('Request canceled')
           :
-          <div style={{ display: 'flex' }}>
-            <div className={classes.buttonWrapper} >
-              <Button variant='contained' onClick={ onDelete } >
-                {t('Cancel')}
-              </Button>
-              {isDeleting && <CircularProgress size={24} className={classes.buttonProgress} />}
-            </div>
-
-          </div>
+          <ButtonWithCircularProgress
+            enableProgress={isDeleting}
+            variant='contained'
+            disabled={isDeleting}
+            onClick={onDelete}
+            children={t('Cancel')}
+          />
         }
       </div>
     </div>

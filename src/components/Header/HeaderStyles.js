@@ -4,6 +4,10 @@ export const useStyles = makeStyles(theme => ({
   grow: {
     flexGrow: 1,
   },
+  toolbar: {
+    minHeight: 48, 
+    maxHeight: 48
+  },
   openDrawerButton: {
   },
   drawerRoot: {

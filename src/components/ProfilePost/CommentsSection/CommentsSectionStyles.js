@@ -1,4 +1,5 @@
 import { makeStyles } from "@material-ui/core";
+
 export const useStyles = makeStyles((theme) => ({
   commentsSection: {
     position: 'relative',
@@ -35,5 +36,8 @@ export const useStyles = makeStyles((theme) => ({
     background: theme.palette.common.paper,
     border: `1px solid ${theme.palette.divider}`,
     padding: `${theme.spacing(1)}px 0`
+  },
+  showMore: {
+    cursor: 'pointer', display: 'flex'
   }
 }));

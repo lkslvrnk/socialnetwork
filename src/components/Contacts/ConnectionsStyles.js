@@ -15,6 +15,11 @@ export const useStyles = makeStyles(theme => {
       marginLeft: spacing2x,
     },
     topNav: {
+      position: 'sticky',
+      top: 48,
+      marginBottom: 8,
+      border: `1px solid ${theme.palette.divider}`,
+      zIndex: 1
     },
     connection: {
       padding: spacing2x,
@@ -49,6 +54,16 @@ export const useStyles = makeStyles(theme => {
       display: 'flex',
       justifyContent: 'space-between',
       marginBottom: spacing1x
+    },
+    ownerInfo: {
+      padding: spacing1x,
+      '@media (max-width: 860px)': {
+        padding: theme.spacing(0.5, 1)
+      },
+      display: 'flex',
+    },
+    navPopper: {
+      border: `1px solid ${theme.palette.divider}`,
     }
   }
 })

@@ -7,7 +7,10 @@ import moment from 'moment'
 import {baseUrl, imagesStorage} from '../../api/api'
 import {useTranslation} from 'react-i18next'
 import YesCancelDialog from '../Common/YesCancelDialog.js'
-import { Paper, Typography, DialogTitle, Dialog, DialogContent, DialogActions, MenuItem, Menu, IconButton, Button, CardMedia, CardHeader, Divider, CardContent, Modal, Card, CardActions, ClickAwayListener, Popper, LinearProgress } from '@material-ui/core';
+import {
+  Paper, Typography, DialogTitle, Dialog, DialogContent, DialogActions, MenuItem, Menu, IconButton, Button,
+  CardMedia, CardHeader, Divider, CardContent, Modal, Card, CardActions, ClickAwayListener, LinearProgress
+} from '@material-ui/core';
 import { editPostReaction, deletePostReaction, createPostReaction } from '../../redux/profile_posts_reducer'
 import { useStyles } from './PostStyles'
 import SimpleText from '../Common/SimpleText.jsx'
@@ -324,10 +327,12 @@ const ProfilePost = React.memo(props => {
                 
               />
               <MenuListItemWithProgress
-                children={t(postData.commentingIsDisabled ? 'Enable comments' : 'Disable comments')}
                 disabled={menuDisabled} enableProgress={commentingIsToggling}
                 progressSize={32} onClick={toggleCommenting}
-              />
+              >
+                {t(postData.commentingIsDisabled
+                  ? 'Enable comments' : 'Disable comments')}
+              </MenuListItemWithProgress>
             </>
             :
             <>
@@ -370,12 +375,15 @@ const ProfilePost = React.memo(props => {
     <div className={classes.postReactionsAndCommentsInfo} >
       <div className={classes.postReactionsInfo} >
         {topReactionsTypes.map((reaction) => {
-          const reactionImageSrc = reactionsData.find(element => element.type === reaction.type).src
+          const reactionImageSrc = reactionsData.find(element => {
+            return element.type === reaction.type
+          }).src
+
           return (
             <div
               key={ reaction.type }
               className={classes.mostPopularReactionsItem}
-              style={{ backgroundImage: `url(${reactionImageSrc})`, }}
+              style={{ backgroundImage: `url(${reactionImageSrc})`}}
             />
           )
         })}
@@ -392,7 +400,9 @@ const ProfilePost = React.memo(props => {
   )
 
   return (
-    <Card className={classes.card} style={{ maxWidth: (inWindow || inPostPage) ? 550 : 'auto' }}>
+    <Card
+      className={classes.card}
+    >
       <CardHeader
         className={classes.postHeader}
         action={ !editMode && userIsAuthenticated && postMenu }

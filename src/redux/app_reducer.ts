@@ -13,7 +13,7 @@ const SET_APPEARANCE = 'app/SET-APPEARANCE'
 const SET_PAGE_ID = 'app/SET-PAGE-ID'
 const CLEAN_SETTINGS = 'app/CLEAN-SETTINGS'
 
-let language: string = localStorage.language ? localStorage.language : navigator.language
+let language: string = localStorage.language || navigator.language
 if(!localStorage.language) {
   localStorage.setItem('language', language)
 }
@@ -28,10 +28,12 @@ let initialState = {
 
 const appReducer = (state: InitialStateType = initialState, action: any): InitialStateType => {
   switch (action.type) {
-    case INITIALIZED_SUCCESS:
+    case INITIALIZED_SUCCESS: {
       return {...state, initialized: true}
-    case SET_PRELOADER:
+    }
+    case SET_PRELOADER: {
       return { ...state, preloader: action.flag }
+    }
     case SET_PROFILE_SETTINGS:
       return { ...state, ...action.settings }
     case SET_LANGUAGE:
@@ -42,7 +44,7 @@ const appReducer = (state: InitialStateType = initialState, action: any): Initia
     case SET_COMMON_ERROR:
       return { ...state, commonError: action.error }
     case CLEAN_SETTINGS:
-      return { ...state, language: localStorage.language ? localStorage.language : navigator.language}
+      return { ...state, language: localStorage.language || navigator.language}
     default:
       return state;
   }
@@ -72,6 +74,13 @@ export const changeLanguage = (id: string, language: string): ThunkType => {
         dispatch(actions.setLanguage(language))
       }
     })
+  }
+}
+
+export const changeGuestLanguage = (language: string): ThunkType => {
+  return (dispatch) => {
+    localStorage.setItem('language', language)
+    dispatch(actions.setLanguage(language))
   }
 }
 

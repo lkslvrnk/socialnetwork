@@ -27,7 +27,7 @@ const PhotoGallery = React.memo((props) => {
   const photos = useRef([])
   let location = useLocation();
   const [selectedPhotos, setSelectedPhotos] = useState([])
-  const [setImageChangingCount] = useState(0)
+  const [imageChangingCount, setImageChangingCount] = useState(0)
   const gallery = useRef(null)
 
   function getMeta(url) {

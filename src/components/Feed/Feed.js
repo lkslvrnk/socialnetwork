@@ -9,6 +9,7 @@ import { getFeedPosts, getMoreFeedPosts, cleanProfilePosts } from '../../redux/p
 import Preloader from '../Common/Preloader/Preloader.jsx';
 import StickyPanel from '../Common/StickyPanel.js';
 import PostSkeleton from '../Common/PostSkeleton.js';
+import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress.jsx';
 
 const Feed = React.memo( props => {
   const classes = useStyles()
@@ -36,16 +37,15 @@ const Feed = React.memo( props => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [morePostsLoading, loaded, cursor])
 
-  const panel = <div className={classes.panel}>
+  const panel = <aside className={classes.feedRightPanel}>
     <StickyPanel top={55}>
       <Paper style={{padding: 16, height: 100}}></Paper>
     </StickyPanel>
-  </div>
+  </aside>
 
   if(loaded && posts && !posts.length) {
     return <section className={classes.root}>
       <Paper className={classes.noPosts} >
-        {/* <LocalFloristIcon style={{width: 150, height: 150}} /> */}
         <div style={{ fontSize: '130px' }}>🐮</div>
         <Typography variant='h6' >
           {t('No posts yet')}
@@ -72,23 +72,27 @@ const Feed = React.memo( props => {
 
   let postsSkeletonsList = [0, 1, 2].map((sk) => <PostSkeleton key={sk} />)
 
-  return <section className={classes.root}>
+  return <div className={classes.root}>
     <main className={classes.posts}>
       { loaded
         ? postsList
         : postsSkeletonsList
       }
-      <div style={{display: 'flex', justifyContent: 'center'}} ref={loadMorePostsButton} >
-        { loaded && !!cursor &&
-          <div style={{ position: 'relative'}}>
-            <Button onClick={handleLoadMorePosts} >Загрузить ещё</Button>   
-            <div style={{position: 'absolute', top: 0, right:0, left:0, bottom: 0, display: morePostsLoading ? 'block' : 'none' }}><Preloader /></div>
-          </div>
-        }
-      </div>
+
+      { loaded && !!cursor &&
+        <div className={classes.loadMore} >
+          <ButtonWithCircularProgress
+            onClick={handleLoadMorePosts}
+            children={t('Load more')}
+            variant='contained'
+            enableProgress={true}
+            disabled={morePostsLoading}
+          />
+        </div>
+      }
     </main>
     { panel }
-  </section>
+  </div>
 
 })
 

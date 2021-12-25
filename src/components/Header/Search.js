@@ -70,61 +70,74 @@ const Search = React.memo(props => {
     setShowSearchingPanel(false)
   }
 
+  const renderInput = (
+    <>
+      <div className={classes.searchIcon}>
+        <SearchIcon />
+      </div>
+      <InputBase
+        placeholder={ t("Search…") }
+        onChange={ onSearchChange }
+        value={ searchText }
+        onFocus={ () => {
+          if(searchText) setShowSearchingPanel(true)
+        }}
+        classes={{
+          root: classes.inputRoot,
+          input: showSearchingPanel
+            ? classes.inputInputWithOpenPanel
+            : classes.inputInput
+        }}
+        inputProps={{ 'aria-label': 'search' }}
+      />
+    </>
+  )
+
   const resultItems = searchResults.items
 
-  return (
-    <ClickAwayListener onClickAway={ () => setShowSearchingPanel(false)}>
-      <div className={classes.search}>
-        <div className={classes.searchIcon}>
-          <SearchIcon />
+  const renderResults = resultItems.map((user, index) => {
+    let name = `${user.firstname} ${user.lastname}`
+    let picture = user.picture && `${imagesStorage}${user.picture}`
+    let link = `/i/${user.username}`
+    return (
+      <>
+        <div className={classes.searchResultItem} onClick={ removeSearch}>
+          <Avatar
+            src={picture}
+            component={NavLink}
+            to={link}
+          />
+          <Typography
+            variant='body2'
+            component={NavLink}
+            to={link}
+            style={{ marginLeft: 16}}
+            children={name}
+            color='textPrimary'
+          />
         </div>
-        <InputBase
-          placeholder={ t("Search…") }
-          onChange={ onSearchChange }
-          value={ searchText }
-          onFocus={ () => {
-            if(searchText) setShowSearchingPanel(true)
-          }}
-          classes={{
-            root: classes.inputRoot,
-            input: showSearchingPanel ? classes.inputInputWithOpenPanel : classes.inputInput
-          }}
-          inputProps={{ 'aria-label': 'search' }}
-        />
+      </>
+    )
+  })
+
+
+  return (
+    <ClickAwayListener onClickAway={() => setShowSearchingPanel(false)}>
+      <div className={classes.search}>
+
+        { renderInput }
+
         { showSearchingPanel &&
-        <Paper className={ classes.searchPanel }>
-          { isSearching ?
-            <div className={classes.preloader} >
-              <Preloader />
-            </div>
-            :
-            ((resultItems.map((user, index) => {
-              let name = `${user.firstname} ${user.lastname}`
-              let picture = user.picture && `${imagesStorage}${user.picture}`
-              let link = `/i/${user.username}`
-              return (
-                <>
-                <div className={classes.searchResultItem} onClick={ removeSearch}>
-                  <Avatar
-                    src={picture}
-                    component={NavLink}
-                    to={link}
-                  />
-                  <Typography
-                    variant='body2'
-                    component={NavLink}
-                    to={link}
-                    style={{ marginLeft: 16}}
-                    children={name}
-                    color='textPrimary'
-                  />
-                </div>
-                </>
-              )
-              }))
-            )
-          }
-          { !isSearching && searchText &&
+          <Paper className={ classes.searchPanel }>
+            { isSearching ?
+              <div className={classes.preloader} >
+                <Preloader />
+              </div>
+              :
+              <>{ renderResults }</>
+            }
+            
+            { (!isSearching && searchText) &&
             <>
               { resultItems.length > 0 && <Divider /> }
               <NavLink
@@ -132,11 +145,17 @@ const Search = React.memo(props => {
                 to={`/search?query=${searchText}`}
                 onClick={ removeSearch}
               >
-                <Typography color='textPrimary'>{t('Show all results')}</Typography>
+                <Typography
+                  variant='body2'
+                  color='textPrimary'
+                >
+                  {t('Show all results')}
+                </Typography>
               </NavLink>
             </>
-          }
-        </Paper> }
+            }
+          </Paper>
+        }
       </div>
     </ClickAwayListener>
   )

@@ -4,11 +4,11 @@ import RightMenu from './RightMenu/RightMenu.js'
 import { useTranslation } from 'react-i18next';
 import {NavLink, useHistory} from 'react-router-dom'
 import { useStyles } from './HeaderStyles.js'
-import {connect} from 'react-redux'
+import {connect, useDispatch} from 'react-redux'
 import {compose} from 'redux'
 import {withRouter} from 'react-router-dom'
 import CustomToggleButton from '../CustomToggleButton.js'
-import {changeLanguage, changeAppearance} from '../../redux/app_reducer'
+import {changeLanguage, changeAppearance, changeGuestLanguage} from '../../redux/app_reducer'
 import {logOut} from './../../redux/auth_reducer'
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -30,6 +30,7 @@ import HorizontalGrow from '../Common/HorizontalGrow.jsx';
 import YesCancelDialog from '../Common/YesCancelDialog.js';
 import { FormControl, Select } from '@material-ui/core';
 import Search from './Search.js';
+import TypographyLink from '../Common/TypographyLink.jsx';
 
 const Header = React.memo(({
   isAuth, width, language, changeLanguage, logOut,
@@ -38,6 +39,7 @@ const Header = React.memo(({
   const { t } = useTranslation()
   const classes = useStyles()
   const history = useHistory()
+  const dispatch = useDispatch()
 
   const languages = [
     {name: 'English', short: 'en'},
@@ -112,6 +114,8 @@ const Header = React.memo(({
 
   let isMobile = width === 'xs' || width === 'sm'
 
+  const logo = 'url(https://upload.wikimedia.org/wikipedia/commons/d/d1/ShareX_Logo.png)'
+
   const renderUserNavigation = (
     <Fragment>
       <div className={ classes.drawerRoot }>
@@ -139,7 +143,7 @@ const Header = React.memo(({
       <NavLink
         className={ classes.logo}
         to='/'
-        style={{ backgroundImage: 'url(https://upload.wikimedia.org/wikipedia/commons/d/d1/ShareX_Logo.png)', }}
+        style={{ backgroundImage: logo }}
       />
 
       {dialogueInfo.isOpen && isMobile ?
@@ -172,27 +176,35 @@ const Header = React.memo(({
       </CustomToggleButton>
     </Fragment>
   )
-
-  const notLoggedUserLanguage = (localStorage.language && localStorage.language.substring(0, 2)) || navigator.language.substring(0, 2)
   
   const guestNavigation = (
     <Fragment>
-      <Link color="inherit" component={NavLink} to="/login">{t('Login')}</Link>
-      <div style={{width: '20px'}}></div>
-      <Link color="inherit" component={NavLink} to="/signup">{t('Register')}</Link>
+      <TypographyLink to="/login">
+        {t('Login')}
+      </TypographyLink>
+      <div style={{width: '20px'}}/>
+      <TypographyLink to="/signup" >
+        {t('Register')}
+      </TypographyLink>
 
       <div className={classes.selectNotLoggedUserLanguage} >
         <FormControl>
           <Select
             labelId="demo-simple-select-label"
             id="demo-simple-select"
-            value={ notLoggedUserLanguage }
+            value={ language }
             onChange={(event) => {
-              localStorage.setItem('language', event.target.value)
-              window.location.reload()
+              dispatch(changeGuestLanguage(event.target.value))
             }}
           >
-          {languages.map(item => <MenuItem key={item.short} value={item.short}>{`${item.name}`}</MenuItem>)}
+          {languages.map(item => {
+            return <MenuItem
+              key={item.short}
+              value={item.short}
+            >
+              {`${item.name}`}
+            </MenuItem>
+          })}
           </Select>
         </FormControl>
       </div>
@@ -201,9 +213,8 @@ const Header = React.memo(({
 
   return (
     <Grid item container>
-     
       <AppBar position="fixed" color="inherit" >
-        <Toolbar style={{minHeight: 48, maxHeight: 48}} >
+        <Toolbar style={{minHeight: 48, maxHeight: 48, }} >
           {isAuth ? renderUserNavigation : guestNavigation}
         </Toolbar>
       </AppBar>

@@ -7,44 +7,19 @@ import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import { useDispatch, useSelector} from 'react-redux'
 import {logIn} from './../../redux/auth_reducer'
-import {makeStyles} from "@material-ui/core/styles";
 import Avatar from '@material-ui/core/Avatar';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import { useTranslation } from 'react-i18next';
 import { Redirect } from 'react-router-dom'
-
-const useStyles = makeStyles(theme => ({
-  root: {
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    marginTop: theme.spacing(8),
-  },
-  form: {
-    width: '100%'
-  },
-  formContainer: {
-    padding: theme.spacing(2),
-    flexDirection: 'column',
-    display: 'flex',
-    alignItems: 'center',
-    minWidth: 300,
-    maxWidth: 400
-  },
-  submit: {
-    margin: theme.spacing(3, 0, 2),
-  },
-  avatar: {
-    margin: theme.spacing(1),
-    backgroundColor: theme.palette.secondary.main,
-  }
-}))
+import { useStyles } from './LoginStyles'
 
 const Login = React.memo( props => {
   let classes = useStyles()
 
   let dispatch = useDispatch()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  let loginForm = React.useRef(null)
+  const { t } = useTranslation();
 
   const onSubmit = formData => {
     setIsSubmitting(true)
@@ -57,12 +32,9 @@ const Login = React.memo( props => {
       })
   }
 
-  let loginForm = React.useRef(null)
-
-  const { t } = useTranslation();
-
   const isAuthenticated = useSelector((state) => state.auth.isAuth)
   const username = useSelector((state) => state.auth.username)
+
   if(isAuthenticated) {
     return <Redirect to={`/i/${username}`} />
   }
@@ -90,11 +62,7 @@ let maxLength30 = maxLengthCreator(30)
 
 const LoginForm = reduxForm({form: 'login'})(
   (props) => {
-
     let error = props.error
-    console.log(error)
-    console.log(props)
-
     let classes = useStyles()
     const { t } = useTranslation();
 

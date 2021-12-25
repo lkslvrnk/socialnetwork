@@ -6,10 +6,10 @@ import NewComment from '../NewComment.js'
 import SimpleText from '../../Common/SimpleText.jsx'
 import { getComments, createComment } from '../../../redux/profile_posts_reducer'
 import { getCurrentUserId, getCurrentUserPicture } from '../../../redux/auth_selectors'
-import Preloader from '../../Common/Preloader/Preloader.jsx'
 import { getPostComments } from '../../../redux/profile_posts_selectors'
 import { useTranslation } from 'react-i18next'
-import { baseUrl } from '../../../api/api'
+import { imagesStorage } from '../../../api/api'
+import { CircularProgress } from '@material-ui/core'
 
 const CommentsSection = React.memo(props => {
 
@@ -20,7 +20,7 @@ const CommentsSection = React.memo(props => {
   const currentUserId = useSelector(getCurrentUserId)
   const comments = useSelector(state => getPostComments(state, postId))
   const picture = useSelector(getCurrentUserPicture)
-  const currentUserPicture = `${baseUrl}/images/for-photos/${picture}`
+  const currentUserPicture = `${imagesStorage}/${picture}`
 
   const [qwe, setQwe] = useState(false)
   const [commentsAreHidden] = useState(false)
@@ -60,10 +60,15 @@ const CommentsSection = React.memo(props => {
   )
 
   const renderShowMoreButton = (
-    <div style={{cursor: 'pointer', display: 'flex', }} onClick={onShowMoreClick} >
-      <SimpleText > {t('Load previous')} </SimpleText>
+    <div
+      className={classes.showMore}
+      onClick={onShowMoreClick}
+    >
+      <SimpleText>{t('Load previous')}</SimpleText>
       { qwe &&
-        <div style={{marginLeft: 8}} ><Preloader color='secondary' size={15} /></div>
+        <div style={{marginLeft: 8}} >
+          <CircularProgress color='secondary' size={15} />
+        </div>
       }
     </div>
   )
@@ -102,14 +107,15 @@ const CommentsSection = React.memo(props => {
           })
         }
 
-        { commentsCount > 0 && !comments.length && <Preloader color='secondary' size={40} /> }
+        { commentsCount > 0 && !comments.length
+          && <CircularProgress color='secondary' size={40} />
+        }
         { userIsAuthenticated && !commentingIsDisabled && renderNewCommentField } 
       </div>
 
   </div>
   )
 })
-
 
 export default CommentsSection
 

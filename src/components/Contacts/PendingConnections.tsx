@@ -48,12 +48,14 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
   const header = (
     <Tabs value={tabNumber} aria-label="simple tabs example">
       <Tab
-        label={`${t('Incoming')} ${incomingCount ? '(' + incomingCount + ')' : '' }`}
-        component={NavLink} to={`/i/${params.username}/contacts?section=incoming`}
+        label={`${t('Incoming')} ${incomingCount ? incomingCount : '' }`}
+        component={NavLink}
+        to={`/i/${params.username}/contacts?section=incoming`}
       />
       <Tab
-        label={`${t('Outgoing')} ${outgoingCount ? '(' + outgoingCount + ')' : ''}`}
-        component={NavLink} to={`/i/${params.username}/contacts?section=outgoing`}
+        label={`${t('Outgoing')} ${outgoingCount ? outgoingCount : ''}`}
+        component={NavLink}
+        to={`/i/${params.username}/contacts?section=outgoing`}
       />
     </Tabs>
   )
@@ -74,7 +76,12 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
   else if(!!incoming && tabNumber === 0) {
     body = ( incoming.length > 0
       ? incoming.map((conn, index) => <>
-          <IncomingConnection key={conn.id} connection={conn} handleAccept={handleAccept} handleDelete={handleDeleteIncoming} />
+          <IncomingConnection
+            key={conn.id}
+            connection={conn}
+            handleAccept={handleAccept}
+            handleDelete={handleDeleteIncoming}
+          />
           { index !== (incoming.length - 1) && <Divider />}
         </>)
       :
@@ -87,7 +94,11 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
     body = (
       outgoing.length > 0
         ? outgoing.map((conn, index) => <>
-            <OutgoingConnection key={conn.id} connection={conn} handleDelete={handleDeleteOutgoing} />
+            <OutgoingConnection
+              key={conn.id}
+              connection={conn}
+              handleDelete={handleDeleteOutgoing}
+            />
             { index !== (outgoing.length - 1) && <Divider />}
           </>)
         :

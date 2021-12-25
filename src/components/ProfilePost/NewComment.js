@@ -1,20 +1,18 @@
-import React, {useState, useEffect, useRef} from 'react';
-import Avatar from "@material-ui/core/Avatar";
-import IconButton from "@material-ui/core/IconButton";
-import {useTranslation} from 'react-i18next';
-import SendIcon from '@material-ui/icons/Send';
-import { Button, Popper, TextField, useTheme } from '@material-ui/core';
+import React, {useState, useEffect, useRef} from 'react'
+import Avatar from "@material-ui/core/Avatar"
+import {useTranslation} from 'react-i18next'
+import SendIcon from '@material-ui/icons/Send'
+import { Button, Popper, TextField, useTheme } from '@material-ui/core'
 import { useDispatch } from 'react-redux'
-import Preloader from '../Common/Preloader/Preloader';
-import { usePrevious } from '../../hooks/hooks';
-import SentimentSatisfiedRoundedIcon from '@material-ui/icons/SentimentSatisfiedRounded';
-import EmojiPicker from '../Common/EmojiPicker';
-import AddAPhotoIcon from '@material-ui/icons/AddAPhoto';
-import { createComment, createCommentPhoto, editPostComment, getCommentPhoto } from '../../redux/profile_posts_reducer';
-import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress';
-import { imagesStorage } from '../../api/api';
-import { useStyles } from './NewCommentStyles';
-import IconButtonWithCircularProgress from '../Common/IconButtonWithCircularProgress';
+import { usePrevious } from '../../hooks/hooks'
+import SentimentSatisfiedRoundedIcon from '@material-ui/icons/SentimentSatisfiedRounded'
+import EmojiPicker from '../Common/EmojiPicker'
+import AddAPhotoIcon from '@material-ui/icons/AddAPhoto'
+import { createComment, createCommentPhoto, editPostComment, getCommentPhoto } from '../../redux/profile_posts_reducer'
+import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress'
+import { imagesStorage } from '../../api/api'
+import { useStyles } from './NewCommentStyles'
+import IconButtonWithCircularProgress from '../Common/IconButtonWithCircularProgress'
 
 const NewComment = React.memo(props => {
 

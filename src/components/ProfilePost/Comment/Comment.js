@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useStyles } from './CommentStyles';
 import { usePrevious } from '../../../hooks/hooks';
 import SimpleText from '../../Common/SimpleText';
-import { ClickAwayListener, IconButton, LinearProgress, MenuItem, MenuList, Paper, Popper, Typography } from '@material-ui/core';
+import { CircularProgress, ClickAwayListener, IconButton, LinearProgress, MenuItem, MenuList, Paper, Popper, Typography } from '@material-ui/core';
 import classNames from 'classnames';
 import NewComment from '../NewComment';
 import moment from 'moment'
@@ -302,9 +302,8 @@ const Comment = React.memo(props => {
 
       <div
         className={classes.header}
-        style={{ display: 'flex'}}
       >
-        <div style={{display: 'flex', flexDirection: 'column', justifyContent: 'start'}}>
+        <div className={classes.nameAndDate} >
           <Typography
             component={NavLink}
             to={`/i/${commentData.creator.username}`}
@@ -357,7 +356,11 @@ const Comment = React.memo(props => {
             />
           </span>
         </div>
-        { restoreError && <span style={{ color: 'red' }}>{ restoreError }</span>}
+        { restoreError &&
+          <span style={{ color: 'red' }}>
+            { restoreError }
+          </span>
+        }
         { isRestoring && <LinearProgress /> }
       </>
     )
@@ -366,45 +369,78 @@ const Comment = React.memo(props => {
   const underComment = (
     !editMode &&
     <div className={classes.underComment}>
-      <div style={{ display: 'flex', alignItems: 'center' }} >
+      <div className={classes.reactions} >
 
-        <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }} >
+        <div className={classes.likes} >
           { likeButton }
-          { <span style={{ marginLeft: 4, marginRight: 8 }} >{ likesCount > 0 && likesCount } </span> }
+          { <span className={classes.likesCount} >
+              { likesCount > 0 && likesCount}
+            </span>
+          }
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}  >
+        <div className={classes.dislikes} >
           { dislikeButton }
-          { <span style={{ marginLeft: 4 }} >{ dislikesCount > 0 && dislikesCount } </span> }
+          { <span className={classes.dislikesCount} >
+              { dislikesCount > 0 && dislikesCount }
+            </span>
+          }
         </div>
 
       </div>
 
       {!commentingIsDisabled && userIsAuthenticated &&
-        <>
-          <div style={{ margin: '0 8px' }} />
-          <div>
-            <span
-              className={classNames(classes.replyButton, classes.replyButtonActive)}
-              onClick={ handleRespond }
-            >
-              <div style={{ textTransform: 'uppercase' }} >{t('Reply')}</div>
-            </span>
-          </div>
-        </>
+        <span
+          className={classNames(classes.replyButton, classes.replyButtonActive)}
+          onClick={ handleRespond }
+        >
+          <div style={{ textTransform: 'uppercase' }} >{t('Reply')}</div>
+        </span>
       }
     </div>
+  )
+
+  const renderReplies = (
+    <>
+    {reversedReplies.map(reply => {
+      return <Comment
+        key={reply.id}
+        postId={postId}
+        postCreatorId={postCreatorId}
+        commentData={reply}
+        currentUserReaction={reply.requesterReaction}
+        replies={[]}
+        isReply={true}
+        commentingIsDisabled={commentingIsDisabled}
+        inList={false}
+        onRespond={onRespondToReplyClick}
+        setReplied={setReplied}
+        userIsAuthenticated={userIsAuthenticated}
+      />
+    })}
+    </>
   )
 
   const repliesContainer = (
     <div className={classes.repliesContainer} >
 
       { replies.length === 0 && commentData.repliesCount > 0 &&
-        <div className={ classes.toggleRepliesVisibilityButton } onClick={handleShowReplies} >
-            <div><ArrowDropDownIcon style={{ display: 'block'}}/></div>
-            <div><SimpleText >{`${t('Show replies')} (${commentData.repliesCount})`}</SimpleText></div>
-            { repliesAreLoading && <div style={{ marginLeft: 16 }} ><Preloader size={24} /></div> }
+        <div
+          className={ classes.toggleRepliesVisibilityButton }
+          onClick={handleShowReplies}
+        >
+          <div><ArrowDropDownIcon style={{ display: 'block'}}/></div>
+          <div>
+            <SimpleText >
+              {`${t('Show replies')} (${commentData.repliesCount})`}
+            </SimpleText>
           </div>
+          { repliesAreLoading &&
+            <div style={{ marginLeft: 16 }} >
+              <CircularProgress size={24} />
+            </div>
+          }
+        </div>
       }
       { replies.length > 0 &&
         <div style={{marginRight: 16}}>
@@ -413,38 +449,28 @@ const Comment = React.memo(props => {
               className={ classes.loadMoreRepliesButton }
               onClick={ handleRepliesLoad }
             >
-              <div ><SimpleText >{t('Load previous replies')}</SimpleText></div>
-              { repliesAreLoading && <div style={{ marginLeft: 16 }} ><Preloader size={20} /></div> }
+              <div><SimpleText >
+                {t('Load previous replies')}
+              </SimpleText></div>
+              { repliesAreLoading &&
+                <div><CircularProgress size={20} /></div>
+              }
             </div>
           }
           { commentData.repliesCount > replies.length && replies.length === 0 &&
             <Preloader color='secondary' />
           }
 
-          { reversedReplies.map(reply => {
-            return <Comment
-              key={reply.id}
-              postId={postId}
-              postCreatorId={postCreatorId}
-              commentData={reply}
-              currentUserReaction={reply.requesterReaction}
-              replies={[]}
-              isReply={true}
-              commentingIsDisabled={commentingIsDisabled}
-              inList={false}
-              onRespond={onRespondToReplyClick}
-              setReplied={setReplied}
-              userIsAuthenticated={userIsAuthenticated}
-            />
-            })
-          }
+          { renderReplies }
         </div>
       }
       { showReplyField && !commentingIsDisabled && userIsAuthenticated &&
         <div className={classes.newReplyFieldContainer} >
           { replied && replied.rootId &&
             <div style={{ marginTop: 8 }} >
-              <SimpleText color='textSecondary'>Ответ для {repliedFullName}</SimpleText>
+              <SimpleText color='textSecondary'>
+                {`${'Reply for'} ${repliedFullName}`}
+              </SimpleText>
             </div>
           }
           <NewComment
@@ -464,8 +490,7 @@ const Comment = React.memo(props => {
 
   return (
     <>
-    <div className={classes.container} style={{ padding: `0 ${isReply ? '0px' : '0px'}` }}>
-
+    <div className={classes.container}>
       <div className={classes.comment} >
         <Avatar
           component={NavLink}

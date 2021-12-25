@@ -7,7 +7,7 @@ import { getCurrentUserId } from '../../redux/auth_selectors';
 import { getCurrentUserUsername } from '../../redux/auth_selectors';
 import { ConnectionType, ContactType, ProfileType } from '../../types/types';
 import { usePrevious } from '../../hooks/hooks';
-import { Avatar, List, ListItem, ListItemText, MenuItem, MenuList, Paper, Typography, useMediaQuery } from '@material-ui/core';
+import { Avatar, ClickAwayListener, FormControl, InputLabel, List, ListItem, ListItemText, MenuItem, MenuList, Paper, Popper, Select, Typography, useMediaQuery } from '@material-ui/core';
 import { imagesStorage } from '../../api/api';
 import { Skeleton } from '@material-ui/lab';
 import { connectionAPI } from '../../api/connection_api'
@@ -18,6 +18,7 @@ import PendingConnections from './PendingConnections';
 import PopperMenu from '../Common/PopperMenu';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { profileAPI } from '../../api/profile_api';
+import PopperMenu2 from '../Common/PopperMenu2';
 
 export const CLEAN = 'CLEAN'
 export const SET_ACCEPTED_CONNS = 'SET-ACCEPTED-CONNS'
@@ -379,9 +380,6 @@ const Connections: React.FC = React.memo((props) => {
   }
 
   useEffect(() => {
-    if(!mobile && Boolean(menuAnchor)) {
-      closeMenu() 
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mobile])
 
@@ -419,30 +417,9 @@ const Connections: React.FC = React.memo((props) => {
       />
     )
   }
-  const menuButton = useRef(null)
-  const [menuAnchor, setMenuAnchor] = useState(null)
-
-  const openMenu = (event: any) => {
-    if(Boolean(menuAnchor)) {
-      return
-    }
-    setMenuAnchor(event.currentTarget)
-  }
-
-  const onClickAway = (event: any) => {
-    if(event.target === menuButton.current) {
-      event.stopPropagation()
-      return
-    }
-    setMenuAnchor(null)
-  }
-
-  const closeMenu = () => {
-    setMenuAnchor(null)
-  }
 
   const ownerInfo = ( !isOwnProfile &&
-    <div style={{padding: '8px', display: 'flex'}}>
+    <div className={classes.ownerInfo} >
     { !!stateUR.owner ?
       <>
         <Avatar
@@ -485,33 +462,39 @@ const Connections: React.FC = React.memo((props) => {
   )
 
   const mobileConnectionsNav = (
-    <div className={classes.topNav}>
-
-      <div style={{display: 'flex', marginBottom: 8}}  >
-        <div style={{padding: `8px 16px`, cursor: 'pointer', display: 'flex', alignItems: 'center', position: 'relative'}}   >
-          <Typography>{ t(mobileNavSectionName) }</Typography>
-          <div><ArrowDropDownIcon/></div>
-          <div ref={ menuButton } onClick={openMenu} style={{position: 'absolute', top: 0, bottom: 0, right: 0, left: 0}}/>
+    <Paper className={classes.topNav} >
+      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center',}} >
+        <div style={{padding: 8}}>
+          <FormControl >
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={sectionNumber}
+            >
+              <MenuItem value={0} >
+                <Typography
+                  color='textPrimary'
+                  component={NavLink}
+                  to={`/i/${usernameFromParams}/contacts`}
+                  children={'Contacts'}
+                />
+              </MenuItem>
+              { isOwnProfile &&
+                <MenuItem value={1} >
+                  <Typography
+                    color='textPrimary'
+                    component={NavLink}
+                    to={`/i/${usernameFromParams}/contacts?section=incoming`}
+                    children={'Requests'}
+                  />
+                </MenuItem>
+              }
+            </Select>
+          </FormControl>
         </div>
-        <Paper style={{marginLeft: 'auto'}}>{ownerInfo}</Paper>
+        {ownerInfo}
       </div>
-
-      <PopperMenu anchor={menuAnchor} onClickAway={onClickAway} width='200px' placement='top-start' offset='0, -56'  >
-        <MenuList dense>
-
-          <MenuItem onClick={closeMenu} component={NavLink} to={`/i/${usernameFromParams}/contacts`} disableRipple >
-            <Typography>{t('Contacts')}</Typography>
-          </MenuItem>
-
-          { isOwnProfile &&
-          <MenuItem onClick={closeMenu} component={NavLink} to={`/i/${usernameFromParams}/contacts?section=incoming`} disableRipple >
-            <Typography>{t('Requests')}</Typography>
-          </MenuItem>
-          }
-
-        </MenuList>
-      </PopperMenu>
-    </div>
+    </Paper>
   )
 
   return (

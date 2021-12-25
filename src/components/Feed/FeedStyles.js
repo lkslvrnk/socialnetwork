@@ -24,10 +24,15 @@ export const useStyles = makeStyles(theme => {
         marginRight: 0
       },
     },
-    panel: {
+    feedRightPanel: {
       '@media (max-width: 860px)': {
         display: 'none',
       },
+    },
+    loadMore: {
+      display: 'flex',
+      justifyContent: 'center',
+      padding: theme.spacing(2),
     }
   }
 });

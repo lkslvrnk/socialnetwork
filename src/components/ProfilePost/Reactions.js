@@ -142,7 +142,9 @@ const Reactions = React.memo(props => {
         open={ Boolean(anchor) }
         anchorEl={ anchor }
         placement='top'
-        modifiers={{ offset: { enabled: true, offset: '40, 0' } }}
+        modifiers={{
+          offset: { enabled: true, offset: '40, 0' }
+        }}
         transition
         onMouseEnter={ stopPopperHiding }
       >
