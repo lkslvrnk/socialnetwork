@@ -1,27 +1,26 @@
-import React, {useEffect, useState} from 'react';
-import Avatar from "@material-ui/core/Avatar";
-import PhotoGallery from '../Common/PhotoGallery.js';
-import ShareIcon from "@material-ui/icons/Share";
+import React, {useEffect, useState} from 'react'
+import Avatar from "@material-ui/core/Avatar"
+import PhotoGallery from '../Common/PhotoGallery.js'
+import ShareIcon from "@material-ui/icons/Share"
 import {NavLink} from 'react-router-dom'
 import moment from 'moment'
 import {baseUrl, imagesStorage} from '../../api/api'
-import {useTranslation} from 'react-i18next';
-import YesCancelDialog from '../Common/YesCancelDialog.js';
-import { Paper, MenuList, Typography, DialogTitle, Dialog, DialogContent, DialogActions, MenuItem, Menu, IconButton, Button, CardMedia, CardHeader, Divider, CardContent, Modal, Card, CardActions, ClickAwayListener, Popper, LinearProgress } from '@material-ui/core';
+import {useTranslation} from 'react-i18next'
+import YesCancelDialog from '../Common/YesCancelDialog.js'
+import { Paper, Typography, DialogTitle, Dialog, DialogContent, DialogActions, MenuItem, Menu, IconButton, Button, CardMedia, CardHeader, Divider, CardContent, Modal, Card, CardActions, ClickAwayListener, Popper, LinearProgress } from '@material-ui/core';
 import { editPostReaction, deletePostReaction, createPostReaction } from '../../redux/profile_posts_reducer'
-import { useStyles } from './PostStyles';
-import SimpleText from '../Common/SimpleText.jsx';
-import CommentsSection from './CommentsSection/CommentsSection.js';
-import Reactions from './Reactions.js'; 
-import reactionsData from '../Common/ReactionsData.ts';
-import Preloader from '../Common/Preloader/Preloader.jsx';
-import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
-import { useDispatch, useSelector } from 'react-redux';
-import { getCurrentUserPicture } from '../../redux/auth_selectors';
-import PostForm from '../Profile/PostForm.js';
-import StyledNavLink from '../Common/StyledNavLink.jsx';
-import PopperMenu2 from '../Common/PopperMenu2.jsx';
-import MenuListItemWithProgress from '../Common/MenuListItemWithProgress.jsx';
+import { useStyles } from './PostStyles'
+import SimpleText from '../Common/SimpleText.jsx'
+import CommentsSection from './CommentsSection/CommentsSection.js'
+import Reactions from './Reactions.js';
+import reactionsData from '../Common/ReactionsData.ts'
+import MoreHorizIcon from '@material-ui/icons/MoreHoriz'
+import { useDispatch, useSelector } from 'react-redux'
+import { getCurrentUserPicture } from '../../redux/auth_selectors'
+import PostForm from '../Profile/PostForm.js'
+import StyledNavLink from '../Common/StyledNavLink.jsx'
+import PopperMenu2 from '../Common/PopperMenu2.jsx'
+import MenuListItemWithProgress from '../Common/MenuListItemWithProgress.jsx'
 
 const ProfilePost = React.memo(props => {
   const {
@@ -284,12 +283,6 @@ const ProfilePost = React.memo(props => {
         />
       </div>
     </CardMedia>
-  )
-
-  const menuItemPreloader = (
-    <div className={classes.menuItemPreloader}>
-      <Preloader size={30} color='secondary' />
-    </div>
   )
 
   const handleClickAwayMenu = () => {

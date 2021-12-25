@@ -34,6 +34,7 @@ import LocationOnIcon from '@material-ui/icons/LocationOn';
 import CakeIcon from '@material-ui/icons/Cake';
 import ProfilePost from '../ProfilePost/ProfilePost.js';
 import PostSkeleton from '../Common/PostSkeleton.js';
+import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress.jsx';
 
 const Profile = React.memo(props => {
 
@@ -242,50 +243,31 @@ const Profile = React.memo(props => {
   
     buttonsSection = (
       <div className={buttonsSectionClass} >
-        <div>
-          { !profile.banned &&
-            <Button color='primary' variant="contained" startIcon={<MessageIcon />}>
-              {t('Message')}
-            </Button> }
-        </div>
+        <Button color='primary' variant="contained" startIcon={<MessageIcon />}>
+          {t('Message')}
+        </Button>
 
         <div id='subscription' >
-          { !profile.banned &&
-            <div style={{display: 'flex', position: 'relative'}} >
-              <Button disabled={ subscriptionActionInProgress } color='secondary' variant="contained" onClick={onSubscriptionButtonClick}>
-                {subscribeButtonTitle}
-              </Button>
-
-              { subscriptionActionInProgress &&
-                <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center'}} >
-                  <Preloader color='secondary' size={32} />
-                </div>
-              }
-            </div>
-          }
+          <ButtonWithCircularProgress
+            color='secondary' variant='contained'
+            startIcon={<EditIcon />}
+            children={subscribeButtonTitle}
+            onClick={onSubscriptionButtonClick}
+            enableProgress={subscriptionActionInProgress}
+            disabled={subscriptionActionInProgress}
+          />
         </div>
-
         <div id='connection' >
-          { !profile.banned &&
-          <div style={{display: 'flex', position: 'relative'}} >
-            <Tooltip  title={tooltipTitle} arrow>
-              <Button
-                disabled={connectionActionInProgress}
-                onClick={onConnectButtonClick}
-                variant="contained"
-                startIcon={<PersonAddIcon />}
-              >
-                {connectButtonTitle}
-              </Button>
-            </Tooltip>
-            { connectionActionInProgress &&
-              <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center'}} >
-                <Preloader color='secondary' size={32} />
-              </div>
-            }
-            
-          </div>
-          }
+          <Tooltip  title={tooltipTitle} arrow>
+            <ButtonWithCircularProgress
+              variant='contained'
+              startIcon={<PersonAddIcon />}
+              children={connectButtonTitle}
+              onClick={onConnectButtonClick}
+              enableProgress={connectionActionInProgress}
+              disabled={connectionActionInProgress}
+            />
+          </Tooltip>
         </div>
       </div>
     )

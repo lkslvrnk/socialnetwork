@@ -1,0 +1,146 @@
+import React from 'react';
+import { createSubscription, deleteSubscription } from '../../redux/profile_reducer'
+import { createConnection, deleteConnection, acceptConnection } from '../../redux/profile_reducer';
+import { Button} from '@material-ui/core';
+import Preloader from '../Common/Preloader/Preloader.jsx';
+import MessageIcon from '@material-ui/icons/Message';
+import PersonAddIcon from '@material-ui/icons/PersonAdd';
+import Tooltip from '@material-ui/core/Tooltip';
+import Skeleton from '@material-ui/lab/Skeleton';
+import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress';
+
+const Communication = React.memo(props => {
+
+  const {profileLoaded} = props
+
+  if(profileLoaded) {
+    return (
+      <div className={buttonsSectionClass}>
+        { [150, 120, 170].map(width => {
+          return (
+            <div>
+              <Skeleton
+                className={classes.buttonSkeleton}
+                variant='rect'
+                width={width}
+                height={buttonSkeletonHeight}
+              />
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  let buttonsSectionClass = mobile ? classes.buttonsSectionMobile : classes.buttonsSection
+  let buttonSkeletonHeight = 36
+
+  const connection = profile.connection
+  const areConnected = connection && connection.isAccepted
+  const currentUserInitiatorOfConnection = connection && connection.initiator.id === currentUserId
+  const ownerOfProfileInitiatorOfConnection = connection && connection.initiator.id === profile.id
+
+  const connectRequest = async () => {
+    if(!connection) {
+      return dispatch(createConnection(profile.id))
+    }
+    else if(!!connection && !areConnected && currentUserInitiatorOfConnection) {
+      return dispatch(deleteConnection(connection.id))
+    }
+    else if(!!connection && !areConnected && ownerOfProfileInitiatorOfConnection) {
+      return dispatch(acceptConnection(connection.id))
+    }
+    else if(!!connection && areConnected) {
+      return dispatch(deleteConnection(connection.id))
+    }
+    return null
+  }
+
+  const subscription = profile.subscription
+
+  const subscriptionRequest = async () => {
+    if(!subscription) {
+      return dispatch(createSubscription(profile.id))
+    }
+    else {
+      return dispatch(deleteSubscription(subscription.id))
+    }
+  }
+
+  const onConnectButtonClick = () => {
+    if(connectionActionInProgress) {
+      return
+    }
+    setConnectionActionInProgress(true)
+    connectRequest()
+      .then(() => setConnectionActionInProgress(false), () => setConnectionActionInProgress(false))
+  }
+
+  const onSubscriptionButtonClick = () => {
+    if(subscriptionActionInProgress) {
+      return
+    }
+    setSubscriptionActionInProgress(true)
+    subscriptionRequest()
+      .then(() => setSubscriptionActionInProgress(false), () => setSubscriptionActionInProgress(false))
+  }
+
+  let connectButtonTitle = ''
+  let tooltipTitle = ''
+
+  if(!!connection && areConnected) {
+    connectButtonTitle = t('Delete from contacts')
+  }
+  else if(Boolean(connection) && !areConnected && currentUserInitiatorOfConnection) {
+    connectButtonTitle = t('Cancel request')
+    tooltipTitle = t('You offered to set up a contact, press if you want to cancel')
+  }
+  else if(Boolean(connection) && !areConnected && ownerOfProfileInitiatorOfConnection) {
+    connectButtonTitle = t('Accept request')
+    tooltipTitle = t('You have been offered to set up a contact, press if you want to refuse')
+  }
+  else if(!Boolean(connection)) {
+    connectButtonTitle = t('Offer contact')
+  }
+
+  let subscribeButtonTitle = ''
+  if(!!subscription) {
+    subscribeButtonTitle = t('Unsubscribe')
+  } else {
+    subscribeButtonTitle = t('Subscribe')
+  }
+
+  buttonsSection = (
+    <div className={buttonsSectionClass} >
+      <Button color='primary' variant="contained" startIcon={<MessageIcon />}>
+        {t('Message')}
+      </Button>
+
+      <div id='subscription' >
+        <ButtonWithCircularProgress
+          color='secondary' variant='contained'
+          startIcon={<EditIcon />}
+          children={subscribeButtonTitle}
+          onClick={onSubscriptionButtonClick}
+          enableProgress={subscriptionActionInProgress}
+          disabled={subscriptionActionInProgress}
+        />
+      </div>
+      <div id='connection' >
+        <Tooltip  title={tooltipTitle} arrow>
+          <ButtonWithCircularProgress
+            variant='contained'
+            startIcon={<PersonAddIcon />}
+            children={connectButtonTitle}
+            onClick={onConnectButtonClick}
+            enableProgress={connectionActionInProgress}
+            disabled={connectionActionInProgress}
+          />
+        </Tooltip>
+      </div>
+    </div>
+  )
+  
+})
+
+export default Communication

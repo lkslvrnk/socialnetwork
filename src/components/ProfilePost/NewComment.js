@@ -1,10 +1,9 @@
 import React, {useState, useEffect, useRef} from 'react';
-
 import Avatar from "@material-ui/core/Avatar";
 import IconButton from "@material-ui/core/IconButton";
 import {useTranslation} from 'react-i18next';
 import SendIcon from '@material-ui/icons/Send';
-import { Button, makeStyles, Popper, TextField, useTheme } from '@material-ui/core';
+import { Button, Popper, TextField, useTheme } from '@material-ui/core';
 import { useDispatch } from 'react-redux'
 import Preloader from '../Common/Preloader/Preloader';
 import { usePrevious } from '../../hooks/hooks';
@@ -12,42 +11,15 @@ import SentimentSatisfiedRoundedIcon from '@material-ui/icons/SentimentSatisfied
 import EmojiPicker from '../Common/EmojiPicker';
 import AddAPhotoIcon from '@material-ui/icons/AddAPhoto';
 import { createComment, createCommentPhoto, editPostComment, getCommentPhoto } from '../../redux/profile_posts_reducer';
-
-const useStyles = makeStyles((theme) => ({
-  avatar: {
-    [theme.breakpoints.down("xs")]: {
-      display: 'none'
-    },
-  },
-  pickEmojiButton: {
-    [theme.breakpoints.down("xs")]: {
-    },
-  },
-  createCommentButton: {
-    marginLeft: 8
-  },
-  fieldTextSize: theme.typography.body2,
-  fieldContainer: {
-    display: 'flex',
-    alignItems: 'flex-start'
-  },
-  field: {
-    display: 'flex',
-  },
-  underField: {
-    ...theme.styles.flexRowAlignCenter,
-    padding: theme.spacing(0.5, 1),
-    color: theme.palette.text.secondary,
-    fontSize: '0.840rem',
-    fontWeight: 500,
-    wordBreak: "keep-all"
-  },
-}))
+import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress';
+import { imagesStorage } from '../../api/api';
+import { useStyles } from './NewCommentStyles';
+import IconButtonWithCircularProgress from '../Common/IconButtonWithCircularProgress';
 
 const NewComment = React.memo(props => {
 
   const {
-    postId, rootId, repliedId, avatarSize, autoFocus, focusTrigger, setShowReplyField,
+    postId, rootId, repliedId, autoFocus, focusTrigger, setShowReplyField,
     editMode, editingComment, onEditingFinish, creatorPicture
   } = props;
 
@@ -56,30 +28,21 @@ const NewComment = React.memo(props => {
   const dispatch = useDispatch()
   const theme = useTheme()
 
-  const openImageExplorer = () => {
-    photoInput.current.click()
-  }
-
-  const photoInput = React.useRef(null)
-
   const [attachment, setAttachment] = useState(editMode ? editingComment.attachment : null)
-
-  const width = avatarSize ? avatarSize : 40
-  const height = avatarSize ? avatarSize : 40
-
   const [text, setText] = useState(editMode ? editingComment.text : '')
-
-  const changeText = (e) => {
-    setText(e.target.value)
-  }
-
-  const ref1 = useRef(null)
-
   const [commentIsCreating, setCommentIsCreating] = useState(false)
   const [commentIsEditing, setCommentIsEditing] = useState(false)
   const [error, setError] = useState("")
 
+  const changeText = (e) => setText(e.target.value)
+  const ref1 = useRef(null)
+  const photoInput = React.useRef(null)
+
   const prevFocusTrigger = usePrevious(focusTrigger)
+
+  const openImageExplorer = () => {
+    photoInput.current.click()
+  }
 
   useEffect(() => {
     if(prevFocusTrigger !== null && focusTrigger !== prevFocusTrigger) {
@@ -101,7 +64,6 @@ const NewComment = React.memo(props => {
           if(response.status === 201) {
             response = await dispatch(getCommentPhoto(response.data.id))
             if(response.status === 200) {
-              console.log(response.data.photo)
               setAttachment(response.data.photo)
             }
           }
@@ -228,111 +190,86 @@ const NewComment = React.memo(props => {
     </div>
   )
 
+  const handleFieldOnFocus = (e) => {
+    e.currentTarget.setSelectionRange(
+      e.currentTarget.value.length,
+      e.currentTarget.value.length
+    )
+  }
+
   return (
     <div>
-    <div className={classes.field} >
-      { !editMode && <Avatar
-          className={classes.avatar}
-          style={{ marginRight: 8, width: width, height: height }}
-          src={creatorPicture}
-        />
-      }
-
-      <TextField
-        onBlur={ () => setError("") }
-        onKeyPress={ onEnterPress }
-        autoFocus={ autoFocus}
-        ref={ref1}
-        inputRef={ inputRef }
-        size='small'
-        multiline
-        fullWidth
-        variant={ editMode ? "standard" : "outlined" }
-        value={text}
-        onChange={ changeText }
-        error={!!error}
-        helperText={error ? error : ""}
-        InputProps={{
-          classes: { input: classes.fieldTextSize, },
-          style: editMode ? {} : { borderRadius: '8px', padding: '4px 8px' },
-          endAdornment: editMode ? null : adornments
-        }}
-        onFocus={(e) =>
-          e.currentTarget.setSelectionRange(
-            e.currentTarget.value.length,
-            e.currentTarget.value.length
-          )}
-      />
-
-      <input
-        accept='image/*'
-        style={{ display: 'none' }}
-        id='post-comment-photo-input'
-        type='file'
-        onChange={(event) => {
-          handleImageUpload(event)
-        }}
-        ref={photoInput}
-      />
-
-      <div style={{display: 'flex', alignItems: 'center'}}>
+      <div className={classes.field} >
         { !editMode &&
-          <>
-            <div style={{position: 'relative'}} >
-              <IconButton
-                size='small'
-                disabled={ commentIsCreating || (!text.length && !Boolean(attachment)) } 
-                className={classes.createCommentButton}
-                onClick={ handleCreate }
-              >
-                <SendIcon />
-              </IconButton>
-
-              { commentIsCreating &&
-                <div style={{position: 'absolute', top: 0, right: 0}}>
-                  <Preloader size={30} />
-                </div>
-              }
-            </div>
-          </>
+          <Avatar
+            className={classes.avatar}
+            src={creatorPicture}
+          />
+        }
+        <TextField
+          onBlur={() => setError("")}
+          onKeyPress={onEnterPress}
+          autoFocus={autoFocus}
+          ref={ref1} inputRef={inputRef}
+          size='small' multiline fullWidth
+          variant={editMode ? "standard" : "outlined"}
+          value={text}
+          onChange={changeText} onFocus={handleFieldOnFocus}
+          error={!!error} helperText={error ? error : ""}
+          InputProps={{
+            classes: {input: classes.fieldTextSize},
+            style: editMode ? {} : {borderRadius: '8px', padding: '4px 8px'},
+            endAdornment: editMode ? null : adornments
+          }}
+        />
+        <input
+          accept='image/*'
+          style={{ display: 'none' }}
+          id='post-comment-photo-input'
+          type='file'
+          onChange={(event) => handleImageUpload(event)}
+          ref={photoInput}
+        />
+        { !editMode &&
+          <div className={classes.createCommentButton}>
+            <IconButtonWithCircularProgress
+              size='small'
+              children={<SendIcon />}
+              disabled={commentIsCreating || (!text.length && !Boolean(attachment))}
+              onClick={handleCreate}
+              enableProgress={commentIsCreating}
+            />
+          </div>
         }
       </div>
-    </div>
-    { editMode &&
-      <div className={classes.underField}>
-        { adornments }
-        <div
-          onClick={onEditingFinish}
-          style={{cursor: 'pointer', marginLeft: 'auto', textTransform: 'uppercase', marginRight: 16}}
-        >
-          {t('Cancel')}
-        </div>
-        <div style={{position: 'relative'}} >
-          <Button
-            onClick={handleSave}
-            variant='contained'
-            disabled={commentIsEditing}
-          >
-            {t('Save')}
-          </Button>
-          { commentIsEditing &&
-            <div style={{position: 'absolute', top: 0, right: 0, left: 0, bottom: 0, display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-              <Preloader size={30} />
-            </div>
-          }
-        </div>
-      </div>
-    }
 
-    { attachment &&
-      <div style={{marginLeft: editMode ? 0 : 56, marginTop: 8, maxWidth: 150}}>
-        <img
-          alt='comment-attachment'
-          style={{width: '100%'}}
-          src={`http://localhost:8001/images/for-photos/${attachment.versions
-            ? attachment.versions[2] : attachment.src}`} />
+      { editMode &&
+        <div className={classes.underField}>
+          { adornments }
+          <Button
+            onClick={onEditingFinish}
+            children={t('Cancel')}
+            style={{marginLeft: 'auto', marginRight: 16}}
+          />
+          <ButtonWithCircularProgress
+            enableProgress={commentIsEditing}
+            disabled={commentIsEditing}
+            children={t('Save')}
+            onClick={handleSave}
+          />
         </div>
-    }
+      }
+
+      { attachment &&
+        <div style={{marginLeft: editMode ? 0 : 56, marginTop: 8, maxWidth: 150}}>
+          <img
+            alt='comment-attachment'
+            style={{width: '100%'}}
+            src={`${imagesStorage}/${attachment.versions
+              ? attachment.versions[2] : attachment.src}`}
+          />
+        </div>
+      }
     </div>
   )
 })
