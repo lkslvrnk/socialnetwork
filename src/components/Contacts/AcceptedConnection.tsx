@@ -7,8 +7,8 @@ import { Avatar, ClickAwayListener, IconButton, Typography } from '@material-ui/
 import { imagesStorage } from '../../api/api';
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import MenuListItemWithProgress from '../Common/MenuListItemWithProgress';
-import PopperMenu2 from '../Common/PopperMenu2';
 import { useStyles } from './ConnectionsStyles';
+import PopperMenu from '../Common/PopperMenu';
 
 type AcceptedConnectionPropsType = {
   connection: ConnectionType
@@ -91,7 +91,7 @@ const AcceptedConnection: React.FC<AcceptedConnectionPropsType> = React.memo((pr
                 <MoreHorizIcon ref={menuButton} />
               </IconButton>
 
-              <PopperMenu2 dense open={!!menuAnchor} anchorEl={menuAnchor}>
+              <PopperMenu dense open={!!menuAnchor} anchorEl={menuAnchor}>
                 <MenuListItemWithProgress
                   children={'Delete from contacts'}
                   enableProgress={isDeleting}
@@ -99,7 +99,7 @@ const AcceptedConnection: React.FC<AcceptedConnectionPropsType> = React.memo((pr
                   onClick={onDelete}
                   disabled={isDeleting}
                 />
-              </PopperMenu2>
+              </PopperMenu>
               </div>
             </ClickAwayListener>
           }

@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useStyles } from './CommentStyles';
 import { usePrevious } from '../../../hooks/hooks';
 import SimpleText from '../../Common/SimpleText';
-import { CircularProgress, ClickAwayListener, IconButton, LinearProgress, MenuItem, Typography } from '@material-ui/core';
+import { CircularProgress, ClickAwayListener, IconButton, LinearProgress, MenuItem, MenuList, Paper, Popper, Typography } from '@material-ui/core';
 import classNames from 'classnames';
 import NewComment from '../NewComment';
 import moment from 'moment'
@@ -14,19 +14,13 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { getReplies } from '../../../redux/profile_posts_reducer'
 import { getCurrentUserId, getCurrentUserPicture } from '../../../redux/auth_selectors'
 import Preloader from '../../Common/Preloader/Preloader';
+import { createCommentReaction, deleteComment, deleteCommentReaction, editCommentReaction, restoreComment } from '../../../redux/profile_posts_reducer'
 import { nFormatter } from '../../../helper/helperFunctions.js'
 import { NavLink } from 'react-router-dom';
 import { imagesStorage } from '../../../api/api';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import PopperMenu from '../../Common/PopperMenu';
 import MenuListItemWithProgress from '../../Common/MenuListItemWithProgress';
-import {
-  createCommentReaction,
-  deleteComment,
-  deleteCommentReaction,
-  editCommentReaction,
-  restoreComment
-} from '../../../redux/profile_posts_reducer'
 
 const Comment = React.memo(props => {
   const {

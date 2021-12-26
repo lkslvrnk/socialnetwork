@@ -4,7 +4,7 @@ import { makeStyles } from "@material-ui/core";
 export const useStyles = makeStyles((theme) => ({
 
   reactionsContainer: {
-    background: '#424242',
+    background: theme.palette.background.paper,
     borderRadius: '3em',
     padding: 4,
     display: 'flex'

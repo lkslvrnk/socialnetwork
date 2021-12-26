@@ -22,10 +22,20 @@ export const useStyles = makeStyles(theme => {
       padding: theme.spacing(2),
       display: 'flex'
     },
+    noSubscriptions: {
+      flexGrow: 1,
+      display: 'flex',
+      justifyContent: 'center',
+      marginRight: 16
+    },
     avatar: {
       width: 80,
       height: 80,
       marginRight: 16
+    },
+    loadMore: {
+      display: 'flex',
+      justifyContent: 'center'
     }
   }
 });

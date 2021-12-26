@@ -289,12 +289,13 @@ const profilePostsReducer = (state: InitialStateType = initialState, action: any
       }
       return state
     }
-
     case ADD_CURRENT_USER_REACTION: {
       let post = state.posts.filter(post => post.id === action.postId)[0]
       post.requesterReaction = action.reaction
 
-      let currentReactionCountInfo = post.reactionsCount.find(reactionsCountItem => reactionsCountItem.type === action.reaction.type)
+      let currentReactionCountInfo = post.reactionsCount.find(reactionsCountItem => {
+        return reactionsCountItem.type === action.reaction.type
+      })
       if(currentReactionCountInfo) {
         currentReactionCountInfo.count++ 
       }
@@ -315,7 +316,12 @@ const profilePostsReducer = (state: InitialStateType = initialState, action: any
           if(root) {
             let reply = root.replies.find(reply => action.commentId === reply.id)
             if(reply) {
-              reply = action.comment
+              const index = root.replies.indexOf(reply)
+              root.replies[index] = action.comment
+              root.replies = [...root.replies]
+              const indexOfRoot = post.comments.indexOf(root)
+              post.comments[indexOfRoot] = {...root}
+              post.comments = [...post.comments]
             }
           }
         } 
@@ -986,7 +992,6 @@ export let editCommentReaction = (
         }
       }
     }
-    console.log('edit end')
   }
 }
 

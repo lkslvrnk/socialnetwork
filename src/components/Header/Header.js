@@ -1,4 +1,4 @@
-import React, {Fragment, useState} from 'react';
+import React, {Fragment, useEffect, useState} from 'react';
 import Drawer from './Drawer/Drawer.js'
 import RightMenu from './RightMenu/RightMenu.js'
 import { useTranslation } from 'react-i18next';
@@ -7,7 +7,7 @@ import { useStyles } from './HeaderStyles.js'
 import {connect, useDispatch} from 'react-redux'
 import {compose} from 'redux'
 import {withRouter} from 'react-router-dom'
-import CustomToggleButton from '../CustomToggleButton.js'
+import CustomToggleButton from '../Common/CustomToggleButton.js'
 import {changeLanguage, changeAppearance, changeGuestLanguage} from '../../redux/app_reducer'
 import {logOut} from './../../redux/auth_reducer'
 import AppBar from "@material-ui/core/AppBar";
@@ -27,10 +27,10 @@ import ExitToAppOutlinedIcon from '@material-ui/icons/ExitToAppOutlined';
 import ListItemText from '@material-ui/core/ListItemText';
 import Link from '@material-ui/core/Link';
 import HorizontalGrow from '../Common/HorizontalGrow.jsx';
-import YesCancelDialog from '../Common/YesCancelDialog.js';
-import { FormControl, Select } from '@material-ui/core';
+import { FormControl, Select, useMediaQuery } from '@material-ui/core';
 import Search from './Search.js';
 import TypographyLink from '../Common/TypographyLink.jsx';
+import AcceptDialog from '../Common/AcceptDialog.js';
 
 const Header = React.memo(({
   isAuth, width, language, changeLanguage, logOut,
@@ -40,6 +40,7 @@ const Header = React.memo(({
   const classes = useStyles()
   const history = useHistory()
   const dispatch = useDispatch()
+  const showRightMenu = useMediaQuery('(min-width:860px)')
 
   const languages = [
     {name: 'English', short: 'en'},
@@ -48,6 +49,16 @@ const Header = React.memo(({
   ]
 
   const [showDrawer, setShowDrawer] = React.useState(false);
+
+  useEffect(() => {
+    if(!showRightMenu) {
+      closeRightMenu()
+    }
+  }, [showRightMenu])
+
+  const handleAppearanceSwitch = () => {
+    changeAppearance(currentUserId, !Boolean(appearance))
+  }
 
   const appearanceSwitcherListItem = (
     <ListItem>
@@ -58,7 +69,7 @@ const Header = React.memo(({
         control={
           <Switch
             checked={Boolean(appearance)} 
-            onClick={() => changeAppearance(currentUserId, !Boolean(appearance))}
+            onClick={handleAppearanceSwitch}
           />
         }
       />
@@ -68,7 +79,9 @@ const Header = React.memo(({
   const [rightMenuAnchor, setRightMenuAnchor] = React.useState(null)
 
   const closeRightMenu = () => {
-    if(rightMenuAnchor) setRightMenuAnchor(null)
+    if(rightMenuAnchor) {
+      setRightMenuAnchor(null)
+    }
   }
 
   const toggleRightMenu = event => {
@@ -85,11 +98,7 @@ const Header = React.memo(({
   }
   
   const [showLogOutDialog, setShowLogOutDialog] = useState(false)
-  
-  const onLogOutClick1 = () => {
-    openLogOutDialog()
-  }
-  
+
   const openLogOutDialog = () => {
     setShowLogOutDialog(true)
   }
@@ -98,7 +107,7 @@ const Header = React.memo(({
     setShowLogOutDialog(false)
   }
   
-  const onLogOutClick2 = () => {
+  const onLogOutInDialog = () => {
     logOut(history)
     closeRightMenu()
     setShowDrawer(false)
@@ -106,7 +115,7 @@ const Header = React.memo(({
   }
   
   const renderExitListItem = (
-    <ListItem button onClick={onLogOutClick1}>
+    <ListItem button onClick={openLogOutDialog}>
       <ListItemIcon><ExitToAppOutlinedIcon /></ListItemIcon>
       <ListItemText primary={t('Log out')}/>
     </ListItem>
@@ -219,7 +228,7 @@ const Header = React.memo(({
         </Toolbar>
       </AppBar>
       
-      {width !== 'xs' && width !== 'sm' &&
+      {showRightMenu &&
         <RightMenu
           anchor={rightMenuAnchor}
           languages={languages} onSetLanguage={onSetLanguage}
@@ -228,10 +237,10 @@ const Header = React.memo(({
           renderExitListItem={renderExitListItem}
         />
       }
-      <YesCancelDialog
+      <AcceptDialog
         show={showLogOutDialog}
         setShow={setShowLogOutDialog}
-        onYes={onLogOutClick2}
+        onYes={onLogOutInDialog}
         title={t('Exit from app')}
         text={t('You sure you want exit from app')}
       />

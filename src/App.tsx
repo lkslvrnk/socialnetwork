@@ -84,11 +84,12 @@ const App: React.FC = React.memo(props => {
   let themeConfig = responsiveFontSizes(createMuiTheme(theObj))
   let loadingDisplay = <div style={{ background: '#424242', position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} />
 
-  if (!isInitialized) return loadingDisplay
+  if(!isInitialized) return loadingDisplay
 
-  if (language !== i18n.language) {
-    if (language) i18n.changeLanguage(language)
-    //return loadingDisplay
+  if(language !== i18n.language) {
+    if(language) {
+      i18n.changeLanguage(language)
+    }
   }
 
   let networkLostSnakbar = <Snackbar

@@ -27,7 +27,8 @@ export const useStyles = makeStyles((theme) => {
       borderRadius: theme.spacing(2),
       borderTopLeftRadius: 0,
       paddingLeft: theme.spacing(1),
-      position: 'relative'
+      position: 'relative',
+      marginBottom: theme.spacing(0.5),
     },
     creatorNameLink: {
       color: theme.palette.text.primary,
@@ -135,5 +136,8 @@ export const useStyles = makeStyles((theme) => {
       marginTop: theme.spacing(1),
       marginRight: theme.spacing(1)
     },
+    reactionButton: {
+      cursor: 'pointer'
+    }
   }
 })

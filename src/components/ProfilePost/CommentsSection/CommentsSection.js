@@ -4,12 +4,15 @@ import { useStyles } from './CommentsSectionStyles.js'
 import Comment from '../Comment/Comment.js'
 import NewComment from '../NewComment.js'
 import SimpleText from '../../Common/SimpleText.jsx'
-import { getComments, createComment } from '../../../redux/profile_posts_reducer'
 import { getCurrentUserId, getCurrentUserPicture } from '../../../redux/auth_selectors'
 import { getPostComments } from '../../../redux/profile_posts_selectors'
 import { useTranslation } from 'react-i18next'
 import { imagesStorage } from '../../../api/api'
 import { CircularProgress } from '@material-ui/core'
+import {
+  getComments,
+  createComment
+} from '../../../redux/profile_posts_reducer'
 
 const CommentsSection = React.memo(props => {
 
@@ -95,7 +98,6 @@ const CommentsSection = React.memo(props => {
                 postCreatorId={postCreatorId}
                 commentData={comment}
                 currentUserReaction={comment.requesterReaction}
-                replies={comment.replies}
                 isReply={false}
                 commentingIsDisabled={commentingIsDisabled}
                 inList={true}

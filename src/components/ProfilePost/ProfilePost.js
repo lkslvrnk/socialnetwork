@@ -11,7 +11,6 @@ import {
   Paper, Typography, DialogTitle, Dialog, DialogContent, DialogActions, MenuItem, Menu, IconButton, Button,
   CardMedia, CardHeader, Divider, CardContent, Modal, Card, CardActions, ClickAwayListener, LinearProgress
 } from '@material-ui/core';
-import { editPostReaction, deletePostReaction, createPostReaction } from '../../redux/profile_posts_reducer'
 import { useStyles } from './PostStyles'
 import SimpleText from '../Common/SimpleText.jsx'
 import CommentsSection from './CommentsSection/CommentsSection.js'
@@ -21,9 +20,14 @@ import MoreHorizIcon from '@material-ui/icons/MoreHoriz'
 import { useDispatch, useSelector } from 'react-redux'
 import { getCurrentUserPicture } from '../../redux/auth_selectors'
 import PostForm from '../Profile/PostForm.js'
-import StyledNavLink from '../Common/StyledNavLink.jsx'
-import PopperMenu2 from '../Common/PopperMenu2.jsx'
+import PopperMenu from '../Common/PopperMenu.jsx'
 import MenuListItemWithProgress from '../Common/MenuListItemWithProgress.jsx'
+import TypographyLink from '../Common/TypographyLink.jsx'
+import {
+  editPostReaction,
+  deletePostReaction,
+  createPostReaction
+} from '../../redux/profile_posts_reducer'
 
 const ProfilePost = React.memo(props => {
   const {
@@ -31,8 +35,6 @@ const ProfilePost = React.memo(props => {
     onOwnWall,
     embeddedPost,
     wallWidth,
-    inWindow,
-    inPostPage,
     userIsAuthenticated,
     onDelete,
     onRestore,
@@ -312,7 +314,7 @@ const ProfilePost = React.memo(props => {
           <MoreHorizIcon color='action' />
         </IconButton>
 
-        <PopperMenu2 open={!!postMenuAnchor} anchorEl={postMenuAnchor} dense>
+        <PopperMenu open={!!postMenuAnchor} anchorEl={postMenuAnchor} dense>
           {onOwnWall ?
             <>
             { isEditable &&
@@ -341,7 +343,7 @@ const ProfilePost = React.memo(props => {
               </MenuItem>
             </>
           }
-        </PopperMenu2>
+        </PopperMenu>
       </div>
     </ClickAwayListener>
   )
@@ -407,7 +409,7 @@ const ProfilePost = React.memo(props => {
         className={classes.postHeader}
         action={ !editMode && userIsAuthenticated && postMenu }
         title={
-          <StyledNavLink to={creatorLink} children={postCreatorFullName} />
+          <TypographyLink to={creatorLink} children={postCreatorFullName} />
         }
         subheader={
           moment(postData.timestamp).format("DD MMMM HH:mm")

@@ -301,7 +301,7 @@ const PostForm = props => {
       <CardActions disableSpacing={true} >
         <div className={classes.addMedia}>
           <input
-            accept='image/*'
+            accept='image/jpeg,image/png'
             className={classes.input}
             id='photo-input'
             multiple

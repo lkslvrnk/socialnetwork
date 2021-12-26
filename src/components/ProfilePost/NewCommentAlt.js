@@ -8,17 +8,17 @@ import { usePrevious } from '../../hooks/hooks'
 import SentimentSatisfiedRoundedIcon from '@material-ui/icons/SentimentSatisfiedRounded'
 import EmojiPicker from '../Common/EmojiPicker'
 import AddAPhotoIcon from '@material-ui/icons/AddAPhoto'
-import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress'
-import { imagesStorage } from '../../api/api'
-import { useStyles } from './NewCommentStyles'
-import IconButtonWithCircularProgress from '../Common/IconButtonWithCircularProgress'
 import {
   createComment,
   createCommentPhoto,
   editPostComment,
   getCommentPhoto
 } from '../../redux/profile_posts_reducer'
-import HighlightOffIcon from '@material-ui/icons/HighlightOff';
+import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress'
+import { imagesStorage } from '../../api/api'
+import { useStyles } from './NewCommentStyles'
+import IconButtonWithCircularProgress from '../Common/IconButtonWithCircularProgress'
+
 
 const NewComment = React.memo(props => {
 
@@ -35,9 +35,9 @@ const NewComment = React.memo(props => {
   const [attachment, setAttachment] = useState(editMode ? editingComment.attachment : null)
   const [text, setText] = useState(editMode ? editingComment.text : '')
   const [commentIsCreating, setCommentIsCreating] = useState(false)
-  const [commentIsEditing, setCommentIsEditing] = useState(false)
+
   const [error, setError] = useState("")
-  const [photoUploadError, setPhotoUploadError] = useState(false)
+  const [photoUploadError, setPhotoUploadError] = useState("")
 
   const changeText = (e) => setText(e.target.value)
   const ref1 = useRef(null)
@@ -72,12 +72,12 @@ const NewComment = React.memo(props => {
               setAttachment(response.data.photo)
             }
           }
-          setPhotoUploadError(false)
+          setPhotoUploadError('')
         } catch(err) {
-          setPhotoUploadError(true)
+          setPhotoUploadError(t('Photo upload error'))
         }
       } else {
-        setPhotoUploadError(true)
+        setPhotoUploadError(t('Unsupported format'))
       }
       photoInput.current.value = ''
     }
@@ -167,27 +167,28 @@ const NewComment = React.memo(props => {
     <div>
       <SentimentSatisfiedRoundedIcon
         onClick={toggleEmojiPicker}
-        color={editMode
-          ? (showEmojiPicker ? 'secondary' : 'action')
-          : (showEmojiPicker ? 'action' : 'disabled')
-        }
-        style={{cursor: 'pointer'}}
+        style={{
+          cursor: 'pointer',
+          color: editMode
+            ? null
+            : ( !showEmojiPicker ? theme.palette.action.disabled : null )
+        }}
         ref={emojiPickerPopperAnchor}
       />
       { emojiPopper }
     </div>
   )
 
-  console.log(photoUploadError)
-
   let pickPhoto = (
     <div>
       <AddAPhotoIcon
         onClick={openImageExplorer}
-        color={photoUploadError
-          ? 'error' : (editMode ? 'action' : 'disabled')
-        }
-        style={{ cursor: 'pointer' }}
+        style={{
+          cursor: 'pointer',
+          color: editMode
+            ? null
+            : ( !showEmojiPicker ? theme.palette.action.disabled : null )
+        }}
       />
     </div>
   )
@@ -242,10 +243,7 @@ const NewComment = React.memo(props => {
           style={{ display: 'none' }}
           id='post-comment-photo-input'
           type='file'
-          onChange={(event) => {
-            handleImageUpload(event)
-            console.log('onchange')
-          }}
+          onChange={(event) => handleImageUpload(event)}
           ref={photoInput}
         />
         { !editMode &&
@@ -265,6 +263,10 @@ const NewComment = React.memo(props => {
       <div className={classes.underField}>
         { editMode && adornments }
         
+        <div style={{marginLeft: editMode ? 16 : 48}}>
+          { photoUploadError }
+        </div>
+
         { editMode &&
           <>
             {}
@@ -285,16 +287,13 @@ const NewComment = React.memo(props => {
       </div>
 
       { attachment &&
-        <div style={{position: 'relative', marginLeft: editMode ? 0 : 56, marginTop: 8, maxWidth: 150}}>
+        <div style={{marginLeft: editMode ? 0 : 56, marginTop: 8, maxWidth: 150}}>
           <img
             alt='comment-attachment'
             style={{width: '100%'}}
             src={`${imagesStorage}/${attachment.versions
               ? attachment.versions[2] : attachment.src}`}
           />
-          <div style={{position: 'absolute', top: 4, right: 4, cursor: 'pointer'}}>
-            <HighlightOffIcon onClick={() => setAttachment(null)}/>
-          </div>
         </div>
       }
     </div>

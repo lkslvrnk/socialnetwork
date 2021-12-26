@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useReducer } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import { NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom'
@@ -13,12 +13,9 @@ import { Skeleton } from '@material-ui/lab';
 import { connectionAPI } from '../../api/connection_api'
 import StickyPanel from '../Common/StickyPanel';
 import { useStyles } from './ConnectionsStyles';
-import AcceptedConnections from './AcceptedConnections';
-import PendingConnections from './PendingConnections';
-import PopperMenu from '../Common/PopperMenu';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import { profileAPI } from '../../api/profile_api';
-import PopperMenu2 from '../Common/PopperMenu2';
+import AcceptedConnections from './AcceptedConnections'
+import PendingConnections from './PendingConnections'
+import { profileAPI } from '../../api/profile_api'
 
 export const CLEAN = 'CLEAN'
 export const SET_ACCEPTED_CONNS = 'SET-ACCEPTED-CONNS'
