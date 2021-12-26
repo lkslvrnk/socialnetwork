@@ -11,13 +11,13 @@ const ReactionsList = React.memo(props => {
   const classes = useStyles();
 
   const onReactionHover = (e) => {
-    e.target.width = 48
-    e.target.height = 48
+    e.target.width = 40
+    e.target.height = 40
   }
 
   const onReactionUnhover = (e) => {
-    e.target.width = 36
-    e.target.height = 36
+    e.target.width = 32
+    e.target.height = 32
   }
 
   return (

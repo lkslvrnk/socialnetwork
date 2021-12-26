@@ -10,8 +10,8 @@ export const useStyles = makeStyles((theme) => ({
     display: 'flex'
   },
   reactionContainer: {
-    width: 42,
-    height: 40,
+    width: 36,
+    height: 34,
     display: 'flex',
     alignItems: 'flex-end',
     justifyContent: 'center'

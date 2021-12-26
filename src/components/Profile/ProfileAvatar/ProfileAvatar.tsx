@@ -3,12 +3,13 @@ import {makeStyles} from "@material-ui/core/styles";
 import MyAvatarEditor from './MyAvatarEditor.js'
 import MaterialAvatar from '@material-ui/core/Avatar';
 import { Link, useLocation } from 'react-router-dom'
-import { Badge, IconButton } from '@material-ui/core';
+import { Badge, IconButton, Paper } from '@material-ui/core';
 import { withStyles } from '@material-ui/styles';
 import PhotoCameraRoundedIcon from '@material-ui/icons/PhotoCameraRounded';
 import { useSelector } from 'react-redux';
 import { getProfilePicture } from '../../../redux/profile_selectors';
 import { imagesStorage } from '../../../api/api';
+import EditIcon from '@material-ui/icons/Edit';
 
 export const useStyles = makeStyles(theme => ({
   container: {
@@ -59,11 +60,14 @@ const ProfileAvatar: FC<PropsType> = memo((props: PropsType) => {
       <Badge 
         badgeContent={
           isOwnProfile ?
-            <StyledIconButton
-              onClick={handleOpenEditor}
-            >
-              <PhotoCameraRoundedIcon />
-            </StyledIconButton>
+            <Paper style={{borderRadius: 100}}>
+              <IconButton
+                size='small'
+                onClick={handleOpenEditor}
+              >
+                <EditIcon />
+              </IconButton>
+            </Paper>
             :
             null
         }
@@ -108,13 +112,13 @@ const ProfileAvatar: FC<PropsType> = memo((props: PropsType) => {
 
 const StyledIconButton = withStyles((theme) => ({
   root: {
-    background: 'rgba(255, 255, 255, 0.24)',
-    color: '#fff',
+    // background: 'rgba(255, 255, 255, 0.24)',
+    // color: '#fff',
     height: 40,
     width: 40,
-    '&:hover': {
-      background: 'rgba(255, 255, 255, 0.32)'
-    }
+    // '&:hover': {
+    //   background: 'rgba(255, 255, 255, 0.32)'
+    // }
   },
 
 }))(IconButton);

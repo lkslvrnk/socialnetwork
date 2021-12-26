@@ -120,10 +120,10 @@ export const useStyles = makeStyles((theme) => {
     },
     loadMoreRepliesButton: {
       cursor: 'pointer',
-      ...theme.styles.flexRowAlignCenter,
+      display: 'flex',
       margin: `${theme.spacing(1)}px ${theme.spacing(1.5)}px ${theme.spacing(2)}px 0`,
-      "& > :last-child": {
-        marginLeft: theme.spacing(2)
+      "& > :first-child": {
+        marginRight: theme.spacing(2)
       }
     },
     toggleRepliesVisibilityButton: {

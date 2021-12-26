@@ -37,9 +37,7 @@ const ProfilePost = React.memo(props => {
     wallWidth,
     userIsAuthenticated,
     onDelete,
-    onRestore,
-    onPut,
-    onPatch
+    onRestore
  } = props
 
   const dispatch = useDispatch()
@@ -430,13 +428,14 @@ const ProfilePost = React.memo(props => {
       { editMode &&
         <>
           <PostForm
-            onSubmit={ () => {}}
             editMode={editMode}
             setEditMode={setEditMode}
             text={postData.text}
             currentAttachments={attachments}
             commentingIsDisabled={postData.commentingIsDisabled}
             isPublic={postData.isPublic}
+            onEditFinish={ () => setEditMode(false)}
+            editingPostId={postData.id}
           />
           <Divider />
         </>

@@ -16,6 +16,7 @@ export const useStyles = makeStyles(theme => {
       [theme.breakpoints.down("xs")]: {
         display: 'none'
       },
+      flexShrink: 0
     },
     leftNavItem: {
       display: 'flex',

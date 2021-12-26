@@ -65,6 +65,11 @@ const Comment = React.memo(props => {
   let newCommentCreatorPicture = `${imagesStorage}/${currentUserPicture}`
   let creatorPicture = `${imagesStorage}/${commentData.creator.picture}`
 
+  const creationDate = new Date(commentData.timestamp)
+  const currentDate = Date.now()
+  const differenceInHours = (((currentDate - creationDate) / 1000) /60) / 60
+  const isEditable = differenceInHours < 24
+
   const onRespondToReplyClick = (comment) => {
     setReplied(comment)
     setShowReplyField(true)
@@ -196,8 +201,10 @@ const Comment = React.memo(props => {
   }
 
   const handleEditClick = () => {
-    setEditMode(true)
-    setMenuAnchor(null)
+    if(isEditable) {
+      setEditMode(true)
+      setMenuAnchor(null)
+    }
   }
 
   const openMenu = (e) => setMenuAnchor(e.currentTarget)
@@ -210,7 +217,7 @@ const Comment = React.memo(props => {
         </IconButton>
 
         <PopperMenu open={!!menuAnchor} anchorEl={menuAnchor} dense>
-          { isOwnComment &&
+          { isOwnComment && isEditable &&
             <MenuItem
               disabled={isDeleting}
               onClick={handleEditClick}
@@ -352,7 +359,7 @@ const Comment = React.memo(props => {
   if(commentData.deleted) {
     return (
       <>
-        <div style={{ padding: '16px 0' }}>
+        <div style={{ padding: isReply ? `16px 0` : `16px 64px` }}>
           <span>
             <Typography
               variant='body2'
@@ -450,7 +457,7 @@ const Comment = React.memo(props => {
           </div>
           { repliesAreLoading &&
             <div style={{ marginLeft: 16 }} >
-              <CircularProgress size={24} />
+              <CircularProgress size={16} />
             </div>
           }
         </div>
@@ -466,12 +473,12 @@ const Comment = React.memo(props => {
                 {t('Load previous replies')}
               </SimpleText></div>
               { repliesAreLoading &&
-                <div><CircularProgress size={20} /></div>
+                <div><CircularProgress size={16} /></div>
               }
             </div>
           }
           { commentData.repliesCount > replies.length && replies.length === 0 &&
-            <Preloader color='secondary' />
+            <CircularProgress color='secondary' />
           }
 
           { renderReplies }

@@ -1,10 +1,11 @@
 import  axios from 'axios'
 import { ProfileType } from '../types/types';
 
-// export const baseUrl = 'https://otval.space'
-export const baseUrl = 'http://localhost:8001/api'
+export const baseUrl = 'https://otval.space/api'
+// export const baseUrl = 'http://localhost:8000/api'
 
-export const imagesStorage = `http://localhost:8001/images/forphotos/`
+// export const imagesStorage = `http://localhost:8000/images/forphotos/`
+export const imagesStorage = `https://otval.space/images/forphotos/`
 let websocketUrl = 'ws://localhost:1234/'
 
 export const instance = axios.create({

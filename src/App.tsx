@@ -28,6 +28,7 @@ import Feed from './components/Feed/Feed.js';
 import Subscriptions from './components/Subscriptions/Subscriptions';
 import Search from './components/Search/Search';
 import { logOut } from './redux/auth_reducer';
+import { useTheme } from '@material-ui/core'
 
 const Connections = lazy(() => import('./components/Contacts/Connections'))
 const Profile = lazy(() => import('./components/Profile/Profile.js'))
@@ -47,6 +48,8 @@ const App: React.FC = React.memo(props => {
   const [networkAppears, setNetworkAppears] = useState(false)
   const { t, i18n } = useTranslation()
   const history = useHistory()
+  const theme = useTheme()
+  console.log(theme)
 
   console.log(language, i18n.language)
 

@@ -24,6 +24,7 @@ export const useStyles = makeStyles(theme => {
         marginLeft: theme.spacing(1),
         width: 'auto',
       },
+
     },
     searchIcon: {
       padding: theme.spacing(0, 2),
@@ -57,6 +58,12 @@ export const useStyles = makeStyles(theme => {
       position: 'absolute',
       marginTop: 8,
       width: theme.spacing(29),
+      [theme.breakpoints.down('xs')]: {
+        position: 'fixed',
+        width: 'auto',
+        left: 0,
+        right: 0
+      }
     },
     searchResultItem: {
       display: 'flex',

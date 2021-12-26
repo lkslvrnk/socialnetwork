@@ -11,7 +11,7 @@ const PhotosSectionMobile = React.memo(props => {
   const xs = useMediaQuery('(max-width: 500px)')
   const mobile = useMediaQuery('(max-width: 860px)')
   const { t } = useTranslation()
-  const classes = useStyles({ 'matches800': true })
+  const classes = useStyles()
 
   let photos = [
     {src: "https://is3-ssl.mzstatic.com/image/thumb/Purple113/v4/26/5c/c9/265cc9b2-2dc6-2499-9728-f1fd5c837184/source/256x256bb.jpg"},

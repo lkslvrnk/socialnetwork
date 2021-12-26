@@ -15,6 +15,8 @@ import RemoveIcon from '@material-ui/icons/Remove';
 import YesCancelDialog from '../../Common/YesCancelDialog.js';
 import { useTranslation } from 'react-i18next';
 import AvatarEditor from 'react-avatar-editor'
+import { useMediaQuery } from '@material-ui/core';
+import { useTheme } from '@material-ui/core/styles';
 
 const MyAvatarEditor = props => {
   let [selectedImage, setSelectedImage] = React.useState(null)
@@ -22,6 +24,10 @@ const MyAvatarEditor = props => {
   let [scaleValue, setScaleValue] = React.useState(1)
   const { t } = useTranslation();
   const dispatch = useDispatch()
+
+  const theme = useTheme();
+  const matches = useMediaQuery(theme.breakpoints.down('xs'));
+  console.log(matches)
 
   // function dataURItoBlob (dataURI) {
   //   var byteString;
@@ -102,24 +108,29 @@ const MyAvatarEditor = props => {
     <Dialog
       onClose={openCancelDialog}
       open={props.show}
+      fullScreen={selectedImage && matches}
     >
-      <DialogTitle >{selectedImage ? t('Select region') : t('Select image')}</DialogTitle>
+      <DialogTitle >
+        {selectedImage ? t('Select region') : t('Select image')}
+      </DialogTitle>
         {selectedImage && 
-        <AvatarEditor
-          ref={editorRef}
-          image={selectedImage}
-          width={250}
-          height={250}
-          border={[70, 30]}
-          color={[255, 255, 255, 0.6]}
-          scale={scaleValue}
-          borderRadius={1100}
-        />}
-
+        <div style={{display: 'flex', justifyContent: 'center'}}>
+          <AvatarEditor
+            ref={editorRef}
+            image={selectedImage}
+            width={300}
+            height={300}
+            border={[8, 8]}
+            color={[255, 255, 255, 0.8]}
+            scale={scaleValue}
+            borderRadius={1100}
+          />
+        </div>
+        }
       <DialogContent>
         {selectedImage && 
           <div style={{display: 'flex', alignItems: 'center'}}>
-            <IconButton size="small" onClick={onMinus} children={<RemoveIcon />} />
+            <IconButton onClick={onMinus} children={<RemoveIcon />} />
               <Slider
                 step={0.1}
                 min={1}

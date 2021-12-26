@@ -1,7 +1,6 @@
 import { Button, CardActions, Checkbox, ClickAwayListener, IconButton, MenuItem, MenuList, Paper, Popper, TextField, useTheme } from '@material-ui/core'
 import React, { useState, useRef } from 'react'
 import { useDispatch } from 'react-redux'
-import { createPostPhoto, getPostPhoto } from '../../redux/profile_posts_reducer'
 import PhotoGallery from '../Common/PhotoGallery'
 import { useStyles } from './PostFormStyles'
 import AddPhotoDialog from '../Common/AddPhotoDialog'
@@ -12,9 +11,15 @@ import SettingsIcon from '@material-ui/icons/Settings'
 import EmojiPicker from '../Common/EmojiPicker'
 import SentimentSatisfiedRoundedIcon from '@material-ui/icons/SentimentSatisfiedRounded'
 import { imagesStorage } from '../../api/api'
+import {
+  createPostPhoto,
+  getPostPhoto,
+  editPost,
+  patchPost
+} from '../../redux/profile_posts_reducer'
 
 const PostForm = props => {
-  const { onSubmit, editMode, setEditMode, text, currentAttachments, commentingIsDisabled, isPublic} = props
+  const { onSubmit, editMode, setEditMode, text, currentAttachments, commentingIsDisabled, isPublic, onEditFinish, editingPostId} = props
   
   const openImageExplorer = () => {
     photoInput.current.click()
@@ -35,6 +40,8 @@ const PostForm = props => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [publicCheckboxIsChecked, setPublicCheckboxIsChecked] = useState(editMode ? isPublic : true)
   const [disableComments, setDisableComments] = useState(editMode ? commentingIsDisabled : false)
+  const [error, setError] = useState('')
+  const [photoUploadError, setPhotoUploadError] = useState(false)
 
   let handleImageUpload = async (event) => {
     const files = event.target.files
@@ -95,15 +102,27 @@ const PostForm = props => {
     }
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if(isSubmitting || (!postText.length && !attachments.length)) {
       return
     }
     setIsSubmitting(true)
-    console.log(Number(publicCheckboxIsChecked))
+    setPhotoUploadError(false)
     let preparedAttachments = attachments.map(attachment => attachment.id)
 
-    onSubmit(postText, preparedAttachments, Number(publicCheckboxIsChecked), Number(disableComments), null)
+    if(editMode) {
+      try {
+        await dispatch(editPost(editingPostId, postText, preparedAttachments, Number(disableComments), Number(publicCheckboxIsChecked)))
+        setError(null)
+        setIsSubmitting(false)
+        onEditFinish()
+      } catch (e) {
+        setError('Saving error')
+        setIsSubmitting(false)
+      }
+    }
+    else {
+      onSubmit(postText, preparedAttachments, Number(publicCheckboxIsChecked), Number(disableComments), null)
       .then(
         () => {
           setAttachments([])
@@ -111,21 +130,22 @@ const PostForm = props => {
           setPostText('')
         }
       )
+    }
   }
 
-  const onDone = (selectedPhotos) => {
-    let srcs = []
-    let filteredSelected = []
-    selectedPhotos.forEach(photo => {
-      let inAddedPhotos = addedPhotos.filter(addedPhoto => photo.id === addedPhoto.id)[0]
-      if (!inAddedPhotos) {
-        filteredSelected.push(photo)
-        srcs.push(photo)
-      }
-    })
-    setImages([...images, ...srcs])
-    setAddedPhotos([...addedPhotos, ...filteredSelected])
-  }
+  // const onDone = (selectedPhotos) => {
+  //   let srcs = []
+  //   let filteredSelected = []
+  //   selectedPhotos.forEach(photo => {
+  //     let inAddedPhotos = addedPhotos.filter(addedPhoto => photo.id === addedPhoto.id)[0]
+  //     if (!inAddedPhotos) {
+  //       filteredSelected.push(photo)
+  //       srcs.push(photo)
+  //     }
+  //   })
+  //   setImages([...images, ...srcs])
+  //   setAddedPhotos([...addedPhotos, ...filteredSelected])
+  // }
 
   const [postSettingsAnchor, setPostSettingsAnchor] = useState(null)
 
@@ -317,18 +337,22 @@ const PostForm = props => {
               style={{marginRight: 16}}
               onClick={openImageExplorer}
             >
-              <AddAPhotoIcon />
+              <AddAPhotoIcon
+                color={photoUploadError
+                  ? 'error' : (editMode ? 'action' : 'disabled')
+                }
+              />
             </IconButton>
           </div>
 
-          { showAddPhotoDialog &&
+          {/* { showAddPhotoDialog &&
             <AddPhotoDialog
               handleClose={() => setShowAddPhotoDialog(false)}
               onUploadFromStorage={handleImageUpload}
               show={showAddPhotoDialog}
               onDone={onDone}
             />
-          }
+          } */}
         </div>
 
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>

@@ -3,7 +3,7 @@ import { makeStyles } from "@material-ui/core/styles";
 export const useStyles = makeStyles(theme => {
   return {
     appContainer: {
-      minWidth: 400,
+      minWidth: 350,
     },
     appBody: {
       marginTop: 64,
@@ -14,7 +14,7 @@ export const useStyles = makeStyles(theme => {
 
     },
     content: {
-      minWidth: 400,
+      minWidth: 350,
       maxWidth: 900,
       paddingRight: theme.spacing(4),
       paddingBottom: theme.spacing(2),
