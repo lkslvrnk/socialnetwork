@@ -61,17 +61,17 @@ export const useStyles = makeStyles(theme => {
       [theme.breakpoints.down('xs')]: {
         position: 'fixed',
         width: 'auto',
-        left: 0,
-        right: 0
+        left: theme.spacing(1),
+        right: theme.spacing(1),
       }
     },
     searchResultItem: {
       display: 'flex',
-      padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
+      //padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
     },
     showAllResults: {
       display: 'block',
-      padding: 16, textAlign: 'center',
+      padding: theme.spacing(1.5), textAlign: 'center',
       backgroundColor: alpha(theme.palette.common.white, 0.25),
     },
     preloader: {

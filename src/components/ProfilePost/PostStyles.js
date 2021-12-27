@@ -143,4 +143,7 @@ export const useStyles = makeStyles((theme) => ({
     width: 21,
     backgroundSize: '100%'
   },
+  hide: {
+    display: 'none'
+  }
 }))

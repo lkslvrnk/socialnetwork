@@ -2,7 +2,7 @@ import React, {useState, useEffect, useCallback} from 'react'
 import { useTranslation } from 'react-i18next'
 import {NavLink} from 'react-router-dom'
 import { useStyles } from './SearchStyles.js'
-import { ClickAwayListener, Divider } from '@material-ui/core'
+import { ClickAwayListener, Divider, List, ListItem } from '@material-ui/core'
 import Typography from "@material-ui/core/Typography"
 import Paper from "@material-ui/core/Paper"
 import SearchIcon from "@material-ui/icons/Search"
@@ -101,21 +101,24 @@ const Search = React.memo(props => {
     let link = `/i/${user.username}`
     return (
       <>
-        <div className={classes.searchResultItem} onClick={ removeSearch}>
-          <Avatar
-            src={picture}
-            component={NavLink}
-            to={link}
-          />
-          <Typography
-            variant='body2'
-            component={NavLink}
-            to={link}
-            style={{ marginLeft: 16}}
-            children={name}
-            color='textPrimary'
-          />
-        </div>
+        <ListItem
+          button
+          onClick={ removeSearch}
+          component={NavLink}
+          to={link}
+        >
+          <div className={classes.searchResultItem} >
+            <Avatar
+              src={picture}
+            />
+            <Typography
+              variant='body2'
+              style={{ marginLeft: 16}}
+              children={name}
+              color='textPrimary'
+            />
+          </div>
+        </ListItem>
       </>
     )
   })
@@ -134,7 +137,9 @@ const Search = React.memo(props => {
                 <Preloader />
               </div>
               :
-              <>{ renderResults }</>
+              <List dense >
+                { renderResults }
+              </List>
             }
             
             { (!isSearching && searchText) &&

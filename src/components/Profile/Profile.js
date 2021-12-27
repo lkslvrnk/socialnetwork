@@ -38,6 +38,11 @@ import PostSkeleton from '../Common/PostSkeleton.js';
 import Communication from './Communication.js';
 import PhotosSectionMobile from './PhotosSectionMobile.js';
 import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress.jsx';
+import PhotoViewer from '../PhotoViewer/PhotoViewer';
+import Carousel, { Modal, ModalGateway } from "react-images";
+import ImageGallery from 'react-image-gallery';
+import { PhotoProvider, PhotoConsumer, PhotoSlider } from 'react-photo-view';
+import 'react-photo-view/dist/index.css';
 
 const Profile = React.memo(props => {
 
@@ -45,9 +50,43 @@ const Profile = React.memo(props => {
   
   const mobile = useMediaQuery('(max-width: 860px)')
   
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [viewerIsOpen, setViewerIsOpen] = useState(false);
+
+  const openLightbox = (index) => {
+    setCurrentImageIndex(index);
+    setViewerIsOpen(true);
+  }
+
+  const closeLightbox = () => {
+    setCurrentImageIndex(0);
+    setViewerIsOpen(false);
+  };
+
+  const reversedPictures = profile ? [...profile.pictures].reverse() : []
+
+  const preparedSmallPictures = []
+  const preparedLargePictures = []
+  
+  reversedPictures.forEach((picture) => {
+    const id = picture.id
+    const smallSrc = `${imagesStorage}${picture.versions.small}`
+    const largeSrc = `${imagesStorage}${picture.versions.large}`
+    const originalSrc = `${imagesStorage}${picture.versions.original}`
+    preparedSmallPictures.push({id, src: smallSrc})
+    preparedLargePictures.push({
+      id,
+      src: originalSrc
+    })
+  })
+
+  const onAvatarClick = () => {
+    openLightbox(0)
+  }
+  
   const params = useParams()
   const dispatch = useDispatch()
-  const classes = useStyles({ 'matches800': true })
+  const classes = useStyles()
   const { t } = useTranslation()
   let wall = React.useRef(null)
   const [morePostsLoading, setMorePostsLoading] = useState(false)
@@ -129,12 +168,10 @@ const Profile = React.memo(props => {
     return dispatch(createPost(text, attachments, isPublic, disableComments, 0, null))
   }
 
-  let buttonsSectionClass = mobile ? classes.buttonsSectionMobile : classes.buttonsSection
-
-  let editProfileButton = isOwnProfile &&
+  let editProfileButton = false &&
     (profileLoaded
       ? 
-      <div className={buttonsSectionClass}>
+      <div className={classes.buttonsSection}>
         <Button
           disabled
           variant='contained'
@@ -144,7 +181,7 @@ const Profile = React.memo(props => {
         </Button>
       </div>
       :
-      <div className={buttonsSectionClass} >
+      <div className={classes.buttonsSection} >
         <Skeleton
           className={classes.buttonSkeleton}
           variant='rect'
@@ -154,13 +191,20 @@ const Profile = React.memo(props => {
       </div>
     )
 
+  let renderProfilePicture = (
+    <ProfileAvatar
+      onClick={onAvatarClick}
+      isOwnProfile={onOwnWall}
+      currentUserId={currentUserId}
+    />
+  )
+
   const avatar = (
     mobile
-    ?
-    <ProfileAvatar isOwnProfile={onOwnWall} currentUserId={currentUserId} />
+    ? renderProfilePicture
     : 
     <div className={classes.avatarFrame} >
-      <ProfileAvatar isOwnProfile={onOwnWall} currentUserId={currentUserId} />
+      {renderProfilePicture}
     </div>
   )
 
@@ -350,8 +394,12 @@ const Profile = React.memo(props => {
   const profileBody = (
     <div className={ classes.profileBody } >
       { mobileInfoSection }
-      { mobile &&
-        <PhotosSectionMobile profileLoaded={profileLoaded} />
+      { mobile && preparedSmallPictures.length > 0 &&
+        <PhotosSectionMobile
+          handlePhotoClick={openLightbox}
+          pictures={preparedSmallPictures}
+          profileLoaded={profileLoaded}
+        />
       }
 
       <div ref={ wall } className={ classes.wall }  >
@@ -412,6 +460,26 @@ const Profile = React.memo(props => {
           }
         </StickyPanel>
       }
+
+      {/* <ModalGateway>
+        {viewerIsOpen ? (
+          <Modal onClose={closeLightbox}>
+            <Carousel
+              showArrows={true}
+              currentIndex={currentImageIndex}
+              views={preparedLargePictures}
+            />
+          </Modal>
+        ) : null}
+      </ModalGateway> */}
+      <PhotoSlider 
+        images={preparedLargePictures}
+        visible={viewerIsOpen}
+        onClose={closeLightbox}
+        index={currentImageIndex}
+        onIndexChange={setCurrentImageIndex}
+      />
+
     </div>
   )
 

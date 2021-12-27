@@ -10,6 +10,7 @@ import Preloader from '../Common/Preloader/Preloader.jsx';
 import StickyPanel from '../Common/StickyPanel.js';
 import PostSkeleton from '../Common/PostSkeleton.js';
 import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress.jsx';
+import { Redirect } from 'react-router-dom'
 
 const Feed = React.memo( props => {
   const classes = useStyles()
@@ -20,6 +21,11 @@ const Feed = React.memo( props => {
   const loaded = useSelector((state) => state.profilePosts.areLoaded)
   const loadMorePostsButton = useRef(null)
   const [morePostsLoading, setMorePostsLoading] = useState(false)
+  const isAuthenticated = useSelector((state) => state.auth.isAuth)
+
+  if(!isAuthenticated) {
+    return <Redirect to={`/login`} />
+  }
 
   useEffect(() => {
     document.title = t('Feed')

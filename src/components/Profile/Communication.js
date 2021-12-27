@@ -41,7 +41,7 @@ const Communication = React.memo(props => {
               <Skeleton
                 className={classes.buttonSkeleton}
                 variant='rect'
-                width={width}
+                width={'100%'}
                 height={36}
               />
             </div>
@@ -132,17 +132,15 @@ const Communication = React.memo(props => {
         {t('Message')}
       </Button>
 
-      <div id='subscription' >
         <ButtonWithCircularProgress
           color='secondary' variant='contained'
-          startIcon={<EditIcon />}
           children={subscribeButtonTitle}
           onClick={onSubscriptionButtonClick}
           enableProgress={subscriptionActionInProgress}
           disabled={subscriptionActionInProgress}
+          style={{width: '100%'}}
         />
-      </div>
-      <div id='connection' >
+
         <Tooltip  title={tooltipTitle} arrow>
           <ButtonWithCircularProgress
             variant='contained'
@@ -151,9 +149,9 @@ const Communication = React.memo(props => {
             onClick={onConnectButtonClick}
             enableProgress={connectionActionInProgress}
             disabled={connectionActionInProgress}
+            style={{width: '100%'}}
           />
         </Tooltip>
-      </div>
     </div>
   )
   

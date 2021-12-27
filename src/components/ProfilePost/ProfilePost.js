@@ -51,12 +51,21 @@ const ProfilePost = React.memo(props => {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isRestoring, setIsRestoring] = useState(false)
   const [restoreError, setRestoreError] = useState('')
-  const [attachments, setAttachments] = useState([])
   const [menuDisabled, setMenuDisabled] = useState(false)
   const [commentingIsToggling, setCommentingIsToggling] = useState(false)
   const [postMenuAnchor, setPostMenuAnchor] = useState(null)
   const [showShareDialog, setShowShareDialog] = React.useState(false)
   const [showCancelDialog, setShowCancelDialog] = React.useState(false)
+
+  let attachmentPhotos = []
+  postData.attachments.forEach(p => {
+    attachmentPhotos.push({
+      id: p.id,
+      originalSrc: `${imagesStorage}${p.versions[0]}`,
+      mediumSrc: `${imagesStorage}${p.versions[2]}`,
+    })
+  })
+  const [attachments, setAttachments] = useState(attachmentPhotos)
   
   const creatorLink = `/i/${postData.creator.username}`
   const picture = useSelector(getCurrentUserPicture)
@@ -72,16 +81,10 @@ const ProfilePost = React.memo(props => {
   const differenceInHours = (((currentDate - postCreationDate) / 1000) /60) / 60
   const isEditable = differenceInHours < 24
 
-  useEffect(() => {
-    let photos = []
-    postData.attachments.forEach(p => {
-      photos.push({
-        id: p.id,
-        src: `${imagesStorage}${p.versions[2]}`
-      })
-    })
-    setAttachments(photos)
-  }, [postData.attachments])
+  // useEffect(() => {
+
+  //   setAttachments(photos)
+  // }, [postData.attachments])
 
 
   const handleRestore = () => {
@@ -263,7 +266,7 @@ const ProfilePost = React.memo(props => {
         }
         <CardMedia>
           <PhotoGallery
-            images={photos}
+            passedImages={photos}
             editMode={false} 
             width={wallWidth} 
             spacing={1}
@@ -280,7 +283,7 @@ const ProfilePost = React.memo(props => {
       <div style={{padding: '0 8px', marginBottom: 8}} >
         <PhotoGallery
           place={`postId=${postData.id}`}
-          images={attachments}
+          passedImages={attachments}
           spacing={1}
           imageBorderRadius={2}
         />

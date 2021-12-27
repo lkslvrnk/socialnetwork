@@ -1,33 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ListSubheader, Paper, useMediaQuery } from '@material-ui/core';
 import Skeleton from '@material-ui/lab/Skeleton';
 import { useStyles } from './ProfileStyles';
 import { useTranslation } from 'react-i18next';
-
+import { imagesStorage } from '../../api/api';
+import PhotoViewer from '../PhotoViewer/PhotoViewer';
 
 const PhotosSectionMobile = React.memo(props => {
 
   const profileLoaded = props.profileLoaded
+  const pictures = props.pictures
+  const handlePhotoClick = props.handlePhotoClick
+
   const xs = useMediaQuery('(max-width: 500px)')
   const mobile = useMediaQuery('(max-width: 860px)')
   const { t } = useTranslation()
   const classes = useStyles()
 
-  let photos = [
-    {src: "https://is3-ssl.mzstatic.com/image/thumb/Purple113/v4/26/5c/c9/265cc9b2-2dc6-2499-9728-f1fd5c837184/source/256x256bb.jpg"},
-    {src: "https://is1-ssl.mzstatic.com/image/thumb/Purple71/v4/c8/36/9f/c8369fa9-9dbb-fbb3-1ffc-542d95e019e9/source/256x256bb.jpg"},
-    {src: "https://static-s.aa-cdn.net/img/gp/20600002404286/pRD2XG5X2KqiDoA4L1eNJFlN4_7ghS8cPiMux_wWEDVKzASYPJSsSMQ6580qan62ydRV=w300?v=1"},
-    {src: "https://s9.travelask.ru/uploads/post/000/005/876/main_image/full-a04f69d2e8e7a0364ea5805bb21a9117.jpg"},
-    {src: "http://forumsmile.ru/u/1/4/f/14fd113eac8b7e6f9381b2653e4badf1.jpg"},
-  ]
+  const preparedPhotos = []
 
-  if(xs) {
-    photos = [
-      {src: "https://is3-ssl.mzstatic.com/image/thumb/Purple113/v4/26/5c/c9/265cc9b2-2dc6-2499-9728-f1fd5c837184/source/256x256bb.jpg"},
-      {src: "https://is1-ssl.mzstatic.com/image/thumb/Purple71/v4/c8/36/9f/c8369fa9-9dbb-fbb3-1ffc-542d95e019e9/source/256x256bb.jpg"},
-      {src: "https://static-s.aa-cdn.net/img/gp/20600002404286/pRD2XG5X2KqiDoA4L1eNJFlN4_7ghS8cPiMux_wWEDVKzASYPJSsSMQ6580qan62ydRV=w300?v=1"},
-      {src: "https://s9.travelask.ru/uploads/post/000/005/876/main_image/full-a04f69d2e8e7a0364ea5805bb21a9117.jpg"},
-    ]
+  const count = xs ? 4 : 5
+  for(let i = 0; i < count; i++) {
+    if(pictures[i]) {
+      preparedPhotos.push(pictures[i])
+    }
   }
 
   const mobileMediaSectionSkeleton = (
@@ -67,20 +63,29 @@ const PhotosSectionMobile = React.memo(props => {
       </ListSubheader>
 
       <div className={classes.photosMobile} style={{padding: '0 16px 16px 16px', display: 'flex', justifyContent: 'center'}} >
-        {photos.map((photo, index) => (
-          <div key={index}
-            style={{
-              flexShrink: 0,
-              backgroundImage: `url(${photo.src})`,
-              backgroundSize: 'cover',
-              width: (mobile && !xs) ? '19%' : '24%',
-              paddingBottom: (mobile && !xs) ? '19%' : '24%',
-              borderRadius: 4,
-              overflow: 'hidden'
-            }}
-          />
-        ))}
+        {preparedPhotos.map((photo, index) => {
+          console.log(photo)
+          return (
+            <div
+              onClick={() => handlePhotoClick(index)}
+              key={index}
+              style={{
+                flexShrink: 0,
+                backgroundImage: `url(${photo.src})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                width: (mobile && !xs) ? '19%' : '24%',
+                paddingBottom: (mobile && !xs) ? '19%' : '24%',
+                borderRadius: 4,
+                overflow: 'hidden',
+                cursor: 'pointer'
+              }}
+            />
+          )
+        })}
       </div>
+
+
     </Paper>
     :
     mobileMediaSectionSkeleton

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Slider from '@material-ui/core/Slider';
 import {connect, useDispatch} from 'react-redux'
 import {compose} from 'redux'
@@ -17,16 +17,19 @@ import { useTranslation } from 'react-i18next';
 import AvatarEditor from 'react-avatar-editor'
 import { useMediaQuery } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
+import ButtonWithCircularProgress from '../../Common/ButtonWithCircularProgress';
 
 const MyAvatarEditor = props => {
-  let [selectedImage, setSelectedImage] = React.useState(null)
-  let [showCancelDialog, setShowCancelDialog] = React.useState(false)
-  let [scaleValue, setScaleValue] = React.useState(1)
+  let [selectedImage, setSelectedImage] = useState(null)
+  let [showCancelDialog, setShowCancelDialog] = useState(false)
+  let [scaleValue, setScaleValue] = useState(1)
   const { t } = useTranslation();
   const dispatch = useDispatch()
 
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.down('xs'));
+  const [isUpdating, setIsUpdating] = useState(false)
+
   console.log(matches)
 
   // function dataURItoBlob (dataURI) {
@@ -88,8 +91,10 @@ const MyAvatarEditor = props => {
     }
   }
 
-  const onCrop = () => {
+  const onCrop = async () => {
     if(editorRef.current !== null) {
+      setIsUpdating(true)
+
       let rect = editorRef.current.getCroppingRect()
 
       let img = new Image()
@@ -100,6 +105,10 @@ const MyAvatarEditor = props => {
         let x = img.width * rect.x
         let width = img.width * rect.width
         dispatch(updateAvatar(selectedImage, x, y, width, props.currentUserId))
+          .then(
+            () => setIsUpdating(false),
+            () => setIsUpdating(false),
+          )
       } 
     }
   }
@@ -149,18 +158,18 @@ const MyAvatarEditor = props => {
       {selectedImage && 
         <>
           <Button 
-            variant="contained" 
             onClick={() => setSelectedImage(null)}
           >
             {t('Back')}
           </Button>
 
-          <Button
+          <ButtonWithCircularProgress
             variant="contained" 
-            onClick={onCrop} 
-          >
-            {t('Save')}
-          </Button>
+            onClick={onCrop}
+            children={t('Save')}
+            enableProgress={isUpdating}
+            disabled={isUpdating}
+          />
         </>
        }
       </DialogActions>

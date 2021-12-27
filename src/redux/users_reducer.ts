@@ -1,6 +1,7 @@
 import { AxiosError } from 'axios'
 import { ThunkAction } from 'redux-thunk'
 import { connectionAPI } from '../api/connection_api'
+import { subscriptionAPI } from '../api/subscription_api'
 import { ConnectionType, ProfileType, SubscriptionType } from '../types/types'
 import { AppStateType, InferActionsTypes } from './redux_store'
 
@@ -82,7 +83,7 @@ export const actions = {
   updateConnection: (userId: string, connection: ConnectionType | null) => (
     { type: UPDATE_CONNECTION, userId, connection } as const
   ),
-  updateSubscription: (userId: string, subscription: SubscriptionType) => (
+  updateSubscription: (userId: string, subscription: SubscriptionType | null) => (
     { type: UPDATE_SUBSCRIPTION, userId, subscription } as const
   ),
 }
@@ -151,7 +152,6 @@ export let createConnection2 = (
             }
           } 
         }
-        resolve()
       })()
     })
   }
@@ -195,6 +195,59 @@ export let deleteConnection = (
       const error = e as AxiosError
       if(error.response && error.response.status === 404) {
         dispatch(actions.updateConnection(userId, null))
+      } 
+    }
+  }
+}
+
+export let createSubscription = (
+  userId: string
+): ThunkType => {
+  return async (dispatch) => {
+    try {
+      let response = await subscriptionAPI.createSubscription(userId)
+      if(response.status === 201) {
+        let getSubscriptionResponse = await subscriptionAPI.getSubscription(response.data.id)
+        if(getSubscriptionResponse.status === 200) {
+          dispatch(actions.updateSubscription(userId, getSubscriptionResponse.data.subscription))
+        }
+      }
+    }
+    catch (e) {
+      const error = e as AxiosError
+      if(error.response && error.response.status === 422) {
+        let responseData = error.response.data
+        if([33].includes(responseData.code)) {
+          let getSubscriptionResponse = await subscriptionAPI.getSubscription(responseData.subscription_id)
+          if(getSubscriptionResponse.status === 200) {
+            dispatch(actions.updateSubscription(userId, getSubscriptionResponse.data.subscription))
+          }
+          else if(getSubscriptionResponse.status === 404) {
+            dispatch(actions.updateSubscription(userId, null))
+          }
+        }
+      }
+    }
+    console.log('before resolving')
+    return 'END AND RETURN!!!' // Эта функция СРАЗУ возвращает промис с состоянием pending, и после того как выполнение дойдёт до этой строки, этот промис будет resolved
+  }
+}
+
+export let deleteSubscription = (
+  userId: string,
+  subscriptionId: string
+): ThunkType => {
+  return async (dispatch) => {
+    try {
+      let response = await subscriptionAPI.deleteSubscription(subscriptionId)
+      if(response.status === 200) {
+        dispatch(actions.updateSubscription(userId, null))
+      }
+    }
+    catch (e) {
+      const error = e as AxiosError
+      if(error.response && error.response.status === 404) {
+        dispatch(actions.updateSubscription(userId, null))
       } 
     }
   }

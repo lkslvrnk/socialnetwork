@@ -1,9 +1,9 @@
 import React, {useState, useEffect, useRef} from 'react'
-import { makeStyles } from "@material-ui/core/styles"
 import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked'
 import CheckCircleIcon from '@material-ui/icons/CheckCircle'
 import CancelTwoToneIcon from '@material-ui/icons/CancelTwoTone'
-import { Link, useLocation } from 'react-router-dom'
+import { PhotoSlider } from 'react-photo-view'
+import { useStyles } from './PhotoGalleryStyles'
 
 let glBorderRadius = 0
 let glEditMode = false
@@ -11,58 +11,57 @@ let glSelectMode = false
 let glPlace = null
 
 const PhotoGallery = React.memo((props) => {
-  const {place, imageBorderRadius, editMode, images, spacing, onRemove, grid, columnsCount, selectMode, onSelect, setAttachments} = props
-
-  const [photosLoaded, setPhotosLoaded] = useState(false);
-  const classes = useStyles();
-  const tempPhotos = useRef([])
+  const {place, imageBorderRadius, editMode, passedImages, spacing, selectMode, setAttachments} = props
+  
+  const [photosLoaded, setPhotosLoaded] = useState(false)
+  const classes = useStyles()
   const maxHeightPercents = 80
   glBorderRadius = imageBorderRadius
   glEditMode = editMode
   glSelectMode = selectMode
   glPlace = place
-  let count = 0
 
   const lastHeight = useRef(null)
   const photos = useRef([])
-  let location = useLocation();
-  const [selectedPhotos, setSelectedPhotos] = useState([])
   const [imageChangingCount, setImageChangingCount] = useState(0)
   const gallery = useRef(null)
 
-  function getMeta(url) {
-    let img = new Image();
-    img.onload = function() {
-      let photo = images.filter(image => image.src === url)[0]
-      
-      count++
-      tempPhotos.current.push(createPhotoObject(photo, this.width, this.height))
-      if(count === images.length) {
-        images.forEach(image => {
-          photos.current.push(tempPhotos.current.filter(photo => photo.img === image.src)[0])
-        })
-        tempPhotos.current = []
-        setPhotosLoaded(true)
-        count = 0
-      }
-    };
-    img.src = url;
+  console.log(photos)
+
+  const preparedLargePictures = []
+
+  photos.current.forEach((photo) => {
+    preparedLargePictures.push({src: photo.originalSrc})
+  })
+
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [viewerIsOpen, setViewerIsOpen] = useState(false);
+
+  const openLightbox = (index) => {
+    setCurrentImageIndex(index);
+    setViewerIsOpen(true);
   }
+
+  const closeLightbox = () => {
+    setCurrentImageIndex(0);
+    setViewerIsOpen(false);
+  };
 
   function getPhotoMeta(url, withMetaLoadedCounter) {
     let img = new Image();
     img.onload = function() {
-      let photoSrcAndID = images.filter(image => image.src === url)[0]
+      let photoSrcAndID = passedImages.filter(image => image.mediumSrc === url)[0]
       withMetaLoadedCounter.handledCount++
       withMetaLoadedCounter.handledPhotos.push(createPhotoObject(photoSrcAndID, this.width, this.height))
       withMetaLoadedCounter.onMetaLoaded()
     };
-    img.src = url;
+    img.src = url
   }
 
   const createPhotoObject = (photosSrcAndID, width, height) =>  {
     let photo = {
-      img: photosSrcAndID.src,
+      originalSrc: photosSrcAndID.originalSrc,
+      mediumSrc: photosSrcAndID.mediumSrc,
       id: photosSrcAndID.id
     }
     
@@ -80,17 +79,6 @@ const PhotoGallery = React.memo((props) => {
     photo.checked = false
     
     return photo
-  }
-
-  const createGridPhoto = (photo) =>  {
-    let gridPhoto = {
-      img: photo.src,
-      id: photo.id,
-      width: photo.width,
-      height: photo.height,
-      checked: false
-    }
-    return gridPhoto
   }
 
   const createPhotosWrapper = () => {
@@ -137,80 +125,66 @@ const PhotoGallery = React.memo((props) => {
   }
   
   useEffect(() => {
-    if(images.length > 0 ) {
-      if(grid) {
-        let arr = []
-        images.forEach(photo => {
-          arr.push(createGridPhoto(photo))
-        })
-        setGridPhotos(arr)
-        setPhotosLoaded(true)
-      } else {
-        images.forEach(p => getMeta(p.src))
-      }
+    if(passedImages.length > 0 ) {
+      setPhotosLoaded(true)
     } else {
       setPhotosLoaded(true)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const [gridPhotos, setGridPhotos] = useState([])
-
   useEffect(() => {
     if(photosLoaded) {
-      if(grid) {
-        const arr = []
-        images.forEach(photo => {
-          arr.push(createGridPhoto(photo))
-        })
-        setGridPhotos(arr)
-      } else {
-        let updatedPhotos = [...photos.current]
-        photos.current.forEach(photo => {
-          let match = images.filter(img => img.src === photo.img)[0]
-          if(!match) {
-            updatedPhotos = updatedPhotos.filter(photo1 => photo1.img !== photo.img)
-          }
-        })
-        photos.current = updatedPhotos
-
-        let newPhotos = []
-        images.forEach(image => {
-          let match = photos.current.filter(photo => {
-            return image.src === photo.img
-          })[0]
-          if(!match) newPhotos.push(image)
-        })
-
-        let withMetaLoadedCounter = {
-          newPhotosCount: newPhotos.length,
-          handledCount: 0,
-          handledPhotos: [] 
+      let updatedPhotos = [...photos.current]
+      photos.current.forEach(photo => {
+        let match = passedImages.filter(passedImage => passedImage.mediumSrc === photo.mediumSrc)[0]
+        if(!match) {
+          updatedPhotos = updatedPhotos.filter(photo1 => photo1.mediumSrc !== photo.mediumSrc)
         }
+      })
+      photos.current = updatedPhotos
 
-        function onMetaLoaded(){
-          if(this.newPhotosCount === this.handledCount) {
-            this.handledPhotos.forEach(handled => {
-              let existed = photos.current.filter(photo => photo.img === handled.img)[0]
-              if(!existed) photos.current.push(handled)
-            })
-            setImageChangingCount(prev => prev + 1)
-          }
-        }
+      let newPhotos = []
+      passedImages.forEach(image => {
+        let match = photos.current.filter(photo => {
+          return image.mediumSrc === photo.mediumSrc
+        })[0]
+        if(!match) newPhotos.push(image)
+      })
 
-        withMetaLoadedCounter.onMetaLoaded = onMetaLoaded.bind(withMetaLoadedCounter)
+      console.log(newPhotos)
+      let withMetaLoadedCounter = {
+        newPhotosCount: newPhotos.length,
+        handledCount: 0,
+        handledPhotos: [] 
+      }
 
-        if(newPhotos.length) {
-          newPhotos.forEach(newPhoto => {
-            getPhotoMeta(newPhoto.src, withMetaLoadedCounter)
+      function onMetaLoaded(){
+        if(this.newPhotosCount === this.handledCount) {
+          this.handledPhotos.forEach(handled => {
+            console.log(handled)
+            let existed = photos.current.filter(photo => photo.mediumSrc === handled.mediumSrc)[0]
+            if(!existed) {
+              photos.current.push(handled)
+            }
           })
-        } else {
           setImageChangingCount(prev => prev + 1)
         }
       }
+
+      withMetaLoadedCounter.onMetaLoaded = onMetaLoaded.bind(withMetaLoadedCounter)
+
+      if(newPhotos.length) {
+        newPhotos.forEach(newPhoto => {
+          getPhotoMeta(newPhoto.mediumSrc, withMetaLoadedCounter)
+        })
+      } else {
+        setImageChangingCount(prev => prev + 1)
+      }
+      
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [images.length])
+  }, [photosLoaded, passedImages.length])
 
   useEffect(() => {
     const photosCount = photos.current.length
@@ -249,57 +223,35 @@ const PhotoGallery = React.memo((props) => {
           alignItems: 'center'
         }}
       >
-
+        <div
+          style={{
+            backgroundImage: `url(${photo.mediumSrc})`,
+            width: `${widthPercents}%`,
+            paddingTop: `${heightPercents}%`,
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            position: 'relative',
+            borderRadius: imageBorderRadius,
+            overflow: 'hidden',
+          }}
+        >
           <div
-            style={{
-              backgroundImage: `url(${photo.img})`,
-              width: `${widthPercents}%`,
-              paddingTop: `${heightPercents}%`,
-              backgroundRepeat: 'no-repeat',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              position: 'relative',
-              borderRadius: imageBorderRadius,
-              overflow: 'hidden',
+            onClick={() => openLightbox(0)}
+            style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0,}}
+          />
+          { glEditMode && <div
+            className={classes.removePhoto}
+            onClick={() => {
+              setAttachments(prev => {
+                return prev.filter(image => image.mediumSrc !== photo.mediumSrc)
+              })
             }}
           >
-            {editMode && 
-              <CloseButton
-                onClick={() => {
-                  setAttachments(prev => {
-                    return prev.filter(image => image.src !== photo.img)
-                  })
-                }}
-              />
-            }
-            {
-              !editMode && !selectMode &&
-              <div
-                style={{
-                  width: '100%',
-                  height: '100%'
-                }}
-              >
-                <Link
-                  color='primary'
-                  to={{
-                    pathname: `${location.pathname}`,
-                    search: `?photoId=${photo.id}&${place}`,
-                    state: { 
-                      lolkek: true
-                    }
-                  }}
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    bottom: 0
-                  }}
-                />
-              </div>
-            }
+            <CancelTwoToneIcon fontSize='medium' />
           </div>
+          }
+        </div>
       </div>
     )
   }
@@ -345,7 +297,7 @@ const PhotoGallery = React.memo((props) => {
                 return (
                   <>
                     <PhotoContainer
-                      img={photo.img}
+                      src={photo.mediumSrc}
                       id={photo.id}
                       height={photo.heightPercents - (allSpacings / wrapperLength)}
                       width={100} 
@@ -353,9 +305,10 @@ const PhotoGallery = React.memo((props) => {
                       allPhotos={photos.current}
                       onClose={ () => {
                         setAttachments(prev => {
-                          return prev.filter(image => image.src !== photo.img)
+                          return prev.filter(image => image.mediumSrc !== photo.mediumSrc)
                         })
                       }}
+                      onClick={() => openLightbox(photo.index)}
                     />
                     {currentPhoto < wrapperLength && <div style={{marginBottom: `${spacingHeightInWrapper}%`}}/>}
                   </>
@@ -391,18 +344,19 @@ const PhotoGallery = React.memo((props) => {
                 marginBottom: index < (wrappers.length - 1) ? `${spacing}%` : null
               }}
             >
-              {wrapper.photos.map(photo => {
+              {wrapper.photos.map((photo, index) => {
                 return (
                   <PhotoContainer
-                    img={photo.img}
+                    src={photo.mediumSrc}
                     id={photo.id}
                     height={wrapper.heightPercents}
                     width={photo.widthPercents} 
                     onClose={() => {
                       setAttachments(prev => {
-                        return prev.filter(image => image.src !== photo.img)
+                        return prev.filter(image => image.mediumSrc !== photo.mediumSrc)
                       })
                     }}
+                    onClick={() => openLightbox(photo.index)}
                     allPhotos={photos.current}
                   />
                 )
@@ -434,156 +388,22 @@ const PhotoGallery = React.memo((props) => {
   }
 
   let readyPhotos = null
-  if(photosLoaded && grid) {
-    const rows = []
-    const rowsCount = Math.ceil(gridPhotos.length / columnsCount)
-    
-    for(let i = 0; i < rowsCount; i++) {
-      rows.push({ photos: [] })
-    }
-    let currentRow = 0
-    let currentPhotoInRow = 0
-    gridPhotos.forEach(photo => {
-      if(currentPhotoInRow === columnsCount) {
-        currentRow++
-        currentPhotoInRow = 0
-      }
-      rows[currentRow].photos.push(photo)
-      currentPhotoInRow++
-    })
-    
-    const spacingsInRow = spacing * (columnsCount - 1)
-    const sp = spacingsInRow / columnsCount
-    const photoWidth = (100 / columnsCount) - sp
-
-    rows.forEach(row => {
-      if(row.photos.length < columnsCount) {
-        let difference = columnsCount - row.photos.length
-        while(difference > 0) {
-          let emptyPhoto = createPhotoObject('', 0, 0)
-          row.photos.push(emptyPhoto)
-          difference--
-        }
-      }
-    })
-
-    return (
-      <div style={{ position: 'relative'}}>
-        { rows.map(row => {
-            return (
-              <div
-                className={row}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  marginBottom: `${spacing}%`,
-                  position: 'relative'
-                }}
-              >
-                {row.photos.map((photo) => {      
-
-                  return (
-                    <div
-                      style={{
-                        width: `${photoWidth}%`,
-                        paddingTop: `${photoWidth / 1.5}%`,
-                        backgroundRepeat: 'no-repeat',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        position: 'relative',
-                        borderRadius: imageBorderRadius,
-                      }}
-                    >
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: 0,
-                          bottom: 0,
-                          right: 0,
-                          left: 0,
-                          overflow: 'hidden',
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center'
-                        }}
-                      >
-                        <Link
-                          to={{
-                            pathname: `${location.pathname}`,
-                            search: `?photoId=${photo.id}&${glPlace}`,
-                            state: { 
-                              lolkek: true
-                            }
-                          }}
-                          color='primary'
-                          style={{
-                            position: 'relative'
-                          }}
-                        >
-                          <img
-                            width={'100%'} 
-                            src={photo.img} 
-                            alt='post-attachment'
-                          />
-                        </Link>
-                      </div>
-                      { photo.img && editMode &&
-                        <CloseButton
-                          onClick={() => onRemove(photo.img)}
-                        />
-                      }
-                      {
-                        photo.checked &&
-                          <div
-                            style={{
-                              position: 'absolute',
-                              left: 0,
-                              right: 0,
-                              top: 0,
-                              bottom: 0,
-                              background: 'rgb(0, 0, 0, 0.6)'
-                            }}
-                          />
-                      }
-
-                      { photo.img && selectMode &&
-                        <SelectButton
-                          onClick={() => {
-                            if(photo.checked) {
-                              let lol = selectedPhotos.filter(photo2 => {
-                                return photo2 !== photo.img
-                              })
-                              setSelectedPhotos(lol)
-                              photo.checked = false
-                            } else {
-                              photo.checked = true
-                              setSelectedPhotos([...selectedPhotos, photo.img])
-                            }
-                            onSelect(photo.img)
-                          }}
-                          isChecked={photo.checked}
-                        />
-                      }
-                    </div>
-                  )
-                })}
-              </div>
-            )
-          })
-        }
-
-      </div>
-    )
-  } else if(photosLoaded) {
+  if(photosLoaded) {
     photos.current.forEach(photo => photo.discard())
-    const photosLength = photos.current.length
+
+    let photosWithIndex = []
+    photos.current.forEach((photo, index) => {
+      photo.index = index
+      photosWithIndex.push(photo)
+    })
+
+    const photosLength = photosWithIndex.length
 
     if(photosLength === 1) {
       readyPhotos = forOnePhoto()
     } else if(photosLength === 2) {
-      let firstPhoto = photos.current[0]
-      let secondPhoto = photos.current[1]
+      let firstPhoto = photosWithIndex[0]
+      let secondPhoto = photosWithIndex[1]
 
       let firstPhotoRatio = firstPhoto.width / firstPhoto.height
       let secondPhotoRatio = secondPhoto.width / secondPhoto.height
@@ -606,9 +426,9 @@ const PhotoGallery = React.memo((props) => {
         readyPhotos = renderVertically([[firstPhoto], [secondPhoto]])
       }
     } else if(photosLength === 3) {
-      let firstPhoto = photos.current[0]
-      let secondPhoto = photos.current[1]
-      let thirdPhoto = photos.current[2]
+      let firstPhoto = photosWithIndex[0]
+      let secondPhoto = photosWithIndex[1]
+      let thirdPhoto = photosWithIndex[2]
 
       let firstPhotoRatio = firstPhoto.width / firstPhoto.height
       let secondPhotoRatio = secondPhoto.width / secondPhoto.height
@@ -647,10 +467,10 @@ const PhotoGallery = React.memo((props) => {
         readyPhotos = renderHorizontally([[firstPhoto], [secondPhoto, thirdPhoto]])
       }
     } else if(photosLength === 4) {
-      let firstPhoto = photos.current[0]
-      let secondPhoto = photos.current[1]
-      let thirdPhoto = photos.current[2]
-      let fourthPhoto = photos.current[3]
+      let firstPhoto = photosWithIndex[0]
+      let secondPhoto = photosWithIndex[1]
+      let thirdPhoto = photosWithIndex[2]
+      let fourthPhoto = photosWithIndex[3]
 
       let otherPhotos = [secondPhoto, thirdPhoto, fourthPhoto]
       let firstPhotoRatio = firstPhoto.width / firstPhoto.height
@@ -673,11 +493,11 @@ const PhotoGallery = React.memo((props) => {
         readyPhotos = renderHorizontally([[firstPhoto], otherPhotos])
       }
     } else if (photosLength > 4 && photosLength < 9) {
-      let firstPhoto = photos.current[0]
-      let secondPhoto = photos.current[1]
+      let firstPhoto = photosWithIndex[0]
+      let secondPhoto = photosWithIndex[1]
       let otherPhotos = []
       
-      photos.current.forEach((photo, index) => {
+      photosWithIndex.forEach((photo, index) => {
         if(index > 1) otherPhotos.push(photo)
       })
 
@@ -712,45 +532,17 @@ const PhotoGallery = React.memo((props) => {
     } else if (photosLength > 8) {
     }
   }
-  return <div ref={gallery}>{readyPhotos}</div>
+  return <div ref={gallery}>
+    {readyPhotos}
+    <PhotoSlider 
+      images={preparedLargePictures}
+      visible={viewerIsOpen}
+      onClose={closeLightbox}
+      index={currentImageIndex}
+      onIndexChange={setCurrentImageIndex}
+    />
+  </div>
 })
-
-const LinkToViewer = ({id, allPhotos}) => {
-  let firstPhoto = allPhotos.filter(photo => photo.id === id)[0]
-  let photos = []
-  allPhotos.forEach(photo => photos.push({id: photo.id, src: photo.img}))
-  let location = useLocation();
-
-  return (
-    <div
-      style={{
-        width: '100%',
-        height: '100%'
-      }}
-    >
-      
-      <Link
-        to={{
-          pathname: `${location.pathname}`,
-          search: `?photoId=${firstPhoto.id}&${glPlace}`,
-          state: { 
-            lolkek: true
-          }
-        }}
-
-        color='primary'
-
-        style={{
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          top: 0,
-          bottom: 0
-        }}
-      />
-    </div>
-  )
-}
 
 const PhotoContainer = (props) => {
   let classes = useStyles()
@@ -758,7 +550,8 @@ const PhotoContainer = (props) => {
   return (
     <div
       style={{
-        backgroundImage: `url(${props.img})`,
+        position: 'relative',
+        backgroundImage: `url(${props.src})`,
         paddingTop: `${props.height}%`,
         width: `${props.width}%`,
         marginBottom: props.marginBottom,
@@ -766,8 +559,11 @@ const PhotoContainer = (props) => {
       }}
       className={classes.photoContainer}
     >
-      { glEditMode && <CloseButton onClick={props.onClose} /> }
-      { !glEditMode && !glSelectMode && <LinkToViewer id={props.id} allPhotos={props.allPhotos} /> }
+      <div onClick={props.onClick} style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0,}}></div>
+      { glEditMode && <div className={classes.removePhoto} onClick={props.onClose}>
+        <CancelTwoToneIcon fontSize='medium' />
+      </div>
+      }
     </div>
   )
 }
@@ -820,72 +616,6 @@ const CloseButton = (props) => {
     />
   )
 }
-
-const useStyles = makeStyles((theme) => ({
-  photoContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    position: 'relative',
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    borderRadius: props => props.imageBorderRadius,
-  },
-  removePhoto: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    background: theme.palette.common.halfTransparentPaper,
-    width: 24,
-    height: 24,
-    cursor: 'pointer',
-    borderRadius: 100,
-  },
-  selectPhoto: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    background: theme.palette.common.halfTransparentPaper,
-    width: 35,
-    height: 35,
-    cursor: 'pointer',
-    borderRadius: 100,
-  },
-  withTwoPhotos: {
-    borderRadius: props => props.imageBorderRadius,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    position: 'relative',
-    overflow: 'hidden'
-  },
-  columnGallery: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    position: 'relative'
-  },
-  rowGallery: {
-    width: '100%', 
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    position: 'relative'
-  },
-  columnWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    position: 'relative',
-  }, 
-  rowWrapper: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: `100%`,
-    position: 'relative'
-  }
-}));
 
 function scaleToHeight(neededHeight) {
   if(this.height > this.width) {

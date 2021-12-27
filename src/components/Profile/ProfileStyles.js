@@ -42,13 +42,12 @@ export const useStyles = makeStyles(theme => ({
   buttonsSectionMobile: {
     padding: 8,
     display: 'flex',
-    justifyContent: 'center',
-    '& > div': {
-      marginRight: 8
+    flexDirection: 'column',
+    //alignItems: 'flex-end',
+    //justifyContent: 'center',
+    '& > *': {
+      marginBottom: 8
     },
-    '& div:last-child': {
-      marginRight: 0
-    }
   },
   buttonSkeleton: {
     borderRadius: 3
@@ -65,7 +64,7 @@ export const useStyles = makeStyles(theme => ({
     marginLeft: 0,
     marginRight: 16,
     width: 150,
-    '@media (min-width: 860px)': {
+    '@media (min-width: 861px)': {
       marginLeft: 16,
       marginRight: 32,
       width: 210,
@@ -75,7 +74,7 @@ export const useStyles = makeStyles(theme => ({
   avatarContainer: {
     position: 'absolute',
     top: 0,
-    '@media (min-width: 860px)': {
+    '@media (min-width: 861px)': {
       top: -56,
     },
   },
@@ -115,7 +114,7 @@ export const useStyles = makeStyles(theme => ({
   profileBody: {
 		width: '100%',
     padding: '0',
-    '@media (min-width: 860px)': {
+    '@media (min-width: 861px)': {
       display: 'flex',
     },
     alignItems: 'flex-start',
@@ -128,7 +127,7 @@ export const useStyles = makeStyles(theme => ({
   wall: {
     flexGrow: 1,
     marginRight: 0,
-    '@media (min-width: 860px)': {
+    '@media (min-width: 861px)': {
       marginRight: 16,
     },
     width: '100%',

@@ -186,12 +186,9 @@ export let createConnection = (
       const error = e as AxiosError
       if(error.response && error.response.status === 422) {
         let responseData = error.response.data
-        console.log(responseData)
+
         if([22, 23, 24].includes(responseData.code)) {
-          let getConnectionResponse = await connectionAPI.getConnection(responseData.connection_id)
-          if(getConnectionResponse.status === 200) {
-            dispatch(actions.setConnection(getConnectionResponse.data.connection))
-          }
+          await dispatch(getConnection(responseData.connection_id))
         }
       } 
     }
@@ -205,15 +202,18 @@ export let createSubscription = (
     try {
       let response = await subscriptionAPI.createSubscription(userId)
       if(response.status === 201) {
-        let getSubscriptionResponse = await subscriptionAPI.getSubscription(response.data.id)
-        if(getSubscriptionResponse.status === 200) {
-          dispatch(actions.setSubscription(getSubscriptionResponse.data.subscription))
-        }
+        await dispatch(getSubscription(response.data.id))
       }
     }
     catch (e) {
       const error = e as AxiosError
-      console.log(error)
+      if(error.response && error.response.status === 422) {
+        let responseData = error.response.data
+        
+        if([33].includes(responseData.code)) {
+          await dispatch(getSubscription(responseData.subscription_id))
+        }
+      } 
     }
   }
 }
@@ -270,6 +270,25 @@ export let getConnection = (
       const error = e as AxiosError
       if(error.response && error.response.status === 404) {
         dispatch(actions.setConnection(null))
+      } 
+    }
+  }
+}
+
+export let getSubscription = (
+  subscriptionId: string
+): ThunkType => {
+  return async (dispatch) => {
+    try {
+      let response = await subscriptionAPI.getSubscription(subscriptionId)
+      if(response.status === 200) {
+        dispatch(actions.setSubscription(response.data.subscription))
+      }
+    }
+    catch (e) {
+      const error = e as AxiosError
+      if(error.response && error.response.status === 404) {
+        dispatch(actions.setSubscription(null))
       } 
     }
   }

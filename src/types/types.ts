@@ -171,6 +171,7 @@ export type ProfileType = {
   acceptedConnections: Array<ConnectionType>
   allAcceptedConnections: number
   postsCount: number
+  pictures: Array<ProfilePictureType>
 }
 
 export type ProfilePictureType = {
@@ -178,6 +179,11 @@ export type ProfilePictureType = {
   creator: PhotoCreatorType
   timestamp: number
   versions: PictureVersionsType
+}
+
+export type SimplePhotoType = {
+  id: string
+  src: string
 }
 
 export type PictureVersionsType = {

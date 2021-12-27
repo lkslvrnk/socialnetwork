@@ -34,10 +34,11 @@ type PropsType = {
   isOwnProfile: boolean
   currentUserId: any
   profilePhotosAlbumId: string
+  onClick: Function
 }
 
 const ProfileAvatar: FC<PropsType> = memo((props: PropsType) => {
-  const { isOwnProfile, currentUserId, profilePhotosAlbumId } = props
+  const { isOwnProfile, currentUserId, profilePhotosAlbumId, onClick } = props
   
   const picture = useSelector(getProfilePicture)
   // @ts-ignore
@@ -77,28 +78,12 @@ const ProfileAvatar: FC<PropsType> = memo((props: PropsType) => {
           horizontal: 'right',
         }}
       >
-        <div
-          style={{
-            overflow: 'hidden',
-            borderRadius: 1000
-          }}
-        >
-          <Link
-            to={{
-              pathname: `${location.pathname}`,
-              search: `?photoId=${picture && picture.id}&albumId=${profilePhotosAlbumId}`,
-              state: { 
-                lolkek: true
-              }
-            }}
-          >
-            <MaterialAvatar
-              src={ pictureSrc }
-              className={classes.avatar}
-              style={{}}
-            />
-          </Link>
-        </div>
+        <MaterialAvatar
+          src={ pictureSrc }
+          className={classes.avatar}
+          style={{cursor: 'pointer'}}
+          onClick={() => onClick()}
+        />
       </Badge>
 
       <MyAvatarEditor 
@@ -109,18 +94,5 @@ const ProfileAvatar: FC<PropsType> = memo((props: PropsType) => {
     </>
   )
 })
-
-const StyledIconButton = withStyles((theme) => ({
-  root: {
-    // background: 'rgba(255, 255, 255, 0.24)',
-    // color: '#fff',
-    height: 40,
-    width: 40,
-    // '&:hover': {
-    //   background: 'rgba(255, 255, 255, 0.32)'
-    // }
-  },
-
-}))(IconButton);
 
 export default ProfileAvatar
