@@ -23,17 +23,18 @@ import PostPage from './PostPage.js';
 import LeftNavigation from './components/LeftNavigation/LeftNavigation.js';
 import { useTranslation } from 'react-i18next';
 import './App.css'
-import Preloader from './components/Common/Preloader/Preloader.jsx';
-import Feed from './components/Feed/Feed.js';
-import Subscriptions from './components/Subscriptions/Subscriptions';
-import Search from './components/Search/Search';
-import { logOut } from './redux/auth_reducer';
+import Preloader from './components/Common/Preloader/Preloader.jsx'
+import Feed from './components/Feed/Feed.js'
+import Subscriptions from './components/Subscriptions/Subscriptions'
+import Search from './components/Search/Search'
+import { logOut } from './redux/auth_reducer'
 import { useTheme } from '@material-ui/core'
-import Profile from './components/Profile/Profile';
-import Connections from './components/Contacts/Connections';
-import Login from './components/Login/Login';
-import SignUp from './components/SignUp/SignUp';
-import Settings from './components/Settings/Settings';
+import Profile from './components/Profile/Profile'
+import Connections from './components/Contacts/Connections'
+import Login from './components/Login/Login'
+import SignUp from './components/SignUp/SignUp'
+import Settings from './components/Settings/Settings'
+import Subscribers from './components/Subscribers/Subscribers'
 
 const App: React.FC = React.memo(props => {
   const language = useSelector((state: AppStateType) => state.app.language)
@@ -50,10 +51,10 @@ const App: React.FC = React.memo(props => {
   const theme = useTheme()
 
   const matches = useMediaQuery('(max-width: 1200px)')
-  console.log(matches)
+  // console.log(matches)
   console.log(theme)
 
-  console.log(language, i18n.language)
+  // console.log(language, i18n.language)
 
   if (moment.locale() !== language) moment.locale(language)
 
@@ -144,6 +145,7 @@ const App: React.FC = React.memo(props => {
             <Switch >
               <Route exact path='/' render={() => <Feed /> } />
               <Route exact path='/i/:username/subscriptions' render={() => <Subscriptions /> } />
+              <Route exact path='/i/:username/subscribers' render={() => <Subscribers /> } />
               <Route exact path='/search' render={() => <Search /> } />
               <Route exact path='/i/:username' render={() => <Profile />} />
               <Route exact path='/i/:username/contacts' render={() => <Connections />} />

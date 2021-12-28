@@ -41,8 +41,8 @@ const NewComment = React.memo(props => {
   const [photoUploadError, setPhotoUploadError] = useState(false)
 
   const [viewerIsOpen, setViewerIsOpen] = useState(false);
-  const viewerPhotos = !!attachment ? [{src: `${imagesStorage}${attachment.src}`}] : []
-  console.log(attachment)
+  const viewerPhotos = !!attachment ? [{src: `${imagesStorage}${attachment.originalSrc}`}] : []
+  // console.log(attachment)
 
   const changeText = (e) => setText(e.target.value)
   const ref1 = useRef(null)
@@ -183,7 +183,7 @@ const NewComment = React.memo(props => {
     </div>
   )
 
-  console.log(photoUploadError)
+  // console.log(photoUploadError)
 
   let pickPhoto = (
     <div>
@@ -295,7 +295,7 @@ const NewComment = React.memo(props => {
             alt='comment-attachment'
             style={{width: '100%'}}
             src={`${imagesStorage}/${attachment.versions
-              ? attachment.versions[2] : attachment.src}`}
+              ? attachment.versions[2] : attachment.mediumSrc}`}
           />
           <div style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, cursor: 'pointer'}} onClick={() => setViewerIsOpen(true)}/>
           <div style={{position: 'absolute', top: 4, right: 4, cursor: 'pointer'}}>

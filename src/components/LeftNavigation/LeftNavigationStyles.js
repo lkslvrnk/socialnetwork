@@ -20,7 +20,7 @@ export const useStyles = makeStyles(theme => {
     //   flexShrink: 0
     // },
     leftNav: {
-      
+      position: 'fixed',
       paddingLeft: theme.spacing(1),
       display: 'grid',
       gridGap: 8,

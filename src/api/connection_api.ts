@@ -22,7 +22,7 @@ type CreateConnectionResponseType = {
 }
 
 export const connectionAPI = {
-  createConnection: (targetUserId: string, subscribe: boolean) => {
+  createConnection: (targetUserId: string, subscribe: number) => {
     return instance.post<CreateConnectionResponseType>(`connections`, {
       target_user_id: targetUserId,
       subscribe: subscribe

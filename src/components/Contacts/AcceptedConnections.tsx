@@ -47,38 +47,6 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
     tabNumber = 1
   }
 
-  useEffect(() => {
-    let observer: any = null
-
-    if(loadMoreButton.current) {
-      let options = {
-        root: null,
-        rootMargin: '30px',
-        threshold: 0.1
-      }
-      // @ts-ignore
-      let callback = function(entries: [], observer) {
-        // @ts-ignore
-        entries.forEach(entry => {
-          // @ts-ignore
-          if (entry.isIntersecting) {
-            handleLoadMoreConns()
-          }
-        })
-      };
-      // @ts-ignore
-      observer = new IntersectionObserver(callback, options);
-      observer.observe(loadMoreButton.current)
-    }
-
-    return () => {
-      if(observer) {
-        observer.disconnect() 
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connections, cursor])
-
   const handleLoadMoreConns = async () => {
     if(!moreConnsLoading && !!connections && connections.length > 0) {
       setMoreConnsLoading(true)
@@ -171,14 +139,14 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
   }
 
   return (
-    <div>
-      <Paper component='main' >
+    <main>
+      <Paper >
         { header }
         { body }
       </Paper>
       
       { cursor &&
-        <div className={classes.loadMore} ref={loadMoreButton} >{
+        <div className={classes.loadMore} >{
           tabNumber === 0
             ? (moreConnsLoading
               ? <Preloader />
@@ -195,7 +163,7 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
         }
       </div>
       }
-    </div>
+    </main>
   )
 })
 

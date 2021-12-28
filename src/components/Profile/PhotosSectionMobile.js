@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ListSubheader, Paper, useMediaQuery } from '@material-ui/core';
 import Skeleton from '@material-ui/lab/Skeleton';
 import { useStyles } from './ProfileStyles';
 import { useTranslation } from 'react-i18next';
-import { imagesStorage } from '../../api/api';
-import PhotoViewer from '../PhotoViewer/PhotoViewer';
 
 const PhotosSectionMobile = React.memo(props => {
 
@@ -57,7 +55,7 @@ const PhotosSectionMobile = React.memo(props => {
 
   return profileLoaded
     ?
-    <Paper style={{padding: 0, marginBottom: 16}} >
+    <Paper component='section' style={{padding: 0, marginBottom: 16}} >
       <ListSubheader disableSticky={true}>
         {t('Photos')}
       </ListSubheader>
@@ -84,8 +82,6 @@ const PhotosSectionMobile = React.memo(props => {
           )
         })}
       </div>
-
-
     </Paper>
     :
     mobileMediaSectionSkeleton

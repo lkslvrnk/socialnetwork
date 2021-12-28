@@ -342,9 +342,7 @@ const PostForm = props => {
               onClick={openImageExplorer}
             >
               <AddAPhotoIcon
-                color={photoUploadError
-                  ? 'error' : (editMode ? 'action' : 'disabled')
-                }
+                color={photoUploadError ? 'error' : 'action'}
               />
             </IconButton>
           </div>

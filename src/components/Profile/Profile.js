@@ -43,6 +43,10 @@ import Carousel, { Modal, ModalGateway } from "react-images";
 import ImageGallery from 'react-image-gallery';
 import { PhotoProvider, PhotoConsumer, PhotoSlider } from 'react-photo-view';
 import 'react-photo-view/dist/index.css';
+import RssFeedIcon from '@material-ui/icons/RssFeed';
+import TypographyLink from '../Common/TypographyLink.jsx';
+import SubscriptionsIcon from '@material-ui/icons/Subscriptions';
+import Info from './Info.js';
 
 const Profile = React.memo(props => {
 
@@ -73,7 +77,7 @@ const Profile = React.memo(props => {
   reversedPictures.forEach((picture) => {
     const id = picture.id
     const smallSrc = `${imagesStorage}${picture.versions.small}`
-    const largeSrc = `${imagesStorage}${picture.versions.large}`
+    // const largeSrc = `${imagesStorage}${picture.versions.large}`
     const originalSrc = `${imagesStorage}${picture.versions.original}`
     preparedSmallPictures.push({id, src: smallSrc})
     preparedLargePictures.push({
@@ -147,7 +151,8 @@ const Profile = React.memo(props => {
     ) {
       dispatch(getPosts(profile.id, 5, null, 'DESC', 2, 'DESC'))
     }
-  }, [postsLoaded, dispatch, profile, prevProfileId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile])
 
   let postsList = posts.map(post => {
     return (
@@ -305,6 +310,7 @@ const Profile = React.memo(props => {
                   ? conn.target.username : conn.initiator.username}`
 
                 return <Avatar
+                  key={conn.id}
                   component={NavLink}
                   to={contactLink} 
                   sx={{ width: 56, height: 56 }}
@@ -349,59 +355,15 @@ const Profile = React.memo(props => {
     </div>
   )
 
-  let mainInfo = [{
-      key: 0, icon: <LocationOnIcon />,
-      text: !!profile ? profile.city + ', ' + profile.country : null
-    }, 
-    {
-      key: 1, icon: <WcIcon />,
-      text: !!profile ? profile.gender : null
-    },
-    {
-      key: 2, icon: <CakeIcon />,
-      text: !!profile ? moment(profile.birthday).format("DD MMMM YYYY") : null
-    }
-  ]
-
-  const mobileInfoSection = ( mobile ?
-    <Paper
-      component='section'
-      style={{marginBottom: 16}}
-    >
-      <List
-        className={classes.mainInfoList}
-        dense={true}
-        subheader={<li />}
-      >
-        <ListSubheader disableSticky={true} >
-          {t('Brief info')}
-        </ListSubheader>
-
-        {mainInfo.map(item => {
-          
-          return (
-            <ListItem key={item.key} >
-              <ListItemIcon style={{ minWidth: 32}} >
-                {!!profile ? item.icon : <Skeleton variant="circle" width={24} height={24} /> }
-              </ListItemIcon>
-
-              <ListItemText
-                primary={ !!profile
-                  ? <Typography variant='body2' >{item.text}</Typography>
-                  : <Skeleton height={20} width={100} /> 
-                }
-              />
-            </ListItem>
-          )})}
-      </List>
-    </Paper>
-    :
-    null
-  )
+  const infoSection = <Info profile={profile} />
 
   const profileBody = (
     <section className={ classes.profileBody } >
-      { mobileInfoSection }
+      { mobile && 
+        <section style={{marginBottom: 16}}>
+          {infoSection}
+        </section>
+      }
       { mobile && preparedSmallPictures.length > 0 &&
         <PhotosSectionMobile
           handlePhotoClick={openLightbox}
@@ -464,6 +426,7 @@ const Profile = React.memo(props => {
               profile={profile}
               isOwnProfile={onOwnWall}
               currentUserId={currentUserId}
+              infoSection={infoSection}
             />
             :
             panelSkeleton

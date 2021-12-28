@@ -42,10 +42,12 @@ export const useStyles = makeStyles(theme => ({
   buttonsSectionMobile: {
     padding: 8,
     display: 'flex',
-    flexDirection: 'column',
-    //alignItems: 'flex-end',
-    //justifyContent: 'center',
+    //flexDirection: 'column',
+    // alignItems: 'center',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
     '& > *': {
+      marginRight: 8,
       marginBottom: 8
     },
   },

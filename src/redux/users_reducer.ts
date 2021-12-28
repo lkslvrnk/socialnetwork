@@ -10,8 +10,10 @@ const CLEAN = 'users/CLEAN'
 const UPDATE_CONNECTION = 'users/UPDATE-CONNECTION'
 const UPDATE_SUBSCRIPTION = 'users/UPDATE-SUBSCRIPTION'
 const ADD_USERS = 'users/ADD_USERS'
+const SET_COMPONENT_NAME = 'users/SET_COMPONENT_NAME'
 
 let initialState = {
+  componentName: null as string | null,
   users: null as Array<ProfileType> | null,
   cursor: null as string | null,
   totalCount: null as number | null
@@ -21,16 +23,23 @@ const usersReducer = (state: InitialStateType = initialState, action: ActionsTyp
   switch (action.type) {
     case CLEAN: {
       return {
+        componentName: null,
         users: null,
         cursor: null,
         totalCount: null
       }
     }
+    case SET_COMPONENT_NAME: {
+      return {...state, componentName: action.name}
+    }
     case SET_USERS: {
-      return {...state, users: action.users, totalCount: action.totalCount, cursor: action.cursor}
+      if(action.componentName === state.componentName) {
+        return {...state, users: action.users, totalCount: action.totalCount, cursor: action.cursor}
+      }
+      return {...state}
     }
     case ADD_USERS: {
-      if(state.users) {
+      if(action.componentName === state.componentName && state.users) {
         return {
           ...state,
           users: state.users.concat(action.users),
@@ -38,7 +47,7 @@ const usersReducer = (state: InitialStateType = initialState, action: ActionsTyp
           cursor: action.cursor
         }
       }
-      return state
+      return {...state}
     }
     case UPDATE_CONNECTION: {
       console.log('UPDATE_CONNECTION')
@@ -51,7 +60,7 @@ const usersReducer = (state: InitialStateType = initialState, action: ActionsTyp
           return {...state, users: [...state.users]}
         }
       }
-      return state
+      return {...state}
     }
     case UPDATE_SUBSCRIPTION: {
       if(state.users) {
@@ -63,7 +72,7 @@ const usersReducer = (state: InitialStateType = initialState, action: ActionsTyp
           return {...state, users: [...state.users]}
         }
       }
-      return state
+      return {...state}
     }
     default:
       return state
@@ -71,14 +80,17 @@ const usersReducer = (state: InitialStateType = initialState, action: ActionsTyp
 }
 
 export const actions = {
+  setComponentName: (name: string) => (
+    { type: SET_COMPONENT_NAME, name } as const
+  ),
   clean: () => (
     { type: CLEAN } as const
   ),
-  setUsers: (users: Array<ProfileType>, totalCount: number | null, cursor: string | null) => (
-    { type: SET_USERS, users, totalCount, cursor } as const
+  setUsers: (users: Array<ProfileType>, totalCount: number | null, cursor: string | null, componentName: string) => (
+    { type: SET_USERS, users, totalCount, cursor, componentName } as const
   ),
-  addUsers: (users: Array<ProfileType>, totalCount: number | null, cursor: string | null) => (
-    { type: ADD_USERS, users, totalCount, cursor } as const
+  addUsers: (users: Array<ProfileType>, totalCount: number | null, cursor: string | null, componentName: string) => (
+    { type: ADD_USERS, users, totalCount, cursor, componentName } as const
   ),
   updateConnection: (userId: string, connection: ConnectionType | null) => (
     { type: UPDATE_CONNECTION, userId, connection } as const
@@ -89,11 +101,12 @@ export const actions = {
 }
 
 export let createConnection = (
-  userId: string
+  userId: string,
+  subscribe: number
 ): ThunkType => {
   return async (dispatch) => {
     try {
-      let response = await connectionAPI.createConnection(userId, false)
+      let response = await connectionAPI.createConnection(userId, subscribe)
       if(response.status === 201) {
         let getConnectionResponse = await connectionAPI.getConnection(response.data.id)
         if(getConnectionResponse.status === 200) {
@@ -129,7 +142,7 @@ export let createConnection2 = (
     return new Promise((resolve, reject) => {
       (async () => {
         try {
-          let response = await connectionAPI.createConnection(userId, false)
+          let response = await connectionAPI.createConnection(userId, 0)
           if(response.status === 201) {
             let getConnectionResponse = await connectionAPI.getConnection(response.data.id)
             if(getConnectionResponse.status === 200) {

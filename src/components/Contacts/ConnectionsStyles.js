@@ -48,6 +48,7 @@ export const useStyles = makeStyles(theme => {
     },
     loadMore: {
       ...theme.styles.flexCenterHoriz,
+      padding: spacing2x,
       marginBottom: spacing2x,
     },
     nameAndMenu: {

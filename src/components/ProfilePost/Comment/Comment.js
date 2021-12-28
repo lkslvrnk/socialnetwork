@@ -72,7 +72,7 @@ const Comment = React.memo(props => {
   const isEditable = differenceInHours < 24
 
   const [viewerIsOpen, setViewerIsOpen] = useState(false);
-  const viewerPhotos = !!commentData.attachment ? [{src: `${imagesStorage}${commentData.attachment.src}`}] : []
+  const viewerPhotos = !!commentData.attachment ? [{src: `${imagesStorage}${commentData.attachment.originalSrc}`}] : []
 
   const onRespondToReplyClick = (comment) => {
     setReplied(comment)
@@ -312,7 +312,7 @@ const Comment = React.memo(props => {
             <img
               alt='comment-attachment'
               style={{width: '100%', cursor: 'pointer'}}
-              src={`${imagesStorage}/${commentData.attachment.src}`}
+              src={`${imagesStorage}/${commentData.attachment.mediumSrc}`}
               onClick={() => setViewerIsOpen(true)}
             />
           }

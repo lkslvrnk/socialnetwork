@@ -1,5 +1,5 @@
 import React, { useEffect, useReducer } from 'react';
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, Redirect, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
@@ -16,6 +16,9 @@ import { useStyles } from './ConnectionsStyles';
 import AcceptedConnections from './AcceptedConnections'
 import PendingConnections from './PendingConnections'
 import { profileAPI } from '../../api/profile_api'
+import { AppStateType } from '../../redux/redux_store';
+import { withRedirectToLogin } from '../../hoc/withRedirectToLogin';
+import { compose } from 'redux';
 
 export const CLEAN = 'CLEAN'
 export const SET_ACCEPTED_CONNS = 'SET-ACCEPTED-CONNS'
@@ -238,6 +241,7 @@ const Connections: React.FC = React.memo((props) => {
   const currentUserId: string | null = useSelector(getCurrentUserId)
   const currentUserUsername: string | null = useSelector(getCurrentUserUsername)
   const isOwnProfile = currentUserUsername === usernameFromParams
+  const isAuthenticated = useSelector((state: AppStateType) => state.auth.isAuth)
 
   const prevOwnerUsername = usePrevious(usernameFromParams)
 
@@ -379,7 +383,7 @@ const Connections: React.FC = React.memo((props) => {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mobile])
-
+  
   let body = null
   let mobileNavSectionName = 'Contacts'
 
@@ -459,7 +463,7 @@ const Connections: React.FC = React.memo((props) => {
   )
 
   const mobileConnectionsNav = (
-    <Paper className={classes.topNav} >
+    <Paper component='nav' className={classes.topNav} >
       <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center',}} >
         <div style={{padding: 8}}>
           <FormControl >
@@ -495,7 +499,7 @@ const Connections: React.FC = React.memo((props) => {
   )
 
   return (
-    <section style={{display: 'flex'}}>
+    <div style={{display: 'flex'}}>
 
       <main style={{ flexGrow: 1,}} >
         { mobile && mobileConnectionsNav }
@@ -522,15 +526,17 @@ const Connections: React.FC = React.memo((props) => {
                   selected={sectionNumber === 1}
                   component={NavLink} to={`/i/${usernameFromParams}/contacts?section=incoming`}
                 >
-                  <ListItemText primary={t('Connection requests')} />
+                  <ListItemText primary={t('Requests')} />
                 </ListItem>
               }
             </List>
           </Paper>
         </StickyPanel>
       </aside>
-    </section>
+    </div>
   ) 
 })
 
-export default Connections
+export default compose(
+  withRedirectToLogin
+)(Connections);

@@ -10,6 +10,7 @@ import PeopleIcon from '@material-ui/icons/People';
 import { getCurrentUserUsername } from '../../redux/auth_selectors';
 import ViewStreamIcon from '@material-ui/icons/ViewStream';
 import SubscriptionsIcon from '@material-ui/icons/Subscriptions';
+import RssFeedIcon from '@material-ui/icons/RssFeed';
 
 const LeftNavigation = React.memo( props => {
   let classes = useStyles()
@@ -24,6 +25,7 @@ const LeftNavigation = React.memo( props => {
     { to: `i/${currentUserUsername}`, name: t('My profile'), icon: HomeIcon },
     { to: `i/${currentUserUsername}/contacts`, name: t('Contacts'), icon: PeopleIcon },
     { to: `i/${currentUserUsername}/subscriptions`, name: t('Subscriptions'), icon: SubscriptionsIcon },
+    { to: `i/${currentUserUsername}/subscribers`, name: t('Subscribers'), icon: RssFeedIcon },
   ]
 
   let renderNavLinks = navLinks.map(link => {
@@ -58,11 +60,11 @@ const LeftNavigation = React.memo( props => {
     )
   })
 
-  return  <div className={classes.leftNavContainer}>
+  return  <nav className={classes.leftNavContainer}>
     <div className={classes.leftNav} >
       { isAuthenticated && renderNavLinks }
     </div>
-  </div>
+  </nav>
 
 })
 

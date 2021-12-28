@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createSubscription, deleteSubscription } from '../../redux/profile_reducer'
 import { createConnection, deleteConnection, acceptConnection } from '../../redux/profile_reducer';
-import { Button, useMediaQuery} from '@material-ui/core';
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControlLabel, useMediaQuery} from '@material-ui/core';
 import Preloader from '../Common/Preloader/Preloader.jsx';
 import MessageIcon from '@material-ui/icons/Message';
 import PersonAddIcon from '@material-ui/icons/PersonAdd';
@@ -14,6 +14,7 @@ import { useParams } from 'react-router-dom';
 import { useStyles } from './ProfileStyles';
 import { useTranslation } from 'react-i18next';
 import EditIcon from '@material-ui/icons/Edit';
+import ConnectionAction from '../Common/ConnectionAction';
 
 const Communication = React.memo(props => {
 
@@ -26,7 +27,6 @@ const Communication = React.memo(props => {
   
   const { t } = useTranslation()
 
-  const [connectionActionInProgress, setConnectionActionInProgress] = useState(false)
   const [subscriptionActionInProgress, setSubscriptionActionInProgress] = useState(false)
 
   let buttonsSectionClass = mobile
@@ -56,20 +56,28 @@ const Communication = React.memo(props => {
   const currentUserInitiatorOfConnection = connection && connection.initiator.id === currentUserId
   const ownerOfProfileInitiatorOfConnection = connection && connection.initiator.id === profile.id
 
-  const connectRequest = async () => {
-    if(!connection) {
-      return dispatch(createConnection(profile.id))
+  const onCreateConnection = (subscribe) => {
+    if(!!profile) {
+      return dispatch(createConnection(profile.id, subscribe))
     }
-    else if(!!connection && !areConnected && currentUserInitiatorOfConnection) {
+  }
+
+  const onDeleteConnection = () => {
+    if(!!connection) {
       return dispatch(deleteConnection(connection.id))
     }
-    else if(!!connection && !areConnected && ownerOfProfileInitiatorOfConnection) {
+  }
+
+  const onAcceptConnection = () => {
+    if(!!connection) {
       return dispatch(acceptConnection(connection.id))
     }
-    else if(!!connection && areConnected) {
+  }
+
+  const onRejectConnection = () => {
+    if(!!connection) {
       return dispatch(deleteConnection(connection.id))
     }
-    return null
   }
 
   const subscription = profile.subscription
@@ -82,16 +90,6 @@ const Communication = React.memo(props => {
       return dispatch(deleteSubscription(subscription.id))
     }
   }
-
-  const onConnectButtonClick = () => {
-    if(connectionActionInProgress) {
-      return
-    }
-    setConnectionActionInProgress(true)
-    connectRequest()
-      .then(() => setConnectionActionInProgress(false), () => setConnectionActionInProgress(false))
-  }
-
   const onSubscriptionButtonClick = () => {
     if(subscriptionActionInProgress) {
       return
@@ -101,23 +99,6 @@ const Communication = React.memo(props => {
       .then(() => setSubscriptionActionInProgress(false), () => setSubscriptionActionInProgress(false))
   }
 
-  let connectButtonTitle = ''
-  let tooltipTitle = ''
-
-  if(!!connection && areConnected) {
-    connectButtonTitle = t('Delete from contacts')
-  }
-  else if(Boolean(connection) && !areConnected && currentUserInitiatorOfConnection) {
-    connectButtonTitle = t('Cancel request')
-    tooltipTitle = t('You offered to set up a contact, press if you want to cancel')
-  }
-  else if(Boolean(connection) && !areConnected && ownerOfProfileInitiatorOfConnection) {
-    connectButtonTitle = t('Accept request')
-    tooltipTitle = t('You have been offered to set up a contact, press if you want to refuse')
-  }
-  else if(!Boolean(connection)) {
-    connectButtonTitle = t('Offer contact')
-  }
 
   let subscribeButtonTitle = ''
   if(!!subscription) {
@@ -138,20 +119,18 @@ const Communication = React.memo(props => {
           onClick={onSubscriptionButtonClick}
           enableProgress={subscriptionActionInProgress}
           disabled={subscriptionActionInProgress}
-          style={{width: '100%'}}
         />
 
-        <Tooltip  title={tooltipTitle} arrow>
-          <ButtonWithCircularProgress
-            variant='contained'
-            startIcon={<PersonAddIcon />}
-            children={connectButtonTitle}
-            onClick={onConnectButtonClick}
-            enableProgress={connectionActionInProgress}
-            disabled={connectionActionInProgress}
-            style={{width: '100%'}}
-          />
-        </Tooltip>
+        <ConnectionAction
+          areConnected={areConnected}
+          offerReceived={ownerOfProfileInitiatorOfConnection}
+          offerSent={currentUserInitiatorOfConnection}
+          onCreate={onCreateConnection}
+          onAccept={onAcceptConnection}
+          onReject={onRejectConnection}
+          onDelete={onDeleteConnection}
+        />
+
     </div>
   )
   

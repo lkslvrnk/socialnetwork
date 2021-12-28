@@ -36,4 +36,20 @@ export const useStyles = makeStyles(theme => ({
     color: theme.palette.text.secondary,
 
   },
+  photos: {
+    padding: theme.spacing(0, 1),
+    display: 'flex',
+    justifyContent: 'center',
+    '& > *': {
+      marginRight: theme.spacing(1),
+    },
+    "& > :last-child": {
+      marginRight: 0
+    }
+  },
+  photo: {
+    cursor: 'pointer',
+    width: 90, height: 90,
+    backgroundSize: 'cover',
+  }
 }))

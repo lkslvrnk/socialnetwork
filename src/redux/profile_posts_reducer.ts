@@ -35,6 +35,7 @@ const ADD_NEW_POST_ERROR = 'profile-posts/ADD-NEW-POST-ERROR'
 const SET_COMMENT_IS_DELETED = 'profile-posts/SET-COMMENT-IS-DELETED'
 const SET_OWNER_ID_AND_POSTS_COUNT = 'profile-posts/SET-OWNER-ID'
 const CLEAN = 'CLEAN'
+const INITIALIZE_FEED = 'INITIALIZE-FEED'
 
 let initialState = {
   ownerId: null as string | null,
@@ -47,7 +48,15 @@ let initialState = {
 
 const profilePostsReducer = (state: InitialStateType = initialState, action: any): InitialStateType => {
   switch (action.type) {
+    case INITIALIZE_FEED:{
+      console.log('INITIALIZE_FEED')
+      return {
+        ...state,
+        isFeed: true
+      }
+    }
     case CLEAN: {
+      console.log('CLEAN')
       return {
         ownerId: null,
         allCount: null,
@@ -127,13 +136,12 @@ const profilePostsReducer = (state: InitialStateType = initialState, action: any
       }
     }
     case SET_POSTS: {
-      
       let post = action.posts[0]
-      if(state.ownerId && !!post && state.ownerId === post.creator.id) {
+      if(!action.isFeed && !state.isFeed && state.ownerId && !!post && state.ownerId === post.creator.id) {
         return { ...state, areLoaded: true, posts: action.posts, cursor: action.cursor, allCount: action.count }
       }
-      else if(!state.ownerId) {
-        return { ...state, areLoaded: true, posts: action.posts, cursor: action.cursor, isFeed: true }
+      else if(action.isFeed && state.isFeed) {
+        return { ...state, areLoaded: true, posts: action.posts, cursor: action.cursor }
       }
       return state
     }
@@ -488,7 +496,7 @@ const profilePostsReducer = (state: InitialStateType = initialState, action: any
 }
 
 export const actions = {
-  setPosts: (posts: Array<PostType>, cursor: string | null, count: number | null) => ({ type: SET_POSTS, posts: posts, cursor: cursor, count: count } as const),
+  setPosts: (posts: Array<PostType>, cursor: string | null, count: number | null, isFeed: boolean) => ({ type: SET_POSTS, posts, cursor, count, isFeed } as const),
   addPosts: (posts: Array<PostType>, cursor: string | null) => ({ type: ADD_POSTS, posts: posts, cursor: cursor } as const),
   setNewPostPhoto: (photo: PhotoType) => ({ type: SET_NEW_POST_PHOTO, photo: photo } as const),
   removePost: (postId: string) => ({ type: REMOVE_POST, postId: postId } as const),
@@ -553,6 +561,9 @@ export const actions = {
   ),
   cleanProfilePosts: () => (
     {type: CLEAN} as const
+  ),
+  initializeFeed: () => (
+    {type: INITIALIZE_FEED} as const
   )
 }
 
@@ -567,13 +578,17 @@ export let cleanProfilePosts = (): ThunkType => async (dispatch) => {
   dispatch(actions.cleanProfilePosts());
 }
 
+export let initFeed = (): ThunkType => async (dispatch) => {
+  dispatch(actions.initializeFeed());
+}
+
 export let getFeedPosts = (count: number | null): ThunkType => {
   return async (dispatch) => {
     let response = await feedAPI.getFeedPosts(count, null)
 
     if(response.status === HttpStatusCode.OK) {
       const responseData = response.data
-      dispatch(actions.setPosts(responseData.items, responseData.cursor, null))
+      dispatch(actions.setPosts(responseData.items, responseData.cursor, null, true))
     }
   }
 }
@@ -601,10 +616,11 @@ export let getPosts = (
   commentsCount: number | null,
   commentsOrder: string | null
 ): ThunkType => async (dispatch) => {
+  console.log('GET POSTS')
   let response = await profileAPI.getPosts(userId, count, cursor, order, commentsCount, commentsOrder)
 
   if(response.status === 200) {
-    dispatch(actions.setPosts(response.data.items, response.data.cursor, response.data.allPostsCount));
+    dispatch(actions.setPosts(response.data.items, response.data.cursor, response.data.allPostsCount, false));
   }
   return response
 }

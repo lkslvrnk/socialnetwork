@@ -5,6 +5,7 @@ import { ConnectionType, } from '../../types/types';
 import { Avatar, Button, CircularProgress, Typography } from '@material-ui/core';
 import { imagesStorage } from '../../api/api';
 import { useStyles } from './ConnectionsStyles';
+import TypographyLink from '../Common/TypographyLink';
 
 type IncomingConnectionPropsType = {
   connection: ConnectionType
@@ -58,16 +59,14 @@ const IncomingConnection: React.FC<IncomingConnectionPropsType> = React.memo((pr
 
       <div style={{flexGrow: 1}}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <Typography component={NavLink} to={userLink} variant='body2' style={{marginBottom: 8}} >
-            <b>{ userFullName }</b>
-          </Typography>
+          <TypographyLink variant='body2' to={userLink} style={{marginBottom: 8}} children={<b>{ userFullName }</b>} />
         </div>
 
         { connection.isAccepted &&
-          <Typography variant='body2' color='textSecondary'>Пользователь у вас в контактах</Typography>
+          <Typography variant='body2' color='textSecondary'>{t('You are connected')}</Typography>
         }
         { connection.deleted &&
-          <Typography variant='body2' color='textSecondary'>'Вы отклонили запрос'</Typography>
+          <Typography variant='body2' color='textSecondary'>{t('You rejected connection')}</Typography>
         }
 
         { !connection.isAccepted && !connection.deleted &&
@@ -80,7 +79,7 @@ const IncomingConnection: React.FC<IncomingConnectionPropsType> = React.memo((pr
             </div>
 
             <div className={classes.buttonWrapper} >
-              <Button variant='contained' onClick={ onDelete } >
+              <Button variant='contained' color='secondary' onClick={ onDelete } >
                 {t('Reject')}
               </Button>
               {isDeleting && <CircularProgress size={24} className={classes.buttonProgress} />}

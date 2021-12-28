@@ -234,6 +234,7 @@ const PhotoGallery = React.memo((props) => {
             position: 'relative',
             borderRadius: imageBorderRadius,
             overflow: 'hidden',
+            cursor: 'pointer'
           }}
         >
           <div

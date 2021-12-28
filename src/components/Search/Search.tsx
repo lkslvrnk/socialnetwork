@@ -11,6 +11,8 @@ import { appAPI } from '../../api/api';
 import { actions } from '../../redux/users_reducer';
 import SearchIcon from "@material-ui/icons/Search"
 import SearchResultItem from './SearchResultItem';
+import { compose } from 'redux';
+import { withRedirectToLogin } from '../../hoc/withRedirectToLogin.js';
 
 const Search: React.FC = React.memo((props) => {
   const classes = useStyles()
@@ -30,13 +32,15 @@ const Search: React.FC = React.memo((props) => {
   const [fieldText, setFieldText] = useState(searchText)
   const [isSearching, setIsSearching] = useState(false)
 
+  const componentName = 'search'
+
   useEffect(() => {
     (async function() {
       setIsSearching(true)
       try {
         let response = await appAPI.searchUsers(searchText, 10, null)
         let data = response.data
-        dispatch(actions.setUsers(data.items, data.count, data.cursor))
+        dispatch(actions.setUsers(data.items, data.count, data.cursor, componentName))
       } catch(error) {
         console.log(error)
       } finally {
@@ -47,6 +51,7 @@ const Search: React.FC = React.memo((props) => {
   }, [textFromQuery])
 
   useEffect(() => {
+    dispatch(actions.setComponentName(componentName))
     document.title = t('Search')
     return () => {
       dispatch(actions.clean())
@@ -59,7 +64,7 @@ const Search: React.FC = React.memo((props) => {
       setMoreResultsLoading(true)
       let response = await appAPI.searchUsers(searchText, 10, cursor)
       let data = response.data
-      dispatch(actions.addUsers(data.items, data.count, data.cursor))
+      dispatch(actions.addUsers(data.items, data.count, data.cursor, componentName))
     } catch(error) {
       console.log(error)
     } finally {
@@ -141,4 +146,6 @@ const Search: React.FC = React.memo((props) => {
   </section>
 })
 
-export default Search
+export default compose(
+  withRedirectToLogin
+)(Search);

@@ -170,7 +170,7 @@ export let updateStatus = (userId: string, status: string): ThunkType => {
 
 export let createConnection = (
   userId: string,
-  subscribe: boolean
+  subscribe: number
 ): ThunkType => {
   return async (dispatch) => {
     try {

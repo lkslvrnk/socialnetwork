@@ -5,12 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { useStyles } from './FeedStyles.js'
 import { Button, Paper } from '@material-ui/core'
 import ProfilePost from '../ProfilePost/ProfilePost.js';
-import { getFeedPosts, getMoreFeedPosts, cleanProfilePosts } from '../../redux/profile_posts_reducer';
+import { getFeedPosts, getMoreFeedPosts, cleanProfilePosts, initFeed } from '../../redux/profile_posts_reducer';
 import Preloader from '../Common/Preloader/Preloader.jsx';
 import StickyPanel from '../Common/StickyPanel.js';
 import PostSkeleton from '../Common/PostSkeleton.js';
 import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress.jsx';
 import { Redirect } from 'react-router-dom'
+import { withRedirectToLogin } from '../../hoc/withRedirectToLogin.js';
+import { compose } from 'redux';
 
 const Feed = React.memo( props => {
   const classes = useStyles()
@@ -23,12 +25,9 @@ const Feed = React.memo( props => {
   const [morePostsLoading, setMorePostsLoading] = useState(false)
   const isAuthenticated = useSelector((state) => state.auth.isAuth)
 
-  if(!isAuthenticated) {
-    return <Redirect to={`/login`} />
-  }
-
   useEffect(() => {
     document.title = t('Feed')
+    dispatch(initFeed())
     dispatch(getFeedPosts(5))
     return () => dispatch(cleanProfilePosts())
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -42,7 +41,7 @@ const Feed = React.memo( props => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [morePostsLoading, loaded, cursor])
-
+  
   const panel = <aside className={classes.feedRightPanel}>
     <StickyPanel top={55}>
       <Paper style={{padding: 16, height: 100}}></Paper>
@@ -102,4 +101,6 @@ const Feed = React.memo( props => {
 
 })
 
-export default Feed
+export default compose(
+  withRedirectToLogin
+)(Feed);

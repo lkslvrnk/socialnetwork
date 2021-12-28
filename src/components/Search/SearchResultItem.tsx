@@ -9,6 +9,7 @@ import Preloader from '../Common/Preloader/Preloader.jsx';
 import { ProfileType } from '../../types/types.js';
 import { imagesStorage } from '../../api/api';
 import { acceptConnection, createConnection, deleteConnection } from '../../redux/users_reducer';
+import ConnectionAction from '../Common/ConnectionAction';
 
 type SearchResultItemType = {
   found: ProfileType
@@ -25,108 +26,35 @@ const SearchResultItem: React.FC<SearchResultItemType> = React.memo((props: Sear
   const userLink = `/i/${found.username}`
 
   const connection = found.connection
+  console.log(connection)
 
   let offerReceived = !!connection && !connection.isAccepted && connection.initiator.id === found.id
   let offerSend = !!connection && !connection.isAccepted && connection.initiator.id !== found.id
   let areConnected = !!connection && connection?.isAccepted
 
-  const [respondMenuAnchor, setRespondMenuAnchor] = useState(null)
-  const connectionButtonRef = useRef(null)
-
-  const [connectionActionInProgress, setConnectionActionInProgress] = useState(false)
-
-  async function handleCreateConnection(e: any) {
-    if(!connection) {
-      setConnectionActionInProgress(true)
-      await dispatch(createConnection(found.id))
-      setConnectionActionInProgress(false)
+  const onCreateConnection = (subscribe: number) => {
+    if(!!found) {
+      return dispatch(createConnection(found.id, subscribe))
     }
   }
 
-  async function handleRespondToConnectionRequest(e: any) {
-    setRespondMenuAnchor(e.currentTarget)
-  }
-
-  async function handleDeleteConnection(e: any) {
+  const onDeleteConnection = () => {
     if(!!connection) {
-      setConnectionActionInProgress(true)
-      await dispatch(deleteConnection(found.id, connection.id))
-      setConnectionActionInProgress(false)
-      setRespondMenuAnchor(null)
+      return dispatch(deleteConnection(found.id, connection.id))
     }
   }
 
-  async function handleAcceptConnection(e: any) {
+  const onAcceptConnection = () => {
     if(!!connection) {
-      setConnectionActionInProgress(true)
-      await dispatch(acceptConnection(found.id, connection.id))
-      setConnectionActionInProgress(false)
-      setRespondMenuAnchor(null)
+      return dispatch(acceptConnection(found.id, connection.id))
     }
   }
 
-  let connectionButtonText = t('Connect')
-  let onConnectionButtonClick = handleCreateConnection
-  if(offerReceived) {
-    onConnectionButtonClick = handleRespondToConnectionRequest
-    connectionButtonText = t('Respond')
-  } else if(offerSend) {
-    onConnectionButtonClick = handleDeleteConnection
-    connectionButtonText = t('Cancel')
-  } else if(areConnected) {
-    onConnectionButtonClick = handleDeleteConnection
-    connectionButtonText = t('Unconnect')
+  const onRejectConnection = () => {
+    if(!!connection) {
+      return dispatch(deleteConnection(found.id, connection.id))
+    }
   }
-
-  let connectionButton = (
-    <ClickAwayListener onClickAway={ () => setRespondMenuAnchor(null) } >
-      <div>
-      
-      <div style={{position: 'relative'}}>
-        <Button
-          disabled={!!respondMenuAnchor || connectionActionInProgress}
-          variant='contained'
-          onClick={onConnectionButtonClick}
-          ref={connectionButtonRef}
-        >
-          {connectionButtonText}
-        </Button>
-        { connectionActionInProgress && !offerReceived &&
-          <div style={{position: 'absolute', display: 'flex', justifyContent: 'center', alignItems: 'center', top: 0, bottom: 0, left: 0, right: 0}}>
-            <Preloader size={20} />
-          </div>
-        }
-      </div>
-
-      <Popper
-        open={!!respondMenuAnchor}
-        anchorEl={respondMenuAnchor}
-        modifiers={{
-          offset: { enabled: true, offset: '0, 5' }
-        }}
-        transition
-      >
-        <Paper style={{border: '1px solid gray'}}>
-          <MenuList dense>
-            <MenuItem disabled={connectionActionInProgress} onClick={handleAcceptConnection} disableRipple >
-              <div style={{position: 'relative'}}>
-                <Typography>Accept</Typography>
-                { connectionActionInProgress &&
-                  <div style={{position: 'absolute', display: 'flex', justifyContent: 'center', alignItems: 'center', top: 0, bottom: 0, left: 0, right: 0}}>
-                    <Preloader size={20} />
-                  </div>
-                }
-              </div>              
-            </MenuItem>
-            <MenuItem onClick={ handleDeleteConnection } disableRipple >
-              Reject
-            </MenuItem>
-          </MenuList>
-        </Paper>
-      </Popper>
-      </div>
-    </ClickAwayListener>
-  )
 
   return (
     <Paper className={ classes.result } >
@@ -151,7 +79,15 @@ const SearchResultItem: React.FC<SearchResultItemType> = React.memo((props: Sear
         </div>
       </div>
 
-      {connectionButton}
+      <ConnectionAction
+        areConnected={areConnected}
+        offerReceived={offerReceived}
+        offerSent={offerSend}
+        onCreate={onCreateConnection}
+        onAccept={onAcceptConnection}
+        onReject={onRejectConnection}
+        onDelete={onDeleteConnection}
+      />
     </Paper>
   )
 })

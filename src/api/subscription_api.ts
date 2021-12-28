@@ -15,6 +15,12 @@ type CreateSubscriptionResponseType = {
   id: string
 }
 
+type GetSubscribersResponseType = {
+  subscribers: Array<ProfileType>
+  allCount: number
+  cursor: string | null
+}
+
 type GetDeleteSubscriptionResponseType = {
   message: string
 }
@@ -32,6 +38,11 @@ export const subscriptionAPI = {
     const cursorParam = cursor ? `&cursor=${cursor}` : ''
     const countParam = count !== null ? `&count=${count}` : ''
     return instance.get<GetSubscriptionsResponseType>(`/users/${userId}/subscriptions?${countParam}${cursorParam}`)
+  },
+  getSubscribersOfUser: (userId: string, count: number | null, cursor: string | null) => {
+    const cursorParam = cursor ? `&cursor=${cursor}` : ''
+    const countParam = count !== null ? `&count=${count}` : ''
+    return instance.get<GetSubscribersResponseType>(`/users/${userId}/subscribers?${countParam}${cursorParam}`)
   },
   deleteSubscription: (subscriptionId: string) => {
     return instance.delete<GetDeleteSubscriptionResponseType>(`user-subscriptions/${subscriptionId}`)
