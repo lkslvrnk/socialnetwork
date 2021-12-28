@@ -13,6 +13,7 @@ import { subscriptionAPI } from '../../api/subscription_api';
 import { getCurrentUserUsername } from '../../redux/auth_selectors';
 import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress.jsx';
 import Subscription from './Subscription';
+import ConnectionSkeleton from '../Contacts/ConnectionSkeleton';
 
 const Subscriptions: React.FC = React.memo((props) => {
   const classes = useStyles()
@@ -97,11 +98,15 @@ const Subscriptions: React.FC = React.memo((props) => {
     return <Subscription key={subscribed.id} subscribed={subscribed} />
   })
 
+  let skeletons = [1,2,3].map(skeleton => {
+    return <Paper><ConnectionSkeleton /></Paper>
+  })
+
   return <section className={classes.subscriptions}>
     <main className={classes.subscriptionsList}>
       { !!subscriptions
         ? subscriptionsList
-        : <Preloader />
+        : <>{skeletons}</>
       }
       { !!subscriptions && !!cursor &&
         <div className={classes.loadMore} >

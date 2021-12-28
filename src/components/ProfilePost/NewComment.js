@@ -19,6 +19,7 @@ import {
   getCommentPhoto
 } from '../../redux/profile_posts_reducer'
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
+import { PhotoSlider } from 'react-photo-view'
 
 const NewComment = React.memo(props => {
 
@@ -38,6 +39,10 @@ const NewComment = React.memo(props => {
   const [commentIsEditing, setCommentIsEditing] = useState(false)
   const [error, setError] = useState("")
   const [photoUploadError, setPhotoUploadError] = useState(false)
+
+  const [viewerIsOpen, setViewerIsOpen] = useState(false);
+  const viewerPhotos = !!attachment ? [{src: `${imagesStorage}${attachment.src}`}] : []
+  console.log(attachment)
 
   const changeText = (e) => setText(e.target.value)
   const ref1 = useRef(null)
@@ -101,7 +106,7 @@ const NewComment = React.memo(props => {
     if(text.length > 200) {
       setError('Превышено количество символов')
       return
-    } else if (commentIsCreating || !text) {
+    } else if (commentIsCreating || (!text && !attachment)) {
       return
     }
     let attachmentId = attachment ? attachment.id : null
@@ -292,11 +297,19 @@ const NewComment = React.memo(props => {
             src={`${imagesStorage}/${attachment.versions
               ? attachment.versions[2] : attachment.src}`}
           />
+          <div style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, cursor: 'pointer'}} onClick={() => setViewerIsOpen(true)}/>
           <div style={{position: 'absolute', top: 4, right: 4, cursor: 'pointer'}}>
             <HighlightOffIcon onClick={() => setAttachment(null)}/>
           </div>
         </div>
       }
+
+      <PhotoSlider
+        images={viewerPhotos}
+        visible={viewerIsOpen}
+        onClose={() => setViewerIsOpen(false)}
+        index={0}
+      />
     </div>
   )
 })

@@ -9,6 +9,9 @@ export const useStyles = makeStyles(theme => {
     posts: {
       flexGrow: 1,
       marginRight: theme.spacing(2),
+      '@media (max-width: 860px)': {
+        marginRight: 0
+      },
       '& > div': {
         marginBottom: theme.spacing(2),
       },

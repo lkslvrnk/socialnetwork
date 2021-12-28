@@ -20,7 +20,7 @@ import { NavLink } from 'react-router-dom';
 import './Styles.css';
 import { useStyles } from './RightProfilePanelStyles.js';
 
-const RightProfilePanel = ({matchParams, profile, isLoading}) => {
+const RightProfilePanel = ({matchParams, profile, isLoading, onPhotoClick, pictures}) => {
   const classes = useStyles();
   const { t } = useTranslation();
 
@@ -35,11 +35,12 @@ const RightProfilePanel = ({matchParams, profile, isLoading}) => {
     {icon: <CakeIcon />, text: birthday}, 
   ]
 
-  let photos = [
-    {src: "https://is3-ssl.mzstatic.com/image/thumb/Purple113/v4/26/5c/c9/265cc9b2-2dc6-2499-9728-f1fd5c837184/source/256x256bb.jpg"},
-    {src: "https://is1-ssl.mzstatic.com/image/thumb/Purple71/v4/c8/36/9f/c8369fa9-9dbb-fbb3-1ffc-542d95e019e9/source/256x256bb.jpg"},
-    {src: "https://static-s.aa-cdn.net/img/gp/20600002404286/pRD2XG5X2KqiDoA4L1eNJFlN4_7ghS8cPiMux_wWEDVKzASYPJSsSMQ6580qan62ydRV=w300?v=1"}
-  ]
+  const preparedPhotos = []
+  for(let i = 0; i < 3; i++) {
+    if(pictures[i]) {
+      preparedPhotos.push(pictures[i])
+    }
+  }
 
   const infoSection = (
     <Paper className={classes.section} >
@@ -73,9 +74,8 @@ const RightProfilePanel = ({matchParams, profile, isLoading}) => {
     </Paper>
   )
 
-  const photosSection = (
+  const photosSection = preparedPhotos.length > 0 &&
     <Paper
-      
       id='photos-section'
       className={classes.section}
     >
@@ -88,109 +88,21 @@ const RightProfilePanel = ({matchParams, profile, isLoading}) => {
         >
           {t('Photos')}
         </ListSubheader>
-          <ImageList cols={3} gap={10} style={{padding: '0 10px'}} >
-            {photos.map(photo => (
-              <ImageListItem key={photo.src}>
-                <img
-                  src={`${photo.src}?w=164&h=164&fit=crop&auto=format`}
-                  srcSet={`${photo.src}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                  alt='preview'
-                  loading="lazy"
-                />
-              </ImageListItem>
+          <div style={{padding: `0 8px`, display: 'flex', justifyContent: 'space-between',}}>
+            {preparedPhotos.map((photo, index) => (
+              <div
+                onClick={() => onPhotoClick(index)}
+                style={{
+                  cursor: 'pointer',
+                  width: 90, height: 90,
+                  backgroundImage: `url(${photo.src})`,
+                  backgroundSize: 'cover',
+                }}
+              />
             ))}
-          </ImageList>
+          </div>
       </List>
     </Paper>
-  )
-
-  const videosSection = (
-    <Paper id='videos-section' className={classes.section} >
-      <List subheader={<li />} >
-        <ListSubheader 
-          disableSticky={true}
-        >
-          {t('Videos')}
-        </ListSubheader>
-          <ImageList cols={3} gap={10} style={{padding: '0 10px'}} >
-            {photos.map((photo) => (
-              <ImageListItem key={photo.src}>
-                <img
-                  src={`${photo.src}?w=164&h=164&fit=crop&auto=format`}
-                  srcSet={`${photo.src}?w=164&h=164&fit=crop&auto=format&dpr=2 2x`}
-                  alt='user video'
-                  loading="lazy"
-                />
-              </ImageListItem>
-            ))}
-          </ImageList>
-      </List>
-    </Paper>
-  )
-
-  const groupsSection = (
-    <Paper
-      id='groups-section'
-      className={classes.section}
-    >
-      <List
-        subheader={<li />}
-      >
-        <ListSubheader 
-          disableSticky={true}
-          id="nested-list-subheader-2"
-        >
-          {t('Groups')}
-        </ListSubheader>
-
-        <Stack
-          direction="row"
-          spacing={0.5}
-          justifyContent="center"
-          alignItems="center"
-        >
-            <Avatar component={NavLink} to={`/dialogs`} sx={{ width: 56, height: 56 }} src="https://bipbap.ru/wp-content/uploads/2019/05/86ae0b2400c92d333751c8d9a9ae68e4.png" />
-            <Avatar component={NavLink} to={`/dialogs`}sx={{ width: 56, height: 56 }} src="https://pbs.twimg.com/profile_images/378800000585198636/04dcbc783bd6487e8bbff8dcde01f389.jpeg" />
-            <Avatar component={NavLink} to={`/dialogs`}sx={{ width: 56, height: 56 }} src="https://liubavyshka.ru/_ph/114/2/403171597.jpg" />
-            <Avatar component={NavLink} to={`/dialogs`}sx={{ width: 56, height: 56 }} src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZmOKyVtbzYba6v7WGI4a7GjDQM152jAIBrA&usqp=CAU" />
-            <Avatar component={NavLink} to={`/dialogs`}sx={{ width: 56, height: 56 }} src="https://pbs.twimg.com/profile_images/378800000585198636/04dcbc783bd6487e8bbff8dcde01f389.jpeg" />
-            
-        </Stack>
-      </List>
-    </Paper>
-  )
-
-  const pagesSection = (
-    <Paper
-      id='pages-section'
-      className={classes.section}
-    >
-      <List subheader={<li />} >
-        <ListSubheader
-          component={NavLink} to={`/dialogs`}
-          disableSticky={true}
-        >
-          {t('Pages')}
-        </ListSubheader>
-        
-        <Stack
-          direction="row"
-          spacing={2}
-          justifyContent="center"
-          alignItems="center"
-        >
-            <Avatar component={NavLink} to={`/dialogs`} sx={{ width: 56, height: 56 }} src="https://liubavyshka.ru/_ph/114/2/403171597.jpg" />
-            <Avatar component={NavLink} to={`/dialogs`} sx={{ width: 56, height: 56 }} src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZmOKyVtbzYba6v7WGI4a7GjDQM152jAIBrA&usqp=CAU" />
-            <Avatar component={NavLink} to={`/dialogs`} sx={{ width: 56, height: 56 }} src="https://bipbap.ru/wp-content/uploads/2019/05/86ae0b2400c92d333751c8d9a9ae68e4.png" />
-            <Avatar component={NavLink} to={`/dialogs`} sx={{ width: 56, height: 56 }} src="https://pbs.twimg.com/profile_images/378800000585198636/04dcbc783bd6487e8bbff8dcde01f389.jpeg" />
-        </Stack>
-      </List>
-    </Paper>
-  )
-
-  if(true) {
-    
-  }
 
   return (
     <div
@@ -198,9 +110,6 @@ const RightProfilePanel = ({matchParams, profile, isLoading}) => {
     >
       { infoSection }
       { photosSection }
-      { videosSection }
-      { groupsSection }
-      { pagesSection }
 
       <footer
         style={{

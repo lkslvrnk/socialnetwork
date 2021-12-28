@@ -99,6 +99,7 @@ const RightMenu = React.memo((
       transformOrigin={{ vertical: "top", horizontal: "left" }}
       open={Boolean(anchor)}
       onClose={toggleRightMenu}
+      disableScrollLock
     >
       <div className={classes.rightMenu}>
         {renderedContent}

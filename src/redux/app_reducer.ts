@@ -13,9 +13,10 @@ const SET_APPEARANCE = 'app/SET-APPEARANCE'
 const SET_PAGE_ID = 'app/SET-PAGE-ID'
 const CLEAN_SETTINGS = 'app/CLEAN-SETTINGS'
 
-let language: string = localStorage.language || navigator.language
+let navigatorLanguage = navigator.language.split('-')[0]
+let language: string = localStorage.language || navigatorLanguage
+
 if(!localStorage.language) {
-  console.log(language)
   if(['en', 'ru', 'uk'].includes(language)) {
     localStorage.setItem('language', language)
   } else {

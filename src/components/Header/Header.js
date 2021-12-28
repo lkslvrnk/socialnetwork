@@ -221,7 +221,7 @@ const Header = React.memo(({
   )
 
   return (
-    <Grid item container>
+    <>
       <AppBar position="fixed" color="inherit" >
         <Toolbar style={{minHeight: 48, maxHeight: 48, }} >
           {isAuth ? renderUserNavigation : guestNavigation}
@@ -244,7 +244,7 @@ const Header = React.memo(({
         title={t('Exit from app')}
         text={t('You sure you want exit from app')}
       />
-    </Grid>
+    </>
   );
 })
 

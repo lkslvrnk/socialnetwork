@@ -91,7 +91,7 @@ const Feed = React.memo( props => {
             onClick={handleLoadMorePosts}
             children={t('Load more')}
             variant='contained'
-            enableProgress={true}
+            enableProgress={morePostsLoading}
             disabled={morePostsLoading}
           />
         </div>

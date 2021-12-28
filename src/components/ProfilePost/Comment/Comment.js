@@ -27,6 +27,7 @@ import {
   editCommentReaction,
   restoreComment
 } from '../../../redux/profile_posts_reducer'
+import { PhotoSlider } from 'react-photo-view';
 
 const Comment = React.memo(props => {
   const {
@@ -69,6 +70,9 @@ const Comment = React.memo(props => {
   const currentDate = Date.now()
   const differenceInHours = (((currentDate - creationDate) / 1000) /60) / 60
   const isEditable = differenceInHours < 24
+
+  const [viewerIsOpen, setViewerIsOpen] = useState(false);
+  const viewerPhotos = !!commentData.attachment ? [{src: `${imagesStorage}${commentData.attachment.src}`}] : []
 
   const onRespondToReplyClick = (comment) => {
     setReplied(comment)
@@ -307,8 +311,9 @@ const Comment = React.memo(props => {
           { commentData.attachment && 
             <img
               alt='comment-attachment'
-              style={{width: '100%'}}
+              style={{width: '100%', cursor: 'pointer'}}
               src={`${imagesStorage}/${commentData.attachment.src}`}
+              onClick={() => setViewerIsOpen(true)}
             />
           }
         </div>
@@ -526,7 +531,12 @@ const Comment = React.memo(props => {
       </div>
 
       { !isReply && repliesContainer }
-
+      <PhotoSlider
+        images={viewerPhotos}
+        visible={viewerIsOpen}
+        onClose={() => setViewerIsOpen(false)}
+        index={0}
+      />
     </div>
   </>
   )

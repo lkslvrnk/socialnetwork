@@ -11,14 +11,23 @@ export const useStyles = makeStyles((theme) => ({
   },
   reactionContainer: {
     width: 36,
-    height: 34,
+    height: 36,
     display: 'flex',
     alignItems: 'flex-end',
     justifyContent: 'center'
   },
   reactionImage: {
+    width: 30,
+    height: 30,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    overflow: 'visible',
     cursor: 'pointer',
     display: 'block',
+    '&:hover': {
+      width: 36,
+      height: 36
+    }
   },
 
 }));

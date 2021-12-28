@@ -99,7 +99,7 @@ export let logOut = (history: any): ThunkType => {
     localStorage.removeItem('pendingMessages')
     dispatch(actions.setUserData({id: null, email: null, avatar: null, expiresIn: null}, false))
     dispatch(cleanSettings())
-    history.push('/login')
+    // history.push('/login')
   }
 }
 

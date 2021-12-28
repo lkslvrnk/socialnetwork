@@ -25,8 +25,13 @@ export const useStyles = makeStyles(theme => ({
       height: 150,
       width: 150,
     },
-    border: '2px solid #343434'
+    //border: '2px solid #343434'
   },
+  editButtonRoot: {
+    borderRadius: 100,
+    background: theme.palette.background.paper,
+    border: `2px solid ${theme.palette.divider}`
+  }
 }))
 
 type PropsType = {
@@ -56,19 +61,26 @@ const ProfileAvatar: FC<PropsType> = memo((props: PropsType) => {
   let handleOpenEditor = () => {  
     if(isOwnProfile) setShowAvatarEditor(true)
   }
+
+  let handleClick = () => {
+    if(!!picture) {
+      onClick()
+    }
+  }
+
   return (
     <>
       <Badge 
         badgeContent={
           isOwnProfile ?
-            <Paper style={{borderRadius: 100}}>
+            <div className={classes.editButtonRoot}>
               <IconButton
                 size='small'
                 onClick={handleOpenEditor}
               >
                 <EditIcon />
               </IconButton>
-            </Paper>
+            </div>
             :
             null
         }
@@ -81,8 +93,8 @@ const ProfileAvatar: FC<PropsType> = memo((props: PropsType) => {
         <MaterialAvatar
           src={ pictureSrc }
           className={classes.avatar}
-          style={{cursor: 'pointer'}}
-          onClick={() => onClick()}
+          style={{cursor: !!picture ? 'pointer' : 'default'}}
+          onClick={handleClick}
         />
       </Badge>
 

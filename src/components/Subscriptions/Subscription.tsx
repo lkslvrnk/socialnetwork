@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { NavLink} from 'react-router-dom'
+import { NavLink, Redirect} from 'react-router-dom'
 import Typography from '@material-ui/core/Typography'
 import { useTranslation } from 'react-i18next';
 import { useStyles } from './SubscriptionsStyles.js'
@@ -7,8 +7,9 @@ import { Avatar, Button, Paper } from '@material-ui/core'
 import { ProfileType } from '../../types/types.js';
 import { imagesStorage } from '../../api/api';
 import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress.jsx';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { createSubscription, deleteSubscription } from '../../redux/users_reducer';
+import { AppStateType } from '../../redux/redux_store.js';
 
 type SubscriptionPropsType = {
   subscribed: ProfileType
@@ -23,12 +24,17 @@ const Subscription: React.FC<SubscriptionPropsType> = React.memo((props: Subscri
   const userPicture = subscribed.picture ? `${imagesStorage}/${subscribed.picture.versions.cropped_small}` : ''
   const userFullName = `${subscribed.firstName} ${subscribed.lastName}`
   const userLink = `/i/${subscribed.username}`
+  const isAuthenticated = useSelector((state: AppStateType) => state.auth.isAuth)
 
   const subscription = subscribed.subscription
   const subscriptionButtonText = !!subscription
     ? t('Unsubscribe') : t('Subscribe')
 
   const [isProcessing, setIsProcessing] = useState(false)
+
+  if(!isAuthenticated) {
+    return <Redirect to={`/login`} />
+  }
 
   const handleClick = async () => {
     setIsProcessing(true)

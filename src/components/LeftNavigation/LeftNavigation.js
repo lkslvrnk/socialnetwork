@@ -17,7 +17,7 @@ const LeftNavigation = React.memo( props => {
   const username = useSelector((state) => state.auth.username)
   const isAuthenticated = useSelector((state) => state.auth.isAuth)
   const { t } = useTranslation()
-  const largeIcons = useMediaQuery('(max-width: 950px)')
+  const largeIcons = useMediaQuery('(max-width: 1000px)')
 
   let navLinks = [
     { to: '', name: t('Feed'), icon: ViewStreamIcon },
@@ -58,11 +58,12 @@ const LeftNavigation = React.memo( props => {
     )
   })
 
-  return <section className={classes.leftNavContainer}>
+  return  <div className={classes.leftNavContainer}>
     <div className={classes.leftNav} >
       { isAuthenticated && renderNavLinks }
     </div>
-  </section>
+  </div>
+
 })
 
 export default LeftNavigation

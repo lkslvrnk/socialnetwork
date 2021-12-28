@@ -108,12 +108,12 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
     <>
       <Tabs value={tabNumber} aria-label="simple tabs example">
         <Tab
-          label={`${t('All contacts')} ${connectionsCount !== null ? connectionsCount : ''}`}
+          label={`${t('All contacts')} ${connectionsCount ? connectionsCount : ''}`}
           component={NavLink} to={`/i/${params.username}/contacts?section=accepted`}
         />
         { !isOwnProfile &&
         <Tab
-          label={`${t('Common contacts')} ${commonContactsCount !== null ? commonContactsCount : ''}`}
+          label={`${t('Common contacts')} ${commonContactsCount ? commonContactsCount : ''}`}
           component={NavLink} to={`/i/${params.username}/contacts?section=common`}
         />
         }
@@ -142,8 +142,8 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
           </>
         })
         : <div className={ classes.emptyList }>
-          <Typography variant='h5' >
-            { isOwnProfile ? "У вас нет контактов" : "У пользователя пока нет контактов"}
+          <Typography variant='body2' >
+            { isOwnProfile ? t("You have no contacts") : t("User has no contacts")}
           </Typography>
         </div>
       )
@@ -163,7 +163,7 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
         :
         <div className={ classes.emptyList }>
           <Typography variant='h5' >
-            { "У вас нет общих контактов" }
+            { t("There is no common contacts") }
           </Typography>
         </div>
       )

@@ -49,6 +49,8 @@ const Profile = React.memo(props => {
   const { postsLoaded, deletePost, restorePost, posts, currentUserId, profile, postsCursor, postsCount } = props
   
   const mobile = useMediaQuery('(max-width: 860px)')
+
+  const isAuthenticated = !!currentUserId
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [viewerIsOpen, setViewerIsOpen] = useState(false);
@@ -243,7 +245,7 @@ const Profile = React.memo(props => {
     </div>
   )
 
-  const communication = !isOwnProfile &&
+  const communication = !isOwnProfile && isAuthenticated &&
     <Communication
       currentUserId={currentUserId}
       profile={profile}
@@ -251,11 +253,13 @@ const Profile = React.memo(props => {
     />
 
   const profileHeader = (
-    <Paper className={classes.headerRoot} >
-
+    <Paper
+      component='section'
+      className={classes.headerRoot}
+    >
       { cover }
 
-      <section className={classes.header} >
+      <div className={classes.header} >
         <div className={classes.avatarSection}>
           <div className={classes.avatarContainer} >
             { profileLoaded ? avatar : avatarSkeleton }
@@ -265,24 +269,25 @@ const Profile = React.memo(props => {
         <div>
           <div className={ classes.name}>
             { profileLoaded
-              ? <Typography variant='h5' >{ ownerFullName }</Typography>
+              ? <>
+                <Typography variant='h4' >{profile.firstName}</Typography>
+                <Typography variant='h4' >{profile.lastName}</Typography>
+              </>
               : <Skeleton variant='text' width={250} height={40} />
             }
           </div>
 
           { profileLoaded ?
             <>
-              <Typography variant='body1' color='textSecondary' >
-                Черкассы, Украина
-              </Typography>
-
-              <Typography variant='body1' color='textSecondary' >
-                Контактов:&nbsp;
-                <NavLink
-                  style={{color: 'white', textDecoration: 'none'}}
-                  to={`/i/${profile.username}/contacts`}
-                >{profile.allAcceptedConnections}</NavLink>
-              </Typography>
+              {profile.allAcceptedConnections > 0 &&
+                <Typography variant='body1' color='textSecondary' >
+                  Контактов:&nbsp;
+                  <NavLink
+                    style={{color: 'white', textDecoration: 'none'}}
+                    to={`/i/${profile.username}/contacts`}
+                  >{profile.allAcceptedConnections}</NavLink>
+                </Typography>
+              }
             </>
             :
             <><Skeleton variant='text' width={150} height={20} />
@@ -317,7 +322,7 @@ const Profile = React.memo(props => {
             {communication}
           </>
         }
-      </section>
+      </div>
 
       { mobile &&
         <>
@@ -359,7 +364,10 @@ const Profile = React.memo(props => {
   ]
 
   const mobileInfoSection = ( mobile ?
-    <Paper style={{marginBottom: 16}} >
+    <Paper
+      component='section'
+      style={{marginBottom: 16}}
+    >
       <List
         className={classes.mainInfoList}
         dense={true}
@@ -392,7 +400,7 @@ const Profile = React.memo(props => {
   )
 
   const profileBody = (
-    <div className={ classes.profileBody } >
+    <section className={ classes.profileBody } >
       { mobileInfoSection }
       { mobile && preparedSmallPictures.length > 0 &&
         <PhotosSectionMobile
@@ -450,6 +458,8 @@ const Profile = React.memo(props => {
         <StickyPanel top={55} >
           { profileLoaded ?
             <RightProfilePanel
+              onPhotoClick={openLightbox}
+              pictures={preparedSmallPictures}
               isLoading={!Boolean(profile)}
               profile={profile}
               isOwnProfile={onOwnWall}
@@ -480,14 +490,14 @@ const Profile = React.memo(props => {
         onIndexChange={setCurrentImageIndex}
       />
 
-    </div>
+    </section>
   )
 
   return (
-    <div className={classes.profile} >
+    <main className={classes.profile} >
       { profileHeader }
       { profileBody }
-    </div>
+    </main>
   )
 })
 

@@ -11,14 +11,16 @@ export const useStyles = makeStyles(theme => {
         display: 'flex',
         justifyContent: 'center',
       },
-
+      // border: "1px solid white",
     },
     content: {
+      position: 'relative',
       minWidth: 350,
       maxWidth: 900,
-      paddingRight: theme.spacing(4),
+      paddingRight: theme.spacing(2),
       paddingBottom: theme.spacing(2),
       flexGrow: 1,
+      flexShrink: 0,
       [theme.breakpoints.down("xs")]: {
         marginLeft: 'auto',
         marginRight: 'auto',

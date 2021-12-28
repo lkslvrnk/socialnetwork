@@ -26,7 +26,8 @@ import TypographyLink from '../Common/TypographyLink.jsx'
 import {
   editPostReaction,
   deletePostReaction,
-  createPostReaction
+  createPostReaction,
+  patchPost
 } from '../../redux/profile_posts_reducer'
 
 const ProfilePost = React.memo(props => {
@@ -140,9 +141,18 @@ const ProfilePost = React.memo(props => {
     setPostMenuAnchor(null)
   }
 
-  const toggleCommenting = () => {
+  const toggleCommenting = async () => {
     setMenuDisabled(true)
     setCommentingIsToggling(true)
+    if(postData.commentingIsDisabled) {
+      await dispatch(patchPost(postData.id, 'comments_are_disabled', 0))
+      setMenuDisabled(false)
+      setCommentingIsToggling(false)
+    } else {
+      await dispatch(patchPost(postData.id, 'comments_are_disabled', 1))
+      setMenuDisabled(false)
+      setCommentingIsToggling(false)
+    }
   }
 
   const handleDelete = () => {
@@ -330,8 +340,10 @@ const ProfilePost = React.memo(props => {
                 
               />
               <MenuListItemWithProgress
-                disabled={menuDisabled} enableProgress={commentingIsToggling}
-                progressSize={32} onClick={toggleCommenting}
+                disabled={menuDisabled}
+                enableProgress={commentingIsToggling}
+                progressSize={32}
+                onClick={toggleCommenting}
               >
                 {t(postData.commentingIsDisabled
                   ? 'Enable comments' : 'Disable comments')}

@@ -9,7 +9,7 @@ import 'moment/locale/uk'
 import 'moment/locale/de'
 import moment from 'moment'
 import Button from '@material-ui/core/Button';
-import { CssBaseline, Snackbar, IconButton } from "@material-ui/core";
+import { CssBaseline, Snackbar, IconButton, useMediaQuery } from "@material-ui/core";
 import {
   createMuiTheme, responsiveFontSizes
 } from '@material-ui/core/styles';
@@ -29,12 +29,11 @@ import Subscriptions from './components/Subscriptions/Subscriptions';
 import Search from './components/Search/Search';
 import { logOut } from './redux/auth_reducer';
 import { useTheme } from '@material-ui/core'
-
-const Connections = lazy(() => import('./components/Contacts/Connections'))
-const Profile = lazy(() => import('./components/Profile/Profile.js'))
-const Login = lazy(() => import('./components/Login/Login.js'))
-const SignUp = lazy(() => import('./components/SignUp/SignUp.js'))
-const Settings = lazy(() => import('./components/Settings/Settings.js'))
+import Profile from './components/Profile/Profile';
+import Connections from './components/Contacts/Connections';
+import Login from './components/Login/Login';
+import SignUp from './components/SignUp/SignUp';
+import Settings from './components/Settings/Settings';
 
 const App: React.FC = React.memo(props => {
   const language = useSelector((state: AppStateType) => state.app.language)
@@ -49,6 +48,9 @@ const App: React.FC = React.memo(props => {
   const { t, i18n } = useTranslation()
   const history = useHistory()
   const theme = useTheme()
+
+  const matches = useMediaQuery('(max-width: 1200px)')
+  console.log(matches)
   console.log(theme)
 
   console.log(language, i18n.language)
@@ -132,8 +134,10 @@ const App: React.FC = React.memo(props => {
       <Header dialogueInfo={dialogueInfo} />
       
       <div className={classes.appBody} >
-      { isAuthenticated && <LeftNavigation /> }
+          { matches && isAuthenticated && <LeftNavigation /> }
+
         <div className={classes.content}>
+          { !matches && isAuthenticated && <LeftNavigation /> }
 
           <React.Suspense fallback={<Preloader />}>
 
@@ -141,12 +145,12 @@ const App: React.FC = React.memo(props => {
               <Route exact path='/' render={() => <Feed /> } />
               <Route exact path='/i/:username/subscriptions' render={() => <Subscriptions /> } />
               <Route exact path='/search' render={() => <Search /> } />
-              <Route exact path='/i/:username' component={Profile} />
-              <Route exact path='/i/:username/contacts' component={Connections} />
-              <Route path='/login' component={Login} />
-              <Route path='/signup' component={SignUp} />
+              <Route exact path='/i/:username' render={() => <Profile />} />
+              <Route exact path='/i/:username/contacts' render={() => <Connections />} />
+              <Route path='/login' render={() => <Login />}  />
+              <Route path='/signup' render={() => <SignUp />} />
               <Route path='/i/posts/:postId' render={() => <PostPage />} />
-              <Route path='/settings' component={Settings} />
+              <Route path='/settings' render={() => <Settings />}  />
               
               <Route component={NotFound} />
             </Switch>

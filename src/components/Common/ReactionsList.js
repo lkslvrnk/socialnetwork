@@ -10,15 +10,15 @@ const ReactionsList = React.memo(props => {
 
   const classes = useStyles();
 
-  const onReactionHover = (e) => {
-    e.target.width = 40
-    e.target.height = 40
-  }
+  // const onReactionHover = (e) => {
+  //   e.target.width = 40
+  //   e.target.height = 40
+  // }
 
-  const onReactionUnhover = (e) => {
-    e.target.width = 32
-    e.target.height = 32
-  }
+  // const onReactionUnhover = (e) => {
+  //   e.target.width = 32
+  //   e.target.height = 32
+  // }
 
   return (
     <Paper
@@ -32,13 +32,14 @@ const ReactionsList = React.memo(props => {
               className={classes.reactionContainer}
               onClick={() => onReactionClick(reaction.type)}
             >
-              <img
+              <div
                 className={classes.reactionImage}
-                onMouseEnter={onReactionHover}
-                onMouseLeave={onReactionUnhover}
-                width='36' height='36'
+                // onMouseEnter={onReactionHover}
+                // onMouseLeave={onReactionUnhover}
+                // width='32' height='32'
                 src={reaction.src}
                 alt={reaction.emotion}
+                style={{backgroundImage: `url(${reaction.src})`}}
               />
             </div>
           )
