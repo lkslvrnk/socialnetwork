@@ -7,14 +7,17 @@ export const useStyles = makeStyles((theme) => ({
     background: theme.palette.background.paper,
     borderRadius: '3em',
     padding: 4,
-    display: 'flex'
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'center'
+    //border: '1px solid white'
   },
   reactionContainer: {
     width: 36,
     height: 36,
     display: 'flex',
     alignItems: 'flex-end',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   reactionImage: {
     width: 30,
