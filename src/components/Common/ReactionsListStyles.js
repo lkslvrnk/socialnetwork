@@ -8,11 +8,14 @@ export const useStyles = makeStyles((theme) => ({
     borderRadius: '3em',
     padding: 4,
     display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'center'
-    //border: '1px solid white'
+    // flexWrap: 'wrap',
+    // justifyContent: 'center',
   },
   reactionContainer: {
+    '@media (max-width: 400px)': {
+      width: 28,
+      height: 28,
+    },
     width: 36,
     height: 36,
     display: 'flex',
@@ -30,7 +33,15 @@ export const useStyles = makeStyles((theme) => ({
     '&:hover': {
       width: 36,
       height: 36
-    }
+    },
+    '@media (max-width: 400px)': {
+      width: 22,
+      height: 22,
+      '&:hover': {
+        width: 28,
+        height: 28
+      }
+    },
   },
 
 }));
