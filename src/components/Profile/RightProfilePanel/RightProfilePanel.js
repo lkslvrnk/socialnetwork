@@ -59,7 +59,7 @@ const RightProfilePanel = ({onPhotoClick, pictures, infoSection}) => {
           textAlign: 'center'
         }}
       >
-        Privacy  · Terms  · Advertising  · Ad Choices   · Cookies  ·   · OTVAL © 2021
+        Privacy  · Terms  · Advertising  · Ad Choices   · Cookies  ·   · Social Network © 2022
       </footer>
 
     </div>

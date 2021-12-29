@@ -1,6 +1,7 @@
 import React from 'react'
 import {makeStyles} from "@material-ui/core/styles"
 import TextField from '@material-ui/core/TextField'
+import { useTranslation } from 'react-i18next'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -47,10 +48,12 @@ export const OutlinedTextInput = (
   let {input, meta: {touched, error}, ...restProps} = props
   let hasError = touched && error
 
+  const { t } = useTranslation();
+
   return (
     <TextField
       error={Boolean(hasError)}
-      helperText={hasError && error}
+      helperText={hasError && t(error)}
       {...input}
       {...restProps}
     />

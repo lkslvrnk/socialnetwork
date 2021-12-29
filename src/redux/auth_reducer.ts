@@ -4,6 +4,7 @@ import { AppStateType, InferActionsTypes } from './redux_store'
 import { ThunkAction } from 'redux-thunk'
 import HttpStatusCode from '../api/HttpStatusCode'
 import { cleanSettings, getUserSettings } from './app_reducer'
+import { AxiosError } from 'axios'
 
 const SET_USER_DATA = 'auth/SET-USER-DATA'
 const SET_PICTURE = 'auth/SET-PICTURE'
@@ -53,20 +54,31 @@ export let signUp = (
 ): ThunkType => {
   return async (dispatch: any) => {
 
-    return authAPI.signUp(email, password, repeatedPassword, firstName, lastName, username, gender, birthday, language)
-      .then(response => {
-        if(response.status === HttpStatusCode.CREATED) {
-        }
-        return response
-      }, err => {
-        if(err.response && err.response.status === 403) {
+    try {
+      await authAPI.signUp(email, password, repeatedPassword, firstName, lastName, username, gender, birthday, language)
+    } catch (e) {
+      const err = e as AxiosError
+      if(err.response) {
+        const status = err.response.status
+        if(status === HttpStatusCode.FORBIDDEN) {
           const errors = err.response.data.errors
           dispatch(stopSubmit('signup', {_error: errors}))
-        } else if(!err.response) {
-          dispatch(stopSubmit('signup', {_error: 'Error'}))
+        } else if(status === HttpStatusCode.CONFLICT) {
+          const code = err.response.data.code
+          if(code === 70) {
+            dispatch(stopSubmit('signup', {email: 'Email taken'}))
+          } else if(code === 71) {
+            dispatch(stopSubmit('signup', {nickname: 'Nickname taken'}))
+          } else if(code === 72) {
+            dispatch(stopSubmit('signup', {_error: 'Email or nickname taken'}))
+          }
         }
-        throw err
-      })
+      }
+      else {
+        dispatch(stopSubmit('signup', {_error: 'Error'}))
+      }
+      throw err
+    }
   }
 }
 

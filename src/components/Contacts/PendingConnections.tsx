@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import { ConnectionType } from '../../types/types';
@@ -8,19 +8,25 @@ import { useStyles } from './ConnectionsStyles';
 import ConnectionSkeleton from './ConnectionSkeleton';
 import IncomingConnection from './IncomingConnection';
 import OutgoingConnection from './OutgoingConnection';
+import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress';
 
 type PropsType = {
   incoming: Array<ConnectionType> | null
   outgoing: Array<ConnectionType> | null
   incomingCount: number | null
   outgoingCount: number | null
+  incomingCursor: string | null
+  outgoingCursor: string | null
   handleAccept: Function
   handleDeleteOutgoing: Function
   handleDeleteIncoming: Function
   currentUserId: string | null
+  getMoreOutgoing: Function
+  getMoreIncoming: Function
 }
 
 const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) => {
+  console.log(props)
   const {
     incoming, 
     outgoing, 
@@ -28,7 +34,11 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
     outgoingCount, 
     handleAccept,
     handleDeleteOutgoing,
-    handleDeleteIncoming
+    handleDeleteIncoming,
+    getMoreOutgoing,
+    getMoreIncoming,
+    incomingCursor,
+    outgoingCursor
   } = props
 
   const classes = useStyles();
@@ -44,6 +54,25 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
     document.title = t(tabNumber === 0 ? 'Incoming' : 'Outgoing')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabNumber])
+
+  const [incomingLoading, setIncomingLoading] = useState(false)
+  const [outgoingLoading, setOutgoingLoading] = useState(false)
+
+  const handleLoadMoreIncoming = async () => {
+    if(!incomingLoading && !!incoming && incoming.length > 0) {
+      setIncomingLoading(true)
+      await getMoreIncoming()
+      setIncomingLoading(false)
+    }
+  }
+
+  const handleLoadMoreOutgoing = async () => {
+    if(!outgoingLoading && !!outgoing && outgoing.length > 0) {
+      setOutgoingLoading(true)
+      await getMoreOutgoing()
+      setOutgoingLoading(false)
+    }
+  }
 
   const header = (
     <Tabs value={tabNumber} aria-label="simple tabs example">
@@ -109,11 +138,37 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
   }
 
   return (
-    <Paper component='main' >
-      { header }
-      <Divider />
-      { body }
-    </Paper>
+    <main>
+      <Paper>
+        { header }
+        <Divider />
+        { body }
+      </Paper>
+
+      <div className={classes.loadMore} >{
+        tabNumber === 0
+          ?
+          (incomingCursor &&
+            <ButtonWithCircularProgress
+              onClick={handleLoadMoreIncoming}
+              enableProgress={incomingLoading}
+              variant='contained'
+              children={t('Load more')}
+            />
+          )
+          : 
+          ( outgoingCursor &&
+            <ButtonWithCircularProgress
+              onClick={handleLoadMoreOutgoing}
+              enableProgress={outgoingLoading}
+              variant='contained'
+              children={t('Load more')}
+            />
+          )
+        }
+        </div>
+
+    </main>
   )
 })
 

@@ -152,8 +152,11 @@ const Header = React.memo(({
       <NavLink
         className={ classes.logo}
         to='/'
-        style={{ backgroundImage: logo }}
-      />
+      >
+        <span role='img' aria-label='logo' style={{ fontSize: '30px' }}>
+          🐮
+        </span>
+      </NavLink>
 
       {dialogueInfo.isOpen && isMobile ?
         <>             

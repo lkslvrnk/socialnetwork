@@ -115,5 +115,8 @@
     "You have no subscriptions": "У вас нет подписок",
     "You rejected connection": "Вы отклонили запрос",
     "You sure you want exit from app": "Вы уверены, что хотите вийты?",
-    "You sure you want to discard changes?": "Вы уверены, что хотите сбросить изменения?"
+    "You sure you want to discard changes?": "Вы уверены, что хотите сбросить изменения?",
+    "Incorrect email or password": "Неправильный эмейл или пароль",
+    "Email taken": "Такой эмейл уже зарегистрирован",
+    "Nickname taken": "Такой никнейм уже зарегистрирован"
 }

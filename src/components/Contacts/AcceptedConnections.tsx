@@ -9,12 +9,14 @@ import { useStyles } from './ConnectionsStyles';
 import ConnectionSkeleton from './ConnectionSkeleton';
 import AcceptedConnection from './AcceptedConnection';
 import CommonContact from './CommonContact';
+import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress';
 
 type PropsType = {
   connections: Array<ConnectionType> | null
   connectionsCount: number | null
   commonContacts: Array<ContactType> | null
   commonContactsCount: number | null
+  commonContactsCursor: string | null
   handleDelete: Function
   currentUserUsername: string | null
   isOwnProfile: boolean,
@@ -27,7 +29,7 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
   const classes = useStyles();
 
   const {
-    connections, commonContacts, connectionsCount, commonContactsCount,
+    connections, commonContacts, connectionsCount, commonContactsCount, commonContactsCursor,
     handleDelete, isOwnProfile, handleLoadMore, cursor, loadMoreCommonContacts
   } = props
 
@@ -35,7 +37,6 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
   const [moreConnsLoading, setMoreConnsLoading] = useState(false)
   const [moreCommonContactsLoading, setMoreCommonContactsLoading] = useState(false)
 
-  const loadMoreButton = useRef(null)
   const params: any = useParams()
   const location = useLocation()
 
@@ -145,24 +146,28 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
         { body }
       </Paper>
       
-      { cursor &&
-        <div className={classes.loadMore} >{
-          tabNumber === 0
-            ? (moreConnsLoading
-              ? <Preloader />
-              : <Button onClick={handleLoadMoreConns} >
-                  {t('Load more')}
-                </Button>
-            )
-            : (moreCommonContactsLoading
-              ? <Preloader />
-              : <Button onClick={handleLoadMoreCommonContacts} >
-                  {t('Load more')}
-                </Button>
-            )
+      <div className={classes.loadMore} >{
+        tabNumber === 0
+          ?
+          (cursor &&
+            <ButtonWithCircularProgress
+              onClick={handleLoadMoreConns}
+              enableProgress={moreConnsLoading}
+              variant='contained'
+              children={t('Load more')}
+            />
+          )
+          : 
+          ( commonContactsCursor &&
+            <ButtonWithCircularProgress
+              onClick={handleLoadMoreCommonContacts}
+              enableProgress={moreCommonContactsLoading}
+              variant='contained'
+              children={t('Load more')}
+            />
+          )
         }
-      </div>
-      }
+        </div>
     </main>
   )
 })

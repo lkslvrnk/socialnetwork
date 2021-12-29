@@ -19,6 +19,7 @@ import HomeIcon from '@material-ui/icons/Home'
 import PeopleIcon from '@material-ui/icons/People'
 import { useSelector } from 'react-redux'
 import { getCurrentUserUsername } from '../../../redux/auth_selectors';
+import RssFeedIcon from '@material-ui/icons/RssFeed';
 
 const useStyles = makeStyles((theme) => ({
   formControl: {},
@@ -47,6 +48,7 @@ const Drawer = React.memo((
     { to: `i/${currentUserUsername}`, name: t('My profile'), icon: HomeIcon },
     { to: `i/${currentUserUsername}/contacts`, name: t('Contacts'), icon: PeopleIcon },
     { to: `i/${currentUserUsername}/subscriptions`, name: t('Subscriptions'), icon: SubscriptionsIcon },
+    { to: `i/${currentUserUsername}/subscribers`, name: t('Subscribers'), icon: RssFeedIcon },
   ]
 
   let linksList = navLinks.map(link => {

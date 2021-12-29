@@ -17,6 +17,9 @@ export const useStyles = makeStyles(theme => {
       '& > div': {
         marginBottom: theme.spacing(2),
       },
+      '@media (max-width: 860px)': {
+        marginRight: 0,
+      },
     },
     subscription: {
       padding: theme.spacing(2),
@@ -25,6 +28,8 @@ export const useStyles = makeStyles(theme => {
     noSubscriptions: {
       flexGrow: 1,
       display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
       justifyContent: 'center',
       marginRight: 16
     },

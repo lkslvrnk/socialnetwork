@@ -12,6 +12,7 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import { useTranslation } from 'react-i18next';
 import { Redirect } from 'react-router-dom'
 import { useStyles } from './LoginStyles'
+import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress'
 
 const Login = React.memo( props => {
   let classes = useStyles()
@@ -61,14 +62,13 @@ const Login = React.memo( props => {
 let maxLength30 = maxLengthCreator(30)
 
 const LoginForm = reduxForm({form: 'login'})(
-  (props) => {
-    let error = props.error
+  ({error, isSubmitting, invalid, handleSubmit}) => {
     let classes = useStyles()
     const { t } = useTranslation();
 
     return (
-      <form onSubmit={props.handleSubmit} className={classes.form}>
-        { error && <span>{error}</span> }
+      <form onSubmit={handleSubmit} className={classes.form}>
+
         <Field
           label={t('Email')}
           type='email'
@@ -92,17 +92,19 @@ const LoginForm = reduxForm({form: 'login'})(
           autoComplete="current-password"
         />
 
-        <Button
-          disabled={props.isSubmitting}
+        <div style={{padding: 8, display: 'flex', justifyContent: 'center'}}>
+          { error && <span style={{color: 'red'}}>{t(error)}</span> }
+        </div>
+
+        <ButtonWithCircularProgress
+          disabled={invalid || isSubmitting}
           type="submit"
           variant="contained"
           fullWidth
           color='secondary'
-          
-          className={classes.submit}
-        >
-          {t('Enter')}
-        </Button>
+          children={t('Sign in')}
+          enableProgress={isSubmitting}
+        />
       </form>
     )
   }

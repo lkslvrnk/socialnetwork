@@ -12,6 +12,8 @@ import Avatar from '@material-ui/core/Avatar';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import { useTranslation } from 'react-i18next';
 import { Redirect } from 'react-router-dom'
+import TypographyLink from '../Common/TypographyLink'
+import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -57,8 +59,7 @@ const SignUp = React.memo( props => {
       .then(response => {
         setIsRegistered(true)
         setIsSubmitting(false)
-      }, err => {
-        console.log('error')
+      }, (error) => {
         setIsSubmitting(false)
       })
   }
@@ -73,7 +74,20 @@ const SignUp = React.memo( props => {
   }
 
   if(isRegistered) {
-    return <div>Вы успешно зарегистрированы</div>
+    return <div>
+      <Typography
+        component='span'
+        variant='body2'
+        children={`${t('You have successfully registered')}. `}
+      />
+
+      <TypographyLink
+        to='/login'
+        variant='body2'
+        children={t('Sign in')}
+        style={{textDecoration: 'underline'}}
+      />
+    </div>
   }
 
   return (
@@ -99,7 +113,7 @@ let maxLength30 = maxLengthCreator(30)
 let maxLength25 = maxLengthCreator(25)
 let maxLength20 = maxLengthCreator(20)
 let minLength2 = minLengthCreator(2)
-let minLength5 = minLengthCreator(5)
+let minLength3 = minLengthCreator(3)
 let minLength7 = minLengthCreator(7)
 
 const passwordsEquality = (value, rest) => {
@@ -109,7 +123,7 @@ const passwordsEquality = (value, rest) => {
 }
 
 const nicknameValidator = (value) => {
-  let exp = /^[A-Za-z][A-Za-z0-9_]{4,20}$/
+  let exp = /^[A-Za-z][A-Za-z0-9_]{2,20}$/
 
   if(value && !value.match(exp)) {
     return 'Никнейм содержит недопустимые символы'
@@ -154,14 +168,14 @@ const birthdayValidator = (value) => {
 
 const SignUpForm = reduxForm({form: 'signup'})(
   (props) => {
-    const {error, invalid} = props
-    console.log(props)
+    const {error, invalid, isSubmitting} = props
+    // console.log(props)
     let classes = useStyles()
     const { t } = useTranslation();
 
     return (
       <form onSubmit={props.handleSubmit} className={classes.form}>
-        { error && <span>{error}</span> }
+       
         <Field
           label={t('Email')}
           type='email'
@@ -170,7 +184,7 @@ const SignUpForm = reduxForm({form: 'signup'})(
           margin="normal"
           fullWidth
           required
-          autoComplete={true}
+          autoComplete='off'
         />
 
         <Field
@@ -202,11 +216,11 @@ const SignUpForm = reduxForm({form: 'signup'})(
           type='text'
           name="nickname"
           component={OutlinedTextInput}
-          validate={[required, minLength5, maxLength20, nicknameValidator]}
+          validate={[required, minLength3, maxLength20, nicknameValidator]}
           margin="normal"
           fullWidth
           required
-          autoComplete='username'
+          autoComplete='nickname'
         />
 
         <Field
@@ -246,19 +260,22 @@ const SignUpForm = reduxForm({form: 'signup'})(
           margin="normal"
           fullWidth
           required
+          autoComplete="new-password"
         />
 
-        <Button
-          disabled={invalid}
+        <div style={{padding: 8, display: 'flex', justifyContent: 'center'}}>
+          { error && <span style={{color: 'red'}}>{t(error)}</span> }
+        </div>
+
+        <ButtonWithCircularProgress
+          disabled={invalid || isSubmitting}
           type="submit"
           variant="contained"
           fullWidth
           color='secondary'
-          
-          className={classes.submit}
-        >
-          {t('Sign up')}
-        </Button>
+          children={t('Sign up')}
+          enableProgress={isSubmitting}
+        />
       </form>
     )
   }

@@ -84,9 +84,9 @@ const Subscriptions: React.FC = React.memo((props) => {
   if(!!subscriptions && !subscriptions.length) {
     return <section className={classes.subscriptions}>
       <Paper className={classes.noSubscriptions} >
-        <div style={{ fontSize: '130px' }}>
-          🐮
-        </div>
+        <span role='img' aria-label='no-subscriptions' style={{ fontSize: '130px' }}>
+          🐯
+        </span>
 
         <Typography variant='h6' >
           { isOwnSubscriptions

@@ -397,7 +397,9 @@ const Profile = React.memo(props => {
         }
         { !!profile && postsCount === 0 &&
           <Paper className={classes.noPosts} >
-            <div style={{ fontSize: '130px' }}><span role="img">🐮</span></div>
+            <span role='img' aria-label='no-posts' style={{ fontSize: '130px' }}>
+              🐱
+            </span>
             <Typography variant='h6' >
               {t('No posts yet')}
             </Typography>

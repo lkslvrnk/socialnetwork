@@ -11,12 +11,12 @@ export const useStyles = makeStyles(theme => ({
 }))
 
 const ButtonWithCircularProgress = (props) => {
-  const {enableProgress, children, progressSize = 32, progressColor = 'secondary', ...buttonProps} = props
+  const {enableProgress, children, progressSize = 32, progressColor = 'secondary', fullWidth, ...buttonProps} = props
   const classes = useStyles()
 
   return (
-    <div style={{display: 'inline-block', position: 'relative'}}>
-      <Button{...buttonProps}>
+    <div style={{width: fullWidth ? '100%' : 'auto', display: 'inline-block', position: 'relative'}}>
+      <Button fullWidth={fullWidth} {...buttonProps}>
         { children }
       </Button>
       { enableProgress &&

@@ -51,9 +51,11 @@ const Feed = React.memo( props => {
   if(loaded && posts && !posts.length) {
     return <section className={classes.root}>
       <Paper className={classes.noPosts} >
-        <div style={{ fontSize: '130px' }}>🐮</div>
+        <span role='img' aria-label='no-posts' style={{ fontSize: '130px' }}>
+          🐨
+        </span>
         <Typography variant='h6' >
-          {t('No posts yet')}
+          {t('No posts yet. Subscribe to users to see their posts')}
         </Typography>
       </Paper>
       { panel }

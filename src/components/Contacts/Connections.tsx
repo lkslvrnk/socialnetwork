@@ -22,18 +22,21 @@ import { compose } from 'redux';
 
 export const CLEAN = 'CLEAN'
 export const SET_ACCEPTED_CONNS = 'SET-ACCEPTED-CONNS'
+export const ADD_ACCEPTED_CONNS = 'ADD-ACCEPTED-CONNS'
 export const SET_INCOMING_CONNS = 'SET-INCOMING-CONNS'
+export const ADD_INCOMING_CONNS = 'ADD-INCOMING-CONNS'
 export const SET_OUTGOING_CONNS = 'SET-OUTGOING-CONNS'
+export const ADD_OUTGOING_CONNS = 'ADD-OUTGOING-CONNS'
 export const SET_COMMON_CONTACTS = 'SET-COMMON-CONTACTS'
 export const SET_ACCEPTED_CONNS_COUNT = 'SET-ACCEPTED-CONNS-COUNT'
 export const SET_INCOMING_CONNS_COUNT = 'SET-INCOMING-CONNS-COUNT'
 export const SET_OUTGOING_CONNS_COUNT = 'SET-OUTGOING-CONNS-COUNT'
-export const ADD_ACCEPTED_CONNS = 'ADD-ACCEPTED-CONNS'
 export const ACCEPT = 'ACCEPT'
 export const DELETE_OUTGOING = 'DELETE-OUTGOING'
 export const DELETE_INCOMING = 'DELETE-INCOMING'
 export const DELETE_ACCEPTED = 'DELETE-ACCEPTED'
 export const SET_OWNER = 'SET-OWNER'
+export const ADD_COMMON_CONTACTS = 'ADD-COMMON-CONTACTS'
 
 type State = {
   owner: ProfileType | null,
@@ -178,20 +181,51 @@ function reducer(state: State, action: any) {
       return {
         ...state,
         incomingConns: action.connections,
+        incomingConnsCount: action.allCount,
+        incomingCursor: action.cursor,
+      }
+    }
+    case ADD_INCOMING_CONNS: {
+      return {
+        ...state,
+        incomingConns: state.incomingConns?.concat(action.connections),
+        incomingCursor: action.cursor,
         incomingConnsCount: action.allCount
       }
     }
     case SET_OUTGOING_CONNS: {
+      console.log(action)
       return {
         ...state,
         outgoingConns: action.connections,
-        outgoingConnsCount: action.allCount
+        outgoingConnsCount: action.allCount,
+        outgoingCursor: action.cursor
       }
+    }
+    case ADD_OUTGOING_CONNS: {
+      console.log(state.outgoingConns, action)
+      if(state.outgoingConns) {
+        return {
+          ...state,
+          outgoingConns: state.outgoingConns.concat(action.connections),
+          outgoingCursor: action.cursor,
+          outgoingConnsCount: action.allCount
+        }
+      }
+      return {...state}
     }
     case SET_COMMON_CONTACTS: {
       return {
         ...state,
         commonContacts: action.contacts,
+        commonContactsCount: action.count,
+        commonContactsCursor: action.cursor,
+      }
+    }
+    case ADD_COMMON_CONTACTS: {
+      return {
+        ...state,
+        commonContacts: state.commonContacts?.concat(action.contacts),
         commonContactsCount: action.count,
         commonContactsCursor: action.cursor,
       }
@@ -253,6 +287,14 @@ const Connections: React.FC = React.memo((props) => {
     }
   }
 
+  const getMoreCommonContacts = async (cursor: string, count: number | null) => {
+    let response = await connectionAPI.getUserContacts(usernameFromParams, currentUserUsername, cursor, count)
+    if(response.status === 200) {
+      let data = response.data
+      dispatchUR({type: ADD_COMMON_CONTACTS, contacts: data.items, count: data.count, cursor: data.cursor })
+    }
+  }
+
   const getOwner = async (username: string) => {
     let response = await profileAPI.getUser(username)
     if(response.status === 200) {
@@ -260,7 +302,7 @@ const Connections: React.FC = React.memo((props) => {
     }
   }
 
-  const getAccepted2 = async (
+  const getAccepted = async (
     actionType: 'SET-ACCEPTED-CONNS' | 'ADD-ACCEPTED-CONNS',
     ownerUsername: string,
     count: number | null,
@@ -273,16 +315,52 @@ const Connections: React.FC = React.memo((props) => {
   }
 
   const getOutgoing = async () => {
-    let response = await connectionAPI.getConnectionsOfUser(usernameFromParams, 20, null, 'outgoing', true, false)
+    let response = await connectionAPI.getConnectionsOfUser(usernameFromParams, 10, null, 'outgoing', true, false)
     if(response.status === 200) {
-      dispatchUR({type: SET_OUTGOING_CONNS, connections: response.data.connections, allCount: response.data.allCount, ownerUsername: usernameFromParams })
+      let responseData = response.data
+      dispatchUR({
+        type: SET_OUTGOING_CONNS,
+        connections: responseData.connections,
+        allCount: responseData.allCount,
+        cursor: responseData.cursor
+      })
+    }
+  }
+
+  const getMoreOutgoing = async () => {
+    let response = await connectionAPI.getConnectionsOfUser(usernameFromParams, 10, stateUR.outgoingCursor, 'outgoing', true, false)
+    if(response.status === 200) {
+      let responseData = response.data
+      dispatchUR({
+        type: ADD_OUTGOING_CONNS,
+        connections: responseData.connections,
+        allCount: responseData.allCount,
+        cursor: responseData.cursor
+      })
     }
   }
 
   const getIncoming = async () => {
-    let response = await connectionAPI.getConnectionsOfUser(usernameFromParams, 20, null, 'incoming', true, false)
+    let response = await connectionAPI.getConnectionsOfUser(usernameFromParams, 10, null, 'incoming', true, false)
     if(response.status === 200) {
-      dispatchUR({type: SET_INCOMING_CONNS, connections: response.data.connections, allCount: response.data.allCount, ownerUsername: usernameFromParams })
+      dispatchUR({
+        type: SET_INCOMING_CONNS,
+        connections: response.data.connections,
+        allCount: response.data.allCount,
+        cursor: response.data.cursor
+      })
+    }
+  }
+
+  const getMoreIncoming = async () => {
+    let response = await connectionAPI.getConnectionsOfUser(usernameFromParams, 10, stateUR.incomingCursor, 'incoming', true, false)
+    if(response.status === 200) {
+      dispatchUR({
+        type: ADD_INCOMING_CONNS,
+        connections: response.data.connections,
+        allCount: response.data.allCount,
+        cursor: response.data.cursor
+      })
     }
   }
 
@@ -293,7 +371,7 @@ const Connections: React.FC = React.memo((props) => {
         getOwner(usernameFromParams)
 
         if(sectionNumber === 0) {
-          getAccepted2(SET_ACCEPTED_CONNS, usernameFromParams, 8, null)
+          getAccepted(SET_ACCEPTED_CONNS, usernameFromParams, 8, null)
           if(!isOwnProfile) {
             getCommonContacts(null, 10)
           }
@@ -319,7 +397,7 @@ const Connections: React.FC = React.memo((props) => {
         getOwner(usernameFromParams)
 
         if(sectionNumber === 0 && stateUR.acceptedConnsCount === null) {
-          getAccepted2(SET_ACCEPTED_CONNS, usernameFromParams, 7, null)
+          getAccepted(SET_ACCEPTED_CONNS, usernameFromParams, 7, null)
           if(!isOwnProfile) {
             getCommonContacts(null, 10)
           }
@@ -370,19 +448,15 @@ const Connections: React.FC = React.memo((props) => {
 
   const handleLoadMoreAccepted = async () => {
     if(stateUR.acceptedCursor) {
-      await getAccepted2(ADD_ACCEPTED_CONNS, usernameFromParams, 7, stateUR.acceptedCursor)
+      await getAccepted(ADD_ACCEPTED_CONNS, usernameFromParams, 7, stateUR.acceptedCursor)
     }
   }
 
   const handleLoadMoreCommonContacts = async () => {
     if(stateUR.commonContactsCursor) {
-      await getCommonContacts(stateUR.commonContactsCursor, 10)
+      await getMoreCommonContacts(stateUR.commonContactsCursor, 10)
     }
   }
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mobile])
   
   let body = null
   let mobileNavSectionName = 'Contacts'
@@ -394,6 +468,7 @@ const Connections: React.FC = React.memo((props) => {
         connectionsCount={ stateUR.acceptedConnsCount }
         commonContacts={ stateUR.commonContacts }
         commonContactsCount={ stateUR.commonContactsCount }
+        commonContactsCursor={ stateUR.commonContactsCursor }
         currentUserUsername={ currentUserUsername }
         handleDelete={ deleteAccepted }
         isOwnProfile={ isOwnProfile }
@@ -415,6 +490,10 @@ const Connections: React.FC = React.memo((props) => {
         handleAccept={ acceptPending }
         handleDeleteOutgoing={ deleteOutgoing }
         handleDeleteIncoming={ deleteIncoming }
+        getMoreOutgoing={getMoreOutgoing}
+        getMoreIncoming={getMoreIncoming}
+        incomingCursor={stateUR.incomingCursor}
+        outgoingCursor={stateUR.outgoingCursor}
       />
     )
   }

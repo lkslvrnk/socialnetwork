@@ -35,7 +35,6 @@ const ProfilePost = React.memo(props => {
     postData,
     onOwnWall,
     embeddedPost,
-    wallWidth,
     userIsAuthenticated,
     onDelete,
     onRestore
@@ -277,8 +276,7 @@ const ProfilePost = React.memo(props => {
         <CardMedia>
           <PhotoGallery
             passedImages={photos}
-            editMode={false} 
-            width={wallWidth} 
+            editMode={false}
             spacing={1}
           />
         </CardMedia>
