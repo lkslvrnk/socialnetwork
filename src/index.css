@@ -7,9 +7,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
 
   /*следующие свойства убирают дрыгания страницы при открытии различных окон*/
-  padding-right: 0 !important;
-  overflow-y: scroll !important;
-  overflow-x: hidden !important;
+  --padding-right: 0 !important;
+  --overflow-y: visible !important;
+  --overflow-x: hidden !important;
 }
 
 html {
