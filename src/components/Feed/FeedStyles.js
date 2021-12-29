@@ -26,6 +26,8 @@ export const useStyles = makeStyles(theme => {
       '@media (max-width: 860px)': {
         marginRight: 0
       },
+      padding: 16,
+      textAlign: 'center'
     },
     feedRightPanel: {
       '@media (max-width: 860px)': {

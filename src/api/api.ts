@@ -21,7 +21,7 @@ instance.interceptors.request.use(function (config) {
     }
     return config;
   },
-);
+)
 
 type SearchUsersResponseType = {
   items: Array<ProfileType>,

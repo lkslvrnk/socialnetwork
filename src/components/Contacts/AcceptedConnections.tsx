@@ -110,11 +110,15 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
             { index !== (connections.length - 1) && <Divider />}
           </>
         })
-        : <div className={ classes.emptyList }>
-          <Typography variant='body2' >
-            { isOwnProfile ? t("You have no contacts") : t("User has no contacts")}
+        : 
+        <Paper className={classes.emptyList} >
+          <span role='img' aria-label='no-subscriptions' style={{ fontSize: '130px' }}>
+          🦌
+          </span>
+          <Typography variant='h6' >
+          { isOwnProfile ? t("You have no contacts") : t("User has no contacts")}
           </Typography>
-        </div>
+        </Paper>
       )
     )
   }
@@ -130,11 +134,14 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
           </>
         })
         :
-        <div className={ classes.emptyList }>
-          <Typography variant='h5' >
+        <Paper className={classes.emptyList} >
+          <span role='img' aria-label='no-subscriptions' style={{ fontSize: '130px' }}>
+            🐭
+          </span>
+          <Typography variant='h6' >
             { t("There is no common contacts") }
           </Typography>
-        </div>
+        </Paper>
       )
     )
   }

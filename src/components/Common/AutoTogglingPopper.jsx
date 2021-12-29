@@ -27,7 +27,7 @@ const AutoTogglingPopper = props => {
     if(!Boolean(anchor)) {
       showTimeout.current = setTimeout(() => {
         setAnchor(target)
-      }, openTimeout ?? 200);
+      }, openTimeout | 0);
     }
   }
 
@@ -37,7 +37,7 @@ const AutoTogglingPopper = props => {
     }
     hideTimeout.current = setTimeout(() => {
       setAnchor(null)
-    }, closeTimeout ?? 200);
+    }, closeTimeout | 200);
   }
 
   return (

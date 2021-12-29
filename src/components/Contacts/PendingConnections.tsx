@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import { ConnectionType } from '../../types/types';
-import { Divider, Paper, Tab, Tabs } from '@material-ui/core';
+import { Divider, Paper, Tab, Tabs, Typography } from '@material-ui/core';
 import SimpleText from '../Common/SimpleText';
 import { useStyles } from './ConnectionsStyles';
 import ConnectionSkeleton from './ConnectionSkeleton';
@@ -114,9 +114,14 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
           { index !== (incoming.length - 1) && <Divider />}
         </>)
       :
-      <div className={ classes.emptyList }>
-        <SimpleText>{t('There are no incoming requests')}</SimpleText>
-      </div>
+      <Paper className={classes.emptyList} >
+        <span role='img' aria-label='no-subscriptions' style={{ fontSize: '130px' }}>
+          🐼
+        </span>
+        <Typography variant='h6' >
+          {t('There are no incoming requests')}
+        </Typography>
+      </Paper>
     )
   }
   else if(!!outgoing && tabNumber === 1) {
@@ -131,9 +136,14 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
             { index !== (outgoing.length - 1) && <Divider />}
           </>)
         :
-        <div className={ classes.emptyList }>
-          <SimpleText>{t('There are no outgoing requests')}</SimpleText>
-        </div>
+        <Paper className={classes.emptyList} >
+          <span role='img' aria-label='no-subscriptions' style={{ fontSize: '130px' }}>
+            🐻
+          </span>
+          <Typography variant='h6' >
+            {t('There are no outgoing requests')}
+          </Typography>
+        </Paper>
     )
   }
 

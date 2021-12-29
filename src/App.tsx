@@ -35,6 +35,7 @@ import Login from './components/Login/Login'
 import SignUp from './components/SignUp/SignUp'
 import Settings from './components/Settings/Settings'
 import Subscribers from './components/Subscribers/Subscribers'
+import { instance } from './api/api';
 
 const App: React.FC = React.memo(props => {
   const language = useSelector((state: AppStateType) => state.app.language)
@@ -59,6 +60,18 @@ const App: React.FC = React.memo(props => {
   if (moment.locale() !== language) moment.locale(language)
 
   useEffect(() => {
+    instance.interceptors.response.use(
+      response => {
+        return response
+      },
+      error => {
+        if(error.response && error.response.status === 401) {
+          dispatch(logOut(history))
+        }
+        throw error
+      }
+    );
+
     function onoffline() {
       setNetworkLost(true)
     }

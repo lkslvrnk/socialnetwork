@@ -90,7 +90,7 @@ const Subscriptions: React.FC = React.memo((props) => {
 
         <Typography variant='h6' >
           { isOwnSubscriptions
-            ? t("You have no subscriptions")
+            ? t("You have no subscriptions, use search to find users and subscribe to them")
             : t("User has no subscriptions")
           }
         </Typography>

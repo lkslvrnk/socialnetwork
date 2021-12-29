@@ -26,7 +26,6 @@ const SearchResultItem: React.FC<SearchResultItemType> = React.memo((props: Sear
   const userLink = `/i/${found.username}`
 
   const connection = found.connection
-  console.log(connection)
 
   let offerReceived = !!connection && !connection.isAccepted && connection.initiator.id === found.id
   let offerSend = !!connection && !connection.isAccepted && connection.initiator.id !== found.id
@@ -66,28 +65,27 @@ const SearchResultItem: React.FC<SearchResultItemType> = React.memo((props: Sear
       />
 
       <div style={{ flexGrow: 1 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ marginBottom: 8 }}>
           <Typography
             component={NavLink}
             to={userLink}
             variant='body2'
-            style={{ marginBottom: 8 }}
             color={ "textPrimary" }
           >
             <b>{ userFullName }</b>
           </Typography>
         </div>
+        <ConnectionAction
+          areConnected={areConnected}
+          offerReceived={offerReceived}
+          offerSent={offerSend}
+          onCreate={onCreateConnection}
+          onAccept={onAcceptConnection}
+          onReject={onRejectConnection}
+          onDelete={onDeleteConnection}
+        />
       </div>
 
-      <ConnectionAction
-        areConnected={areConnected}
-        offerReceived={offerReceived}
-        offerSent={offerSend}
-        onCreate={onCreateConnection}
-        onAccept={onAcceptConnection}
-        onReject={onRejectConnection}
-        onDelete={onDeleteConnection}
-      />
     </Paper>
   )
 })

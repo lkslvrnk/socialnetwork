@@ -33,7 +33,7 @@ module.exports = {
             prefix: '{{',
             suffix: '}}'
         },
-        removeUnusedKeys: true,
+        removeUnusedKeys: false,
     },
 
     transform: function customTransform(file, enc, done) {

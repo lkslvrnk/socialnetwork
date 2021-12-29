@@ -55,7 +55,7 @@ const Feed = React.memo( props => {
           🐨
         </span>
         <Typography variant='h6' >
-          {t('No posts yet. Subscribe to users to see their posts')}
+          {t('No posts yet, subscribe to users to see their posts')}
         </Typography>
       </Paper>
       { panel }

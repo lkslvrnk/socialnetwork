@@ -31,7 +31,12 @@ export const useStyles = makeStyles(theme => {
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      marginRight: 16
+      marginRight: 16,
+      padding: 16,
+      textAlign: 'center',
+      '@media (max-width: 860px)': {
+        marginRight: 0
+      },
     },
     avatar: {
       width: 80,

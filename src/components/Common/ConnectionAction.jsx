@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button, Checkbox, ClickAwayListener, Dialog, DialogActions, DialogContent, FormControlLabel, MenuItem, Typography } from '@material-ui/core';
 import ButtonWithCircularProgress from './ButtonWithCircularProgress';
-import PersonAddIcon from '@material-ui/icons/PersonAdd';
+// import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import { useTranslation } from 'react-i18next';
 import PopperMenu from './PopperMenu';
 
@@ -91,7 +91,6 @@ const ConnectionAction = props => {
         <div >
           <ButtonWithCircularProgress
             variant='contained'
-            startIcon={<PersonAddIcon />}
             children={buttonTitle}
             onClick={onButtonClick}
             enableProgress={inProgress}

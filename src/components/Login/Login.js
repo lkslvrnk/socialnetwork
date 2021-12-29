@@ -26,7 +26,6 @@ const Login = React.memo( props => {
     setIsSubmitting(true)
     dispatch(logIn(formData.email, formData.password))
       .then(response => {
-        console.log(response)
         setIsSubmitting(false)
       }, err => {
         setIsSubmitting(false)

@@ -270,7 +270,7 @@ const PostForm = props => {
         <div style={{ width: '100%' }}>
           <TextField
             size='small'
-            placeholder={ t('Write something') }
+            placeholder={ t('New post') }
             multiline
             fullWidth
             value={ postText }

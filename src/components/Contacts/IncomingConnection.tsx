@@ -31,7 +31,7 @@ const IncomingConnection: React.FC<IncomingConnectionPropsType> = React.memo((pr
     try {
       await handleAccept(connection)
     } catch(err) {
-      console.log('Connection не было подтверждено', err)
+      // console.log('Connection не было подтверждено', err)
     } finally {
       setIsAccepting(false)
     }
@@ -42,7 +42,7 @@ const IncomingConnection: React.FC<IncomingConnectionPropsType> = React.memo((pr
     try {
       await handleDelete(connection, 'incoming')
     } catch(err) {
-      console.log('Connection не было удалено', err)
+      //console.log('Connection deleted', err)
     } finally {
       setIsDeleting(false)
     }
