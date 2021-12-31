@@ -51,11 +51,7 @@ const App: React.FC = React.memo(props => {
   const history = useHistory()
   const theme = useTheme()
 
-  const matches = useMediaQuery('(max-width: 1200px)')
-  // console.log(matches)
-  console.log(theme)
-
-  // console.log(language, i18n.language)
+  const maxWidth1200 = useMediaQuery('(max-width: 1200px)')
 
   if (moment.locale() !== language) moment.locale(language)
 
@@ -65,8 +61,16 @@ const App: React.FC = React.memo(props => {
         return response
       },
       error => {
-        if(error.response && error.response.status === 401) {
-          dispatch(logOut(history))
+        if(error.response) {
+          const status = error.response.status
+          if(status === 401) {
+            dispatch(logOut(history))
+          }
+          else if(status === 422) { // Если токен валидный, но пользователь по ID из токена не найден
+            if(error.response.data.code === 32) {
+              dispatch(logOut(history))
+            }
+          }
         }
         throw error
       }
@@ -115,7 +119,7 @@ const App: React.FC = React.memo(props => {
     anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
     autoHideDuration={null}
     open={networkLost}
-    message={'Интернета нема'}
+    message={t('Интернета нет')}
     action={
       <React.Fragment>
         <Button color="secondary" size="small" onClick={() => {}}>
@@ -131,7 +135,7 @@ const App: React.FC = React.memo(props => {
   let networkAppearsSnackbar = <Snackbar
     anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
     open={networkAppears}
-    message={'Интернет есть!'}
+    message={t('Интернет есть!')}
     autoHideDuration={5000}
     action={
       <React.Fragment>
@@ -148,10 +152,10 @@ const App: React.FC = React.memo(props => {
       <Header dialogueInfo={dialogueInfo} />
       
       <div className={classes.appBody} >
-          { matches && isAuthenticated && <LeftNavigation /> }
+          { maxWidth1200 && isAuthenticated && <LeftNavigation /> }
 
         <div className={classes.content}>
-          { !matches && isAuthenticated && <LeftNavigation /> }
+          { !maxWidth1200 && isAuthenticated && <LeftNavigation /> }
 
           <React.Suspense fallback={<Preloader />}>
 

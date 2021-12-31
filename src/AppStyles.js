@@ -3,7 +3,7 @@ import { makeStyles } from "@material-ui/core/styles";
 export const useStyles = makeStyles(theme => {
   return {
     appContainer: {
-      minWidth: 350,
+      minWidth: 300,
     },
     appBody: {
       marginTop: 64,
@@ -15,12 +15,12 @@ export const useStyles = makeStyles(theme => {
     },
     content: {
       position: 'relative',
-      minWidth: 350,
+      minWidth: 300,
       maxWidth: 900,
       paddingRight: theme.spacing(2),
       paddingBottom: theme.spacing(2),
       flexGrow: 1,
-      flexShrink: 0,
+      flexShrink: 1,
       [theme.breakpoints.down("xs")]: {
         marginLeft: 'auto',
         marginRight: 'auto',

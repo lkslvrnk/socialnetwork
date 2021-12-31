@@ -30,8 +30,6 @@ const MyAvatarEditor = props => {
   const matches = useMediaQuery(theme.breakpoints.down('xs'));
   const [isUpdating, setIsUpdating] = useState(false)
 
-  console.log(matches)
-
   // function dataURItoBlob (dataURI) {
   //   var byteString;
   //   if (dataURI.split(',')[0].indexOf('base64') >= 0) {
@@ -152,7 +150,15 @@ const MyAvatarEditor = props => {
             <IconButton size="small" onClick={onPlus} children={<AddIcon />} />
           </div>
         }
-        {!selectedImage && <Input type='file' accept="image/png, image/jpeg" onChange={profileImageChange}/>}
+        {!selectedImage
+          && 
+          // <Input type='file' accept="image/png, image/jpeg" onChange={profileImageChange}/>
+          <input
+            accept='image/jpeg,image/png'
+            type='file'
+            onChange={profileImageChange}
+          />
+        }
       </DialogContent>
       <DialogActions>
       {selectedImage && 

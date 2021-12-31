@@ -4,7 +4,7 @@ import Typography from '@material-ui/core/Typography'
 import {useDispatch, useSelector} from 'react-redux'
 import { useTranslation } from 'react-i18next';
 import { useStyles } from './SubscribersStyles.js'
-import { List, ListItem, ListItemText, Paper } from '@material-ui/core'
+import { Paper } from '@material-ui/core'
 import StickyPanel from '../Common/StickyPanel.js';
 import { AppStateType } from '../../redux/redux_store.js';
 import { actions } from '../../redux/users_reducer';
@@ -15,6 +15,10 @@ import Subscriber from './Subscriber';
 import ConnectionSkeleton from '../Contacts/ConnectionSkeleton';
 import { withRedirectToLogin } from '../../hoc/withRedirectToLogin.js';
 import { compose } from 'redux';
+import { profileAPI } from '../../api/profile_api';
+import { ProfileType } from '../../types/types.js';
+import ProfileNotFound from '../Common/ProfileNotFound.js';
+import { usePrevious } from '../../hooks/hooks.js';
 
 const Subscriptions: React.FC = React.memo((props) => {
   const classes = useStyles()
@@ -22,33 +26,81 @@ const Subscriptions: React.FC = React.memo((props) => {
   const dispatch = useDispatch()
   const subscribers = useSelector((state: AppStateType) => state.users.users)
   const cursor = useSelector((state: AppStateType) => state.users.cursor)
+  const totalCount = useSelector((state: AppStateType) => state.users.totalCount)
+
+  const [profile, setProfile] = useState<ProfileType|null>(null)
+  const [profileLoaded, setProfileLoaded] = useState(false)
 
   const [moreSubscribersLoading, setMoreSubscribesLoading] = useState(false)
   const params: any = useParams()
 
   const usernameFromParams = params.username
+  const previousUsernameFromParams = usePrevious(usernameFromParams)
   const currentUserUsername: string | null = useSelector(getCurrentUserUsername)
   const isOwnSubscriptions = currentUserUsername === usernameFromParams
 
   const componentName = 'subscriptions'
 
+  function getUser() {
+    profileAPI.getUser(usernameFromParams)
+      .then(
+        (response) => {
+          if(response.status === 200) {
+            setProfile(response.data)
+            setProfileLoaded(true)
+          }
+        },
+        error => {
+          if(error.response) {
+            if(error.response.status === 404) {
+              setProfileLoaded(true)
+            }
+          }
+        }
+      )
+  }
+
   useEffect(() => {
-    (async function() {
-      dispatch(actions.setComponentName(componentName))
-      try {
-        let response = await subscriptionAPI.getSubscribersOfUser(params.username, 10, null)
-        let data = response.data
-        dispatch(actions.setUsers(data.subscribers, data.allCount, data.cursor, componentName))
-      } catch(error) {
-        console.log(error)
-      }
-    })()
+    getUser()
     document.title = t('Subscribers')
-    return () => {
-      (function() { dispatch(actions.clean()) })()
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    if(profileLoaded && !!profile) {
+      (async function() {
+        dispatch(actions.setComponentName(componentName))
+        try {
+          let response = await subscriptionAPI.getSubscribersOfUser(params.username, 10, null)
+          let data = response.data
+          dispatch(actions.setUsers(data.subscribers, data.allCount, data.cursor, componentName))
+        } catch(error) {
+          console.log(error)
+        }
+      })()
+      return () => {
+        (function() { dispatch(actions.clean()) })()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileLoaded])
+
+  useEffect(() => {
+    (async function() {
+      if(previousUsernameFromParams !== undefined && usernameFromParams !== previousUsernameFromParams) {
+        console.log('username changed')
+        setProfile(null)
+        setProfileLoaded(false)
+        dispatch(actions.clean())
+        getUser()
+      }
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usernameFromParams])
+
+  if(profileLoaded && !profile) {
+    return <ProfileNotFound />
+  }
 
   const handleLoadMoreSubscribers = async () => {
     if(!moreSubscribersLoading && cursor) {
@@ -103,6 +155,20 @@ const Subscriptions: React.FC = React.memo((props) => {
 
   return <section className={classes.subscriptions}>
     <main className={classes.subscriptionsList}>
+      <Paper style={{padding: 16}}>
+        { profileLoaded ?
+          <Typography variant='body2' >
+            <b>
+            {isOwnSubscriptions
+              ? `${t('My subscribers')} ${totalCount ? `(${totalCount})` : ''}`
+              : !!profile && `${t('Subscribers of')} ${profile.firstName} ${profile.lastName} ${totalCount ? `(${totalCount})` : ''}`
+            }
+            </b>
+          </Typography>
+          :
+          ' '
+        }
+      </Paper>
       { !!subscribers
         ? subscribersList
         : <>{skeletons}</>

@@ -20,7 +20,7 @@ import {
 
 const PostForm = props => {
   const { onSubmit, editMode, setEditMode, text, currentAttachments, commentingIsDisabled, isPublic, onEditFinish, editingPostId} = props
-  
+  // console.log(currentAttachments)
   const openImageExplorer = () => {
     photoInput.current.click()
   }
@@ -42,6 +42,8 @@ const PostForm = props => {
   const [disableComments, setDisableComments] = useState(editMode ? commentingIsDisabled : false)
   const [error, setError] = useState('')
   const [photoUploadError, setPhotoUploadError] = useState(false)
+
+  //console.log(attachments)
 
   let handleImageUpload = async (event) => {
     const files = event.target.files
@@ -101,7 +103,7 @@ const PostForm = props => {
         }
       }
       catch(err) {
-        console.log(err)
+        // console.log(err)
       } 
     }
   }
@@ -113,6 +115,7 @@ const PostForm = props => {
     setIsSubmitting(true)
     setPhotoUploadError(false)
     let preparedAttachments = attachments.map(attachment => attachment.id)
+    // console.log(preparedAttachments)
 
     if(editMode) {
       try {
@@ -270,7 +273,7 @@ const PostForm = props => {
         <div style={{ width: '100%' }}>
           <TextField
             size='small'
-            placeholder={ t('New post') }
+            placeholder={ editMode ? '' : t('New post') }
             multiline
             fullWidth
             value={ postText }

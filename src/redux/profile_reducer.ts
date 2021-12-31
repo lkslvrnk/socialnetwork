@@ -18,8 +18,8 @@ const ACCEPT_CONNECTION = 'profile/ACCEPT-CONNECTION'
 const SET_SUBSCRIPTION = 'profile/SET-SUBSCRIPTION'
 
 let initialState = {
-  profileExists: null,
-  profile: undefined as ProfileType | null | undefined,
+  profile: null as ProfileType | null,
+  profileLoaded: false,
   posts: [] as Array<PostType>,
   postsLoaded: false,
   postsCursor: null as string | null,
@@ -55,7 +55,7 @@ const profileReducer = (state: InitialStateType = initialState, action: ActionsT
       return {...state}
     }
     case SET_USER_PROFILE: {
-      return { ...state, profile: action.profile }
+      return { ...state, profile: action.profile, profileLoaded: true }
     }
     case SET_STATUS: {
       return { 
@@ -64,7 +64,7 @@ const profileReducer = (state: InitialStateType = initialState, action: ActionsT
       }
     }
     case CLEAN_PROFILE: {
-      return { ...state, postsLoaded: false, posts: [], profile: undefined }
+      return { ...state, profileLoaded: false, postsLoaded: false, posts: [], profile: null }
     }
     default:
       return state

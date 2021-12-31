@@ -49,14 +49,12 @@ let initialState = {
 const profilePostsReducer = (state: InitialStateType = initialState, action: any): InitialStateType => {
   switch (action.type) {
     case INITIALIZE_FEED:{
-      console.log('INITIALIZE_FEED')
       return {
         ...state,
         isFeed: true
       }
     }
     case CLEAN: {
-      console.log('CLEAN')
       return {
         ownerId: null,
         allCount: null,
@@ -602,7 +600,7 @@ export let getMoreFeedPosts = (count: number | null, cursor: string): ThunkType 
       }
       return response
     } catch (err) {
-      console.log(err)
+      // console.log(err)
     }
 
   }
@@ -616,7 +614,7 @@ export let getPosts = (
   commentsCount: number | null,
   commentsOrder: string | null
 ): ThunkType => async (dispatch) => {
-  console.log('GET POSTS')
+  // console.log('GET POSTS')
   let response = await profileAPI.getPosts(userId, count, cursor, order, commentsCount, commentsOrder)
 
   if(response.status === 200) {
@@ -750,7 +748,7 @@ export let getReplies = (
     }
   } catch(e) {
     const error = e as AxiosError
-    console.log(error)
+    // console.log(error)
   }
 }
 

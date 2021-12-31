@@ -50,7 +50,7 @@ import Info from './Info.js';
 
 const Profile = React.memo(props => {
 
-  const { postsLoaded, deletePost, restorePost, posts, currentUserId, profile, postsCursor, postsCount } = props
+  const { postsLoaded, deletePost, restorePost, posts, currentUserId, profile, profileLoaded, postsCursor, postsCount } = props
   
   const mobile = useMediaQuery('(max-width: 860px)')
 
@@ -58,6 +58,15 @@ const Profile = React.memo(props => {
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [viewerIsOpen, setViewerIsOpen] = useState(false);
+
+  const params = useParams()
+  const dispatch = useDispatch()
+  const classes = useStyles()
+  const { t } = useTranslation()
+  let wall = React.useRef(null)
+  const [morePostsLoading, setMorePostsLoading] = useState(false)
+
+  const usernameFromUrl = params.username
 
   const openLightbox = (index) => {
     setCurrentImageIndex(index);
@@ -68,54 +77,6 @@ const Profile = React.memo(props => {
     setCurrentImageIndex(0);
     setViewerIsOpen(false);
   };
-
-  const reversedPictures = profile ? [...profile.pictures].reverse() : []
-
-  const preparedSmallPictures = []
-  const preparedLargePictures = []
-  
-  reversedPictures.forEach((picture) => {
-    const id = picture.id
-    const smallSrc = `${imagesStorage}${picture.versions.small}`
-    // const largeSrc = `${imagesStorage}${picture.versions.large}`
-    const originalSrc = `${imagesStorage}${picture.versions.original}`
-    preparedSmallPictures.push({id, src: smallSrc})
-    preparedLargePictures.push({
-      id,
-      src: originalSrc
-    })
-  })
-
-  const onAvatarClick = () => {
-    openLightbox(0)
-  }
-  
-  const params = useParams()
-  const dispatch = useDispatch()
-  const classes = useStyles()
-  const { t } = useTranslation()
-  let wall = React.useRef(null)
-  const [morePostsLoading, setMorePostsLoading] = useState(false)
-
-  const usernameFromUrl = params.username
-  const ownerFullName = !!profile && `${profile.firstName} ${profile.lastName}`
-  const profileLoaded = !!profile && profile.username === usernameFromUrl
-
-  const coverSrc = 'https://s1.1zoom.ru/big0/596/Evening_Forests_Mountains_Firewatch_Campo_Santo_549147_1280x720.jpg' 
-  const currentUserUsername = useSelector(getCurrentUserUsername)
-
-  const isOwnProfile = usernameFromUrl === currentUserUsername
-  const prevProfileId = usePrevious(profile ? profile.id : undefined)
-
-  const onOwnWall = currentUserId === (profile ? profile.id : '-1')
-
-  const handleLoadMorePosts = async () => {
-    if(!morePostsLoading && postsLoaded && !!profile && postsCursor) {
-      setMorePostsLoading(true)
-      await dispatch(getMorePosts(profile.id, 5, postsCursor, 'DESC', 2, 'DESC'))
-      setMorePostsLoading(false)
-    }
-  }
 
   useEffect(() => {
     if(!!profile) {
@@ -153,6 +114,57 @@ const Profile = React.memo(props => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile])
+
+  const prevProfileId = usePrevious(profile ? profile.id : undefined)
+  const currentUserUsername = useSelector(getCurrentUserUsername)
+
+  if(profileLoaded && !profile) {
+    return <div style={{display: 'flex', flexDirection: 'column', padding: 16, justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+        <span role='img' aria-label='no-subscribers' style={{ fontSize: '130px' }}>
+          🐷
+        </span>
+      <Typography variant='h4' >{t('Profile not found')}</Typography>
+    </div>
+  }
+
+  const reversedPictures = profile ? [...profile.pictures].reverse() : []
+
+  const preparedSmallPictures = []
+  const preparedLargePictures = []
+  
+  reversedPictures.forEach((picture) => {
+    const id = picture.id
+    const smallSrc = `${imagesStorage}${picture.versions.small}`
+    // const largeSrc = `${imagesStorage}${picture.versions.large}`
+    const originalSrc = `${imagesStorage}${picture.versions.original}`
+    preparedSmallPictures.push({id, src: smallSrc})
+    preparedLargePictures.push({
+      id,
+      src: originalSrc
+    })
+  })
+
+  const onAvatarClick = () => {
+    openLightbox(0)
+  }
+
+  const ownerFullName = !!profile && `${profile.firstName} ${profile.lastName}`
+
+  const coverSrc = 'https://s1.1zoom.ru/big0/596/Evening_Forests_Mountains_Firewatch_Campo_Santo_549147_1280x720.jpg' 
+  
+
+  const isOwnProfile = usernameFromUrl === currentUserUsername
+  
+
+  const onOwnWall = currentUserId === (profile ? profile.id : '-1')
+
+  const handleLoadMorePosts = async () => {
+    if(!morePostsLoading && postsLoaded && !!profile && postsCursor) {
+      setMorePostsLoading(true)
+      await dispatch(getMorePosts(profile.id, 5, postsCursor, 'DESC', 2, 'DESC'))
+      setMorePostsLoading(false)
+    }
+  }
 
   let postsList = posts.map(post => {
     return (
@@ -474,6 +486,7 @@ let mapStateToProps = state => {
     postsCursor: state.profilePosts.cursor,
     postsCount: state.profilePosts.allCount,
     profile: state.profile.profile,
+    profileLoaded: state.profile.profileLoaded,
     currentUserId: state.auth.id,
   }
 }

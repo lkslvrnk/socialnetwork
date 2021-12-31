@@ -65,7 +65,6 @@ const ProfilePost = React.memo(props => {
       mediumSrc: `${imagesStorage}${p.versions[2]}`,
     })
   })
-  const [attachments, setAttachments] = useState(attachmentPhotos)
   
   const creatorLink = `/i/${postData.creator.username}`
   const picture = useSelector(getCurrentUserPicture)
@@ -80,11 +79,6 @@ const ProfilePost = React.memo(props => {
   const currentDate = Date.now()
   const differenceInHours = (((currentDate - postCreationDate) / 1000) /60) / 60
   const isEditable = differenceInHours < 24
-
-  // useEffect(() => {
-
-  //   setAttachments(photos)
-  // }, [postData.attachments])
 
 
   const handleRestore = () => {
@@ -291,7 +285,7 @@ const ProfilePost = React.memo(props => {
       <div style={{padding: '0 8px', marginBottom: 8}} >
         <PhotoGallery
           place={`postId=${postData.id}`}
-          passedImages={attachments}
+          passedImages={attachmentPhotos}
           spacing={1}
           imageBorderRadius={2}
         />
@@ -444,7 +438,7 @@ const ProfilePost = React.memo(props => {
             editMode={editMode}
             setEditMode={setEditMode}
             text={postData.text}
-            currentAttachments={attachments}
+            currentAttachments={attachmentPhotos}
             commentingIsDisabled={postData.commentingIsDisabled}
             isPublic={postData.isPublic}
             onEditFinish={ () => setEditMode(false)}

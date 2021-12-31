@@ -23,6 +23,7 @@ const Login = React.memo( props => {
   const { t } = useTranslation();
 
   const onSubmit = formData => {
+    console.log(formData)
     setIsSubmitting(true)
     dispatch(logIn(formData.email, formData.password))
       .then(response => {
@@ -64,6 +65,7 @@ const LoginForm = reduxForm({form: 'login'})(
   ({error, isSubmitting, invalid, handleSubmit}) => {
     let classes = useStyles()
     const { t } = useTranslation();
+
 
     return (
       <form onSubmit={handleSubmit} className={classes.form}>

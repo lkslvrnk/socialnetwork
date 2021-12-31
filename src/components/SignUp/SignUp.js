@@ -50,7 +50,7 @@ const SignUp = React.memo( props => {
 
 
   const onSubmit = formData => {
-    console.log(formData)
+
     setIsSubmitting(true)
     let exploded = formData.birthday.split('-')
     let birthday = `${exploded[2]}-${exploded[1]}-${exploded[0]}`

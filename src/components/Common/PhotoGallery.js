@@ -26,8 +26,6 @@ const PhotoGallery = React.memo((props) => {
   const [imageChangingCount, setImageChangingCount] = useState(0)
   const gallery = useRef(null)
 
-  console.log(photos)
-
   const preparedLargePictures = []
 
   photos.current.forEach((photo) => {
@@ -152,7 +150,6 @@ const PhotoGallery = React.memo((props) => {
         if(!match) newPhotos.push(image)
       })
 
-      console.log(newPhotos)
       let withMetaLoadedCounter = {
         newPhotosCount: newPhotos.length,
         handledCount: 0,
@@ -162,7 +159,6 @@ const PhotoGallery = React.memo((props) => {
       function onMetaLoaded(){
         if(this.newPhotosCount === this.handledCount) {
           this.handledPhotos.forEach(handled => {
-            console.log(handled)
             let existed = photos.current.filter(photo => photo.mediumSrc === handled.mediumSrc)[0]
             if(!existed) {
               photos.current.push(handled)
@@ -557,6 +553,7 @@ const PhotoContainer = (props) => {
         width: `${props.width}%`,
         marginBottom: props.marginBottom,
         borderRadius: glBorderRadius,
+        cursor: 'pointer'
       }}
       className={classes.photoContainer}
     >

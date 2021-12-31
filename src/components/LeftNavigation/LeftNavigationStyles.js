@@ -43,7 +43,8 @@ export const useStyles = makeStyles(theme => {
       [theme.breakpoints.down("xs")]: {
         display: 'none'
       },
-      flexShrink: 0
+      flexShrink: 0,
+      // border: '1px solid white',
     },
     leftNavItem: {
       display: 'flex',

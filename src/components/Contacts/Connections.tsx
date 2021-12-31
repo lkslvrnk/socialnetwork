@@ -19,6 +19,7 @@ import { profileAPI } from '../../api/profile_api'
 import { AppStateType } from '../../redux/redux_store';
 import { withRedirectToLogin } from '../../hoc/withRedirectToLogin';
 import { compose } from 'redux';
+import ProfileNotFound from '../Common/ProfileNotFound';
 
 export const CLEAN = 'CLEAN'
 export const SET_ACCEPTED_CONNS = 'SET-ACCEPTED-CONNS'
@@ -40,6 +41,7 @@ export const ADD_COMMON_CONTACTS = 'ADD-COMMON-CONTACTS'
 
 type State = {
   owner: ProfileType | null,
+  ownerLoaded: boolean,
   ownerUsername: string | null,
   acceptedConns: Array<ConnectionType> | null,
   acceptedConnsCount: number | null,
@@ -57,6 +59,7 @@ type State = {
 
 const initialState: State = {
   owner: null,
+  ownerLoaded: false,
   ownerUsername: null,
   acceptedConns: null,
   acceptedConnsCount: null,
@@ -75,14 +78,17 @@ const initialState: State = {
 function reducer(state: State, action: any) {
   switch (action.type) {
     case SET_OWNER: {
+      // console.log(action)
       return {
         ...state,
-        owner: action.owner
+        owner: action.owner,
+        ownerLoaded: true
       }
     }
     case CLEAN: {
       return {
         owner: null,
+        ownerLoaded: false,
         ownerUsername: action.ownerUsername,
         acceptedConns: null,
         acceptedConnsCount: null,
@@ -194,7 +200,7 @@ function reducer(state: State, action: any) {
       }
     }
     case SET_OUTGOING_CONNS: {
-      console.log(action)
+      // console.log(action)
       return {
         ...state,
         outgoingConns: action.connections,
@@ -203,7 +209,7 @@ function reducer(state: State, action: any) {
       }
     }
     case ADD_OUTGOING_CONNS: {
-      console.log(state.outgoingConns, action)
+      // console.log(state.outgoingConns, action)
       if(state.outgoingConns) {
         return {
           ...state,
@@ -272,12 +278,107 @@ const Connections: React.FC = React.memo((props) => {
     sectionNumber = 1
   }
 
+  // console.log(stateUR)
+
   const currentUserId: string | null = useSelector(getCurrentUserId)
   const currentUserUsername: string | null = useSelector(getCurrentUserUsername)
   const isOwnProfile = currentUserUsername === usernameFromParams
   const isAuthenticated = useSelector((state: AppStateType) => state.auth.isAuth)
 
   const prevOwnerUsername = usePrevious(usernameFromParams)
+
+
+  useEffect(() => {
+    // console.log(usernameFromParams)
+    getOwner(usernameFromParams)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    (async function() {
+      // console.log(prevOwnerUsername, usernameFromParams)
+      if(prevOwnerUsername !== undefined && prevOwnerUsername !== usernameFromParams) {
+        dispatchUR({type: CLEAN, ownerUsername: usernameFromParams})
+        getOwner(usernameFromParams)
+      }
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [usernameFromParams])
+
+  const getOwner = (username: string) => {
+    // console.log(username)
+    profileAPI.getUser(username)
+      .then(
+        (response) => {
+          if(response.status === 200) {
+            dispatchUR({type: SET_OWNER, owner: response.data })
+          }
+        },
+        error => {
+          // console.log(error)
+          if(error.response) {
+            if(error.response.status === 404) {
+              dispatchUR({type: SET_OWNER, owner: null })
+            }
+          }
+        }
+      )
+    
+    // if(response.status === 200) {
+    //   dispatchUR({type: SET_OWNER, owner: response.data })
+    // } else if(response.status === 404) {
+    //   dispatchUR({type: SET_OWNER, owner: null })
+    // }
+  }
+
+  useEffect(() => {
+    (async function() {
+      if(!!stateUR.owner) {
+        if(sectionNumber === 0) {
+          getAccepted(SET_ACCEPTED_CONNS, usernameFromParams, 8, null)
+          if(!isOwnProfile) {
+            getCommonContacts(null, 10)
+          }
+        }
+        else if(sectionNumber) {
+          if(sectionName === 'incoming') {
+            getIncoming()
+          } else {
+            getOutgoing()
+          }
+        }
+      }
+    })()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stateUR.owner])
+
+  useEffect(() => {
+    if(!currentUserId || !stateUR.owner) {
+      return
+    }
+    try {
+      if(sectionNumber === 0 && stateUR.acceptedConnsCount === null) {
+        getAccepted(SET_ACCEPTED_CONNS, usernameFromParams, 7, null)
+        if(!isOwnProfile) {
+          getCommonContacts(null, 10)
+        }
+      }
+      if(sectionNumber === 1 && isOwnProfile && stateUR.outgoingConnsCount === null) {
+        getOutgoing()
+      }
+      if(sectionNumber === 1 && isOwnProfile && stateUR.incomingConnsCount === null) {
+        getIncoming()
+      }
+    }
+    catch(err) {
+      // console.log(err)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sectionNumber])
+
+  if(stateUR.ownerLoaded && !stateUR.owner) {
+    return <ProfileNotFound />
+  }
 
   const getCommonContacts = async (cursor: string | null, count: number | null) => {
     let response = await connectionAPI.getUserContacts(usernameFromParams, currentUserUsername, cursor, count)
@@ -292,13 +393,6 @@ const Connections: React.FC = React.memo((props) => {
     if(response.status === 200) {
       let data = response.data
       dispatchUR({type: ADD_COMMON_CONTACTS, contacts: data.items, count: data.count, cursor: data.cursor })
-    }
-  }
-
-  const getOwner = async (username: string) => {
-    let response = await profileAPI.getUser(username)
-    if(response.status === 200) {
-      dispatchUR({type: SET_OWNER, owner: response.data })
     }
   }
 
@@ -364,57 +458,6 @@ const Connections: React.FC = React.memo((props) => {
     }
   }
 
-  useEffect(() => {
-    (async function() {
-      if(prevOwnerUsername !== undefined && prevOwnerUsername !== usernameFromParams) {
-        dispatchUR({type: CLEAN, ownerUsername: usernameFromParams})
-        getOwner(usernameFromParams)
-
-        if(sectionNumber === 0) {
-          getAccepted(SET_ACCEPTED_CONNS, usernameFromParams, 8, null)
-          if(!isOwnProfile) {
-            getCommonContacts(null, 10)
-          }
-        }
-        else if(sectionNumber) {
-          if(sectionName === 'incoming') {
-            getIncoming()
-          } else {
-            getOutgoing()
-          }
-        }
-      }
-    })()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [usernameFromParams])
-
-  useEffect(() => {
-    (function() {
-      if(!currentUserId) {
-        return
-      }
-      try {
-        getOwner(usernameFromParams)
-
-        if(sectionNumber === 0 && stateUR.acceptedConnsCount === null) {
-          getAccepted(SET_ACCEPTED_CONNS, usernameFromParams, 7, null)
-          if(!isOwnProfile) {
-            getCommonContacts(null, 10)
-          }
-        }
-        if(sectionNumber === 1 && isOwnProfile && stateUR.outgoingConnsCount === null) {
-          getOutgoing()
-        }
-        if(sectionNumber === 1 && isOwnProfile && stateUR.incomingConnsCount === null) {
-          getIncoming()
-        }
-      }
-      catch(err) {
-        console.log(err)
-      }
-    })()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sectionNumber])
 
   const deleteAccepted = async (connection: ConnectionType, type: string) => {
     let response = await connectionAPI.deleteConnection(connection.id)
@@ -550,9 +593,11 @@ const Connections: React.FC = React.memo((props) => {
               labelId="demo-simple-select-label"
               id="demo-simple-select"
               value={sectionNumber}
+              MenuProps={{ disableScrollLock: true }}
             >
-              <MenuItem value={0} >
+              <MenuItem value={0} style={{padding: 0}}>
                 <Typography
+                style={{padding: 8, width: '100%'}}
                   color='textPrimary'
                   component={NavLink}
                   to={`/i/${usernameFromParams}/contacts`}
@@ -560,8 +605,9 @@ const Connections: React.FC = React.memo((props) => {
                 />
               </MenuItem>
               { isOwnProfile &&
-                <MenuItem value={1} >
+                <MenuItem value={1} style={{padding: 0}} >
                   <Typography
+                    style={{padding: 8, width: '100%'}}
                     color='textPrimary'
                     component={NavLink}
                     to={`/i/${usernameFromParams}/contacts?section=incoming`}

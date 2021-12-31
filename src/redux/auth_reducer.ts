@@ -88,6 +88,7 @@ export let logIn = (email: string, password: string): ThunkType => {
 
     try {
       let response = await authAPI.logIn(email, password)
+      console.log(response)
       if(response.status === HttpStatusCode.CREATED) {
         localStorage.setItem('JWT', response.data.jwt)
         await dispatch(me())
@@ -108,7 +109,7 @@ export let logIn = (email: string, password: string): ThunkType => {
 export let logOut = (history: any): ThunkType => {
   return async (dispatch) => {
     authAPI.removeJWT()
-    localStorage.removeItem('pendingMessages')
+    // localStorage.removeItem('pendingMessages')
     dispatch(actions.setUserData({id: null, email: null, avatar: null, expiresIn: null}, false))
     dispatch(cleanSettings())
     // history.push('/login')

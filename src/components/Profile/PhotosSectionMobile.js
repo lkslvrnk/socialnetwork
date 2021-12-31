@@ -62,7 +62,6 @@ const PhotosSectionMobile = React.memo(props => {
 
       <div className={classes.photosMobile} style={{padding: '0 16px 16px 16px', display: 'flex', justifyContent: 'center'}} >
         {preparedPhotos.map((photo, index) => {
-          console.log(photo)
           return (
             <div
               onClick={() => handlePhotoClick(index)}
