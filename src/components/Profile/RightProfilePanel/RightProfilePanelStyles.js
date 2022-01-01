@@ -7,15 +7,6 @@ export const useStyles = makeStyles(theme => ({
     minWidth: 300,
     maxWidth: 300,
   },
-  avatarAndName: {
-    ...theme.styles.flexColumnCenter
-  },
-  avatar: {
-    margin: `${theme.spacing(1)}px 0`
-  },
-  name: {
-    margin: `${theme.spacing(1)}px 0`
-  },
   profileAvatarContainer: {
     display: 'flex',
     alignItems: 'center',
@@ -39,7 +30,6 @@ export const useStyles = makeStyles(theme => ({
   photos: {
     padding: theme.spacing(0, 1),
     display: 'flex',
-    justifyContent: 'center',
     '& > *': {
       marginRight: theme.spacing(1),
     },
@@ -51,5 +41,6 @@ export const useStyles = makeStyles(theme => ({
     cursor: 'pointer',
     width: 90, height: 90,
     backgroundSize: 'cover',
+    backgroundPosition: 'center'
   }
 }))

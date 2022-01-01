@@ -119,7 +119,7 @@ const Subscriptions: React.FC = React.memo((props) => {
 
   const panel = <div className={classes.panel}>
     <StickyPanel top={55}>
-      <Paper style={{width: 300}}>
+      <Paper style={{width: 300, height: 40}}>
       </Paper>
     </StickyPanel>
   </div>
@@ -155,20 +155,18 @@ const Subscriptions: React.FC = React.memo((props) => {
 
   return <section className={classes.subscriptions}>
     <main className={classes.subscriptionsList}>
+      { !!profile && !!subscribers && subscribers.length > 0 &&
       <Paper style={{padding: 16}}>
-        { profileLoaded ?
-          <Typography variant='body2' >
-            <b>
-            {isOwnSubscriptions
-              ? `${t('My subscribers')} ${totalCount ? `(${totalCount})` : ''}`
-              : !!profile && `${t('Subscribers of')} ${profile.firstName} ${profile.lastName} ${totalCount ? `(${totalCount})` : ''}`
-            }
-            </b>
-          </Typography>
-          :
-          ' '
-        }
+        <Typography variant='body2' >
+          <b>
+          {isOwnSubscriptions
+            ? `${t('My subscribers')} ${totalCount ? `(${totalCount})` : ''}`
+            : `${t('Subscribers of')} ${profile.firstName} ${profile.lastName} ${totalCount ? `(${totalCount})` : ''}`
+          }
+          </b>
+        </Typography>
       </Paper>
+      }
       { !!subscribers
         ? subscribersList
         : <>{skeletons}</>

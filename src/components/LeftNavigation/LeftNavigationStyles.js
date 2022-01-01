@@ -28,7 +28,8 @@ export const useStyles = makeStyles(theme => {
     },
     leftNavContainer: {
       position: 'relative',
-      width: theme.spacing(8),
+      width: theme.spacing(7),
+      right: '-4px',
       '@media (min-width: 1201px)': {
         position: 'absolute',
         // border: '1px solid white',

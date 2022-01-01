@@ -43,6 +43,7 @@ const ProfilePost = React.memo(props => {
   const dispatch = useDispatch()
   const classes = useStyles();
   const { t } = useTranslation();
+  console.log(postData)
 
   const [editMode, setEditMode] = useState(false);
   const [shareMenuAnchor, setShareMenuAnchor] = useState(null)

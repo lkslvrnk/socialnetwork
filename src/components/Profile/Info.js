@@ -26,6 +26,13 @@ const Info = React.memo(props => {
   const classes = useStyles()
   const { t } = useTranslation()
 
+  const birthday = !!profile && moment({
+    day: profile.birthday.day,
+    month: profile.birthday.month -1, 
+    year: profile.birthday.year
+  }).format("DD MMMM YYYY")
+
+  console.log(birthday)
   return (
     <Paper
       component='section'
@@ -61,7 +68,7 @@ const Info = React.memo(props => {
             <ListItemText
               primary={ !!profile
                 ? <Typography variant='body2' >
-                  {moment(profile.birthday).format("DD MMMM YYYY")}
+                  {birthday}
                 </Typography>
                 : <Skeleton height={20} width={100} /> 
               }

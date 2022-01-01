@@ -15,8 +15,11 @@ export const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     display: 'flex',
     alignItems: 'center',
-    minWidth: 300,
-    maxWidth: 400
+    minWidth: 200,
+    maxWidth: 500,
+    [theme.breakpoints.down("xs")]: {
+      width: '100%'
+    },
   },
   submit: {
     margin: theme.spacing(3, 0, 2),

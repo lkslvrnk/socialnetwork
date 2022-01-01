@@ -161,20 +161,18 @@ const Subscriptions: React.FC = React.memo((props) => {
 
   return <section className={classes.subscriptions}>
     <main className={classes.subscriptionsList}>
-      <Paper style={{padding: 16}}>
-        { profileLoaded ?
+      { !!profile && !!subscriptions && subscriptions.length > 0 &&
+        <Paper style={{padding: 16}}>
           <Typography variant='body2' >
             <b>
             {isOwnSubscriptions
               ? `${t('My subscriptions')}`
-              : !!profile && `${t('Subscriptions of')} ${profile.firstName} ${profile.lastName}`
+              : `${t('Subscriptions of')} ${profile.firstName} ${profile.lastName}`
             }
             </b>
           </Typography>
-          :
-          ' '
-        }
-      </Paper>
+        </Paper>
+      }
       { !!subscriptions
         ? subscriptionsList
         : <>{skeletons}</>

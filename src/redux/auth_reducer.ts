@@ -48,14 +48,14 @@ export let signUp = (
   firstName: string,
   lastName: string,
   username: string,
-  gender: string,
+  sex: string,
   birthday: string,
   language: string,
 ): ThunkType => {
   return async (dispatch: any) => {
 
     try {
-      await authAPI.signUp(email, password, repeatedPassword, firstName, lastName, username, gender, birthday, language)
+      await authAPI.signUp(email, password, repeatedPassword, firstName, lastName, username, sex, birthday, language)
     } catch (e) {
       const err = e as AxiosError
       if(err.response) {

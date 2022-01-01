@@ -283,12 +283,16 @@ const Profile = React.memo(props => {
           </div>
         </div>
         
-        <div>
+        <div className={classes.nameAndContacts}>
           <div className={ classes.name}>
             { profileLoaded
               ? <>
-                <Typography variant='h4' >{profile.firstName}</Typography>
-                <Typography variant='h4' >{profile.lastName}</Typography>
+                <Typography variant='h4' style={{ fontWeight: 500 }}>
+                  {profile.firstName}&nbsp;
+                </Typography>
+                <Typography variant='h4' style={{ fontWeight: 500 }}>
+                  {profile.lastName}
+                </Typography>
               </>
               : <Skeleton variant='text' width={250} height={40} />
             }
@@ -297,13 +301,12 @@ const Profile = React.memo(props => {
           { profileLoaded ?
             <>
               {profile.allAcceptedConnections > 0 &&
-                <Typography variant='body1' color='textSecondary' >
-                  Контактов:&nbsp;
-                  <NavLink
-                    style={{color: 'white', textDecoration: 'none'}}
-                    to={`/i/${profile.username}/contacts`}
-                  >{profile.allAcceptedConnections}</NavLink>
-                </Typography>
+                <TypographyLink
+                  to={`/i/${profile.username}/contacts`}
+                  variant='h6'
+                >
+                  {t('Contacts')}:&nbsp;{profile.allAcceptedConnections}
+                </TypographyLink>
               }
             </>
             :

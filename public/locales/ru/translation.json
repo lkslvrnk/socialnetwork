@@ -122,5 +122,7 @@
     "You sure you want to discard changes?": "Вы уверены, что хотите сбросить изменения?",
     "Email taken": "Почта уже использована",
     "Nickname taken": "Никнейм уже использован",
-    "Incorrect email or password": "Неправильная почта или пароль"
+    "Incorrect email or password": "Неправильная почта или пароль",
+    "Male": "Мужчина",
+    "Female": "Женщина"
 }

@@ -80,6 +80,9 @@ export const useStyles = makeStyles(theme => {
         marginRight: 32,
         width: 210,
       },
+      [smallHeaderQuery]: {
+        marginRight: 0
+      },
       flexShrink: 0
     },
     avatarContainer: {
@@ -94,12 +97,19 @@ export const useStyles = makeStyles(theme => {
         position: 'relative',
       },
     },
-    name: {
-      maxWidth: 300,
+    nameAndContacts: {
       [smallHeaderQuery]: {
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center',
+        alignItems: 'center'
+      },
+    },
+    name: {
+      maxWidth: 300,
+      display: 'flex',
+      flexWrap: 'wrap',
+      [smallHeaderQuery]: {
+        marginTop: 16
       },
     },
     avatarAndName: {

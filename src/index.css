@@ -36,5 +36,23 @@ code {
 .emoji-mart-search input {
   background-color: #424242 !important;
 }
-  overflow-x: hidden;
-  margin-right: calc(-1 * (100vw - 100%));
+
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #424242;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 5px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

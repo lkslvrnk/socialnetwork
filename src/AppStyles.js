@@ -19,6 +19,7 @@ export const useStyles = makeStyles(theme => {
       maxWidth: 900,
       paddingRight: theme.spacing(2),
       paddingBottom: theme.spacing(2),
+      paddingLeft: theme.spacing(2),
       flexGrow: 1,
       flexShrink: 1,
       [theme.breakpoints.down("xs")]: {

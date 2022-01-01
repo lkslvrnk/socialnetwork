@@ -25,7 +25,7 @@ export const useStyles = makeStyles(theme => ({
       height: 150,
       width: 150,
     },
-    //border: '2px solid #343434'
+    border: `6px solid ${theme.palette.background.default}`
   },
   editButtonRoot: {
     borderRadius: 100,

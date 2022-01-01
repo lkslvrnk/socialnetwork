@@ -30,7 +30,7 @@ export const authAPI = {
     firstName: string,
     lastName: string,
     username: string,
-    gender: string,
+    sex: string,
     birthday: string,
     language: string
   ) => {
@@ -41,7 +41,7 @@ export const authAPI = {
       firstname: firstName,
       lastname: lastName,
       username,
-      gender,
+      sex,
       birthday,
       language
     })

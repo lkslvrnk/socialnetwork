@@ -2,35 +2,37 @@ import React, { useState } from 'react'
 import {Field, reduxForm} from "redux-form"
 import {maxLengthCreator, minLengthCreator, required} from "../../utils/validators/validators"
 import {OutlinedTextInput} from "../FormControls/FormControls.js"
-import Button from '@material-ui/core/Button'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import { useDispatch, useSelector} from 'react-redux'
 import {signUp} from '../../redux/auth_reducer'
 import {makeStyles} from "@material-ui/core/styles";
 import Avatar from '@material-ui/core/Avatar';
-import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import { useTranslation } from 'react-i18next';
 import { Redirect } from 'react-router-dom'
 import TypographyLink from '../Common/TypographyLink'
 import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress'
+import { FormControl, FormControlLabel, FormLabel, Radio, RadioGroup } from '@material-ui/core'
+import PersonAddIcon from '@material-ui/icons/PersonAdd';
 
 const useStyles = makeStyles(theme => ({
   root: {
     width: '100%',
     display: 'flex',
     justifyContent: 'center',
-    marginTop: theme.spacing(8),
   },
   form: {
     width: '100%'
   },
   formContainer: {
-    padding: theme.spacing(2),
+    padding: theme.spacing(4),
     flexDirection: 'column',
     display: 'flex',
     alignItems: 'center',
-    width: '400px'
+    width: '500px',
+    [theme.breakpoints.down("xs")]: {
+      width: '100%'
+    },
   },
   submit: {
     margin: theme.spacing(3, 0, 2),
@@ -50,12 +52,12 @@ const SignUp = React.memo( props => {
 
 
   const onSubmit = formData => {
-
+    console.log(formData)
     setIsSubmitting(true)
     let exploded = formData.birthday.split('-')
     let birthday = `${exploded[2]}-${exploded[1]}-${exploded[0]}`
 
-    dispatch(signUp(formData.email, formData.password, formData.repeatPassword, formData.firstname, formData.lastname, formData.nickname, 'male', birthday, 'ru'))
+    dispatch(signUp(formData.email, formData.password, formData.repeatPassword, formData.firstname, formData.lastname, formData.nickname, formData.sex, birthday, 'ru'))
       .then(response => {
         setIsRegistered(true)
         setIsSubmitting(false)
@@ -94,7 +96,7 @@ const SignUp = React.memo( props => {
     <div className={classes.root}>
       <Paper className={classes.formContainer}>
         <Avatar className={classes.avatar}>
-          <LockOutlinedIcon />
+          <PersonAddIcon />
         </Avatar>
         <Typography component="h1" variant="h5">
           {t('Sign up')}
@@ -173,6 +175,21 @@ const SignUpForm = reduxForm({form: 'signup'})(
     let classes = useStyles()
     const { t } = useTranslation();
 
+    const renderRadioGroup = ({ input, legend, ...rest }) => {
+      console.log(input)
+      return (
+        <FormControl component="fieldset">
+          <FormLabel component="legend">{legend}</FormLabel>
+          <RadioGroup
+            {...input}
+            {...rest}
+            valueSelected={input.value}
+            onChange={(event, value) => input.onChange(value)}
+          />
+        </FormControl>
+      )
+    }
+
     return (
       <form onSubmit={props.handleSubmit} className={classes.form}>
        
@@ -181,6 +198,7 @@ const SignUpForm = reduxForm({form: 'signup'})(
           type='email'
           name="email"
           component={OutlinedTextInput}
+          validate={[required]}
           margin="normal"
           fullWidth
           required
@@ -222,6 +240,15 @@ const SignUpForm = reduxForm({form: 'signup'})(
           required
           autoComplete='nickname'
         />
+
+        <div style={{marginTop: 16}}>
+          <Field validate={[required]} name="sex" component={renderRadioGroup} legend={t('Gender')} >
+            <div style={{display: 'flex'}}>
+              <FormControlLabel value="male" control={<Radio />} label={t("Male")} />
+              <FormControlLabel value="female" control={<Radio />} label={t("Female")} />
+            </div>
+          </Field>
+        </div>
 
         <Field
           label={t('Birthday')}
