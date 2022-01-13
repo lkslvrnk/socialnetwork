@@ -20,6 +20,7 @@ import PeopleIcon from '@material-ui/icons/People'
 import { useSelector } from 'react-redux'
 import { getCurrentUserUsername } from '../../../redux/auth_selectors';
 import RssFeedIcon from '@material-ui/icons/RssFeed';
+import DynamicFeedIcon from '@material-ui/icons/DynamicFeed';
 
 const useStyles = makeStyles((theme) => ({
   formControl: {},
@@ -44,7 +45,7 @@ const Drawer = React.memo((
   };
 
   let navLinks = [
-    { to: '', name: t('Feed'), icon: ViewStreamIcon },
+    { to: '', name: t('Feed'), icon: DynamicFeedIcon },
     { to: `i/${currentUserUsername}`, name: t('My profile'), icon: HomeIcon },
     { to: `i/${currentUserUsername}/contacts`, name: t('Contacts'), icon: PeopleIcon },
     { to: `i/${currentUserUsername}/subscriptions`, name: t('Subscriptions'), icon: SubscriptionsIcon },
@@ -76,7 +77,7 @@ const Drawer = React.memo((
   let selectLanguage = (
     <ListItem key={1}>
       <ListItemIcon><LanguageIcon /></ListItemIcon>
-      <FormControl className={classes.formControl}>
+      <FormControl className={classes.formControl} size='small' >
 
         <InputLabel id="demo-simple-select-label">{t('Language')}</InputLabel>
         <Select

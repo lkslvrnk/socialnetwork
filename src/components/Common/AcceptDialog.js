@@ -20,8 +20,8 @@ const AcceptDialog = React.memo((
       aria-labelledby="simple-dialog-title"
       open={show}
     >
-      <DialogContent dividers>
-        <Typography variant='body2'>{text}</Typography>
+      <DialogContent >
+        <Typography variant='body1'>{text}</Typography>
       </DialogContent>
       
       <DialogActions>

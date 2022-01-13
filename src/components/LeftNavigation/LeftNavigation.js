@@ -11,6 +11,7 @@ import { getCurrentUserUsername } from '../../redux/auth_selectors';
 import ViewStreamIcon from '@material-ui/icons/ViewStream';
 import SubscriptionsIcon from '@material-ui/icons/Subscriptions';
 import RssFeedIcon from '@material-ui/icons/RssFeed';
+import DynamicFeedIcon from '@material-ui/icons/DynamicFeed';
 
 const LeftNavigation = React.memo( props => {
   let classes = useStyles()
@@ -21,7 +22,7 @@ const LeftNavigation = React.memo( props => {
   const largeIcons = useMediaQuery('(max-width: 1000px)')
 
   let navLinks = [
-    { to: '', name: t('Feed'), icon: ViewStreamIcon },
+    { to: '', name: t('Feed'), icon: DynamicFeedIcon },
     { to: `i/${currentUserUsername}`, name: t('My profile'), icon: HomeIcon },
     { to: `i/${currentUserUsername}/contacts`, name: t('Contacts'), icon: PeopleIcon },
     { to: `i/${currentUserUsername}/subscriptions`, name: t('Subscriptions'), icon: SubscriptionsIcon },

@@ -29,6 +29,8 @@ import {
   createPostReaction,
   patchPost
 } from '../../redux/profile_posts_reducer'
+import SimplePhotoGallery from '../Common/SimplePhotoGallery.js'
+import { createSimpleGalleryPhoto } from '../../helper/helperFunctions.js'
 
 const ProfilePost = React.memo(props => {
   const {
@@ -43,7 +45,7 @@ const ProfilePost = React.memo(props => {
   const dispatch = useDispatch()
   const classes = useStyles();
   const { t } = useTranslation();
-  console.log(postData)
+  console.log('post rerender')
 
   const [editMode, setEditMode] = useState(false);
   const [shareMenuAnchor, setShareMenuAnchor] = useState(null)
@@ -60,12 +62,14 @@ const ProfilePost = React.memo(props => {
 
   let attachmentPhotos = []
   postData.attachments.forEach(p => {
-    attachmentPhotos.push({
-      id: p.id,
-      originalSrc: `${imagesStorage}${p.versions[0]}`,
-      mediumSrc: `${imagesStorage}${p.versions[2]}`,
-    })
+    attachmentPhotos.push(createSimpleGalleryPhoto(
+      p.id,
+      postData.attachments.length === 1 ? p.versions[1] : p.versions[2],
+      p.versions[0])
+    )
   })
+
+  // console.log(attachmentPhotos)
   
   const creatorLink = `/i/${postData.creator.username}`
   const picture = useSelector(getCurrentUserPicture)
@@ -173,10 +177,11 @@ const ProfilePost = React.memo(props => {
   const topReactionsTypes = []
 
   for (var i = 0; i < 3; i++) {
-    if(sortedReacionsCount[i] !== undefined) {
+    if(sortedReacionsCount[i] !== undefined && sortedReacionsCount[i].count > 0) {
       topReactionsTypes.push(sortedReacionsCount[i])
     }
   }
+  // console.log(topReactionsTypes)
 
   const onCreateReaction = reactionType => {
     return dispatch(createPostReaction(postData.id, reactionType))
@@ -284,8 +289,7 @@ const ProfilePost = React.memo(props => {
     hasMedia && !editMode &&
     <CardMedia >
       <div style={{padding: '0 8px', marginBottom: 8}} >
-        <PhotoGallery
-          place={`postId=${postData.id}`}
+        <SimplePhotoGallery
           passedImages={attachmentPhotos}
           spacing={1}
           imageBorderRadius={2}

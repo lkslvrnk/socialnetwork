@@ -34,6 +34,7 @@
     "query-string": "^6.13.1",
     "react": "^16.13.1",
     "react-avatar-editor": "11.0.9",
+    "react-cropper": "^2.1.8",
     "react-dom": "^16.13.1",
     "react-i18next": "^11.7.0",
     "react-image-gallery": "^1.2.7",

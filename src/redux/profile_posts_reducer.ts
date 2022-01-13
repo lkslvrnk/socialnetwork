@@ -30,10 +30,12 @@ const SET_CONNECTION = 'profile-posts/SET-CONNECTION'
 const EDIT_REACTION = 'profile-posts/EDIT-REACTION'
 const DELETE_REACTION = 'profile-posts/DELETE-REACTION'
 const ADD_CURRENT_USER_REACTION = 'profile-posts/ADD-CURRENT-USER-REACTION'
+const REPLACE_CURRENT_USER_REACTION = 'profile-posts/REPLACE-CURRENT-USER-REACTION'
 const SET_POST_REACTIONS = 'profile-posts/SET-POST-REACTIONS'
 const ADD_NEW_POST_ERROR = 'profile-posts/ADD-NEW-POST-ERROR'
 const SET_COMMENT_IS_DELETED = 'profile-posts/SET-COMMENT-IS-DELETED'
 const SET_OWNER_ID_AND_POSTS_COUNT = 'profile-posts/SET-OWNER-ID'
+const REPLACE_CURRENT_USER_COMMENT_REACTION = 'profile-posts/REPLACE-CURRENT-USER-COMMENT-REACTION'
 const CLEAN = 'CLEAN'
 const INITIALIZE_FEED = 'INITIALIZE-FEED'
 
@@ -49,10 +51,7 @@ let initialState = {
 const profilePostsReducer = (state: InitialStateType = initialState, action: any): InitialStateType => {
   switch (action.type) {
     case INITIALIZE_FEED:{
-      return {
-        ...state,
-        isFeed: true
-      }
+      return {...state,isFeed: true}
     }
     case CLEAN: {
       return {
@@ -69,69 +68,74 @@ const profilePostsReducer = (state: InitialStateType = initialState, action: any
         ...state,
         ownerId: action.id,
         allCount: action.count,
-        areLoaded: action.count === 0
+        areLoaded: action.count === 0,
+        posts: [...state.posts]
       }
     }
     case PUT_POST: {
       let post = state.posts.find(post => post.id === action.postId)
       if(post) {
-        let index = state.posts.indexOf(post)
-        state.posts[index] = action.post
+        let postsCopy = [...state.posts]
+        postsCopy[postsCopy.indexOf(post)] = action.post
+        return {...state, posts: postsCopy}
       }
-      return {
-        ...state,
-        posts: [...state.posts]
-      }
+      return {...state}
     }
     case PATCH_POST: {
       let post = state.posts.find(post => post.id === action.postId)
       if(post) {
+        let postCopy = copyPost(post)
         if(action.property === 'comments_are_disabled') {
-          post.commentingIsDisabled = action.value
+          postCopy.commentingIsDisabled = action.value
         } else if(action.property === 'is_public') {
-          post.isPublic = action.value
+          postCopy.isPublic = action.value
         }
-
-        return {
-          ...state,
-          posts: [...state.posts]
-        }
+        let postsCopy = [...state.posts]
+        postsCopy[postsCopy.indexOf(post)] = postCopy
+        return {...state, posts: postsCopy}
       }
-      return state
+      return {...state}
     }
     case SET_POST_IS_DELETED: {
       let post = state.posts.find(post => post.id === action.postId)
       if(post) {
-        post.isDeleted = action.isDeleted
+        let postCopy = copyPost(post)
+        postCopy.isDeleted = action.isDeleted
+        let postsCopy = [...state.posts]
+        postsCopy[postsCopy.indexOf(post)] = postCopy
+        return {...state, posts: postsCopy}
       }
-      return {
-        ...state,
-        posts: [...state.posts]
-      }
+      return {...state}
     }
     case SET_COMMENT_IS_DELETED: {
       let post = state.posts.find(post => post.id === action.postId)
-      if(!post) {
-        return state
-      }
-      if(action.rootId) {
-        let root = post.comments ? post.comments.find(comment => comment.id === action.rootId) : null
-        if(root) {
-          let reply = root.replies.find(reply => reply.id === action.commentId)
-          if(reply) {
-            reply.deleted = action.isDeleted
+      if(!!post) {
+        let postsCopy = [...state.posts]
+        let postCopy = copyPost(post)
+        postsCopy[postsCopy.indexOf(post)] = postCopy
+        if(action.rootId) {
+          let root = post.comments.find(comment => comment.id === action.rootId)
+          if(root) {
+            let rootCopy = copyComment(root)
+            let reply = rootCopy.replies.find(reply => reply.id === action.commentId)
+            if(reply) {
+              let replyCopy = copyComment(reply)
+              replyCopy.deleted = action.isDeleted
+              rootCopy.replies[rootCopy.replies.indexOf(reply)] = replyCopy
+              postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
+            }
+          }
+        } else {
+          let comment = post.comments.find(comment => comment.id === action.commentId)
+          if(comment) {
+            let commentCopy = copyComment(comment)
+            commentCopy.deleted = action.isDeleted
+            postCopy.comments[postCopy.comments.indexOf(comment)] = commentCopy
           }
         }
-      } else {
-        let comment = post.comments.find(comment => comment.id === action.commentId)
-        if(comment) {
-          comment.deleted = action.isDeleted
-        }
+        return {...state, posts: postsCopy}
       }
-      return {
-        ...state,
-        posts: [...state.posts]
-      }
+      return {...state}
     }
     case SET_POSTS: {
       let post = action.posts[0]
@@ -153,42 +157,43 @@ const profilePostsReducer = (state: InitialStateType = initialState, action: any
     }
     case SET_COMMENTS: {
       let post = state.posts.filter(post => post.id === action.postId)[0]
-      if(post.comments) {
-        post.comments = post.comments.concat(action.comments)
-      } else {
-        post.comments = action.comments
+      if(!!post) {
+        let postCopy = copyPost(post)
+
+        if(postCopy.comments.length > 0) {
+          postCopy.comments = postCopy.comments.concat(action.comments)
+        } else {
+          postCopy.comments = action.comments
+        }
+        postCopy.commentsCount = action.allCommentsCount
+        let postsCopy = [...state.posts]
+        postsCopy[postsCopy.indexOf(post)] = postCopy
+        return {...state, posts: postsCopy}
       }
-      post.commentsCount = action.allCommentsCount
-      return {
-        ...state,
-        posts: [...state.posts]
-      }
+      return {...state}
     }
     case ADD_COMMENT: {
       let post = state.posts.filter(post => post.id === action.postId)[0]
-      if(!post.comments) {
-        post.comments = []
-      }
-      let root = null
-      if(action.rootId) {
-        root = post.comments.filter(comment => comment.id === action.rootId)[0]
-        root.replies = [...[action.comment].concat(root.replies)]
-        root.repliesCount ++
-        post.comments = [...post.comments]
-        if(!post.newComments) {
-          post.newComments = new Array<PostCommentType>()
+      if(!!post) {
+        let postCopy = copyPost(post)
+        if(action.rootId) {
+          let root = post.comments.filter(comment => comment.id === action.rootId)[0]
+          if(!!root) {
+            let rootCopy = copyComment(root)
+            rootCopy.replies = [...[action.comment].concat(rootCopy.replies)]
+            rootCopy.repliesCount++
+            postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
+          }
         }
-        post.newComments = post.newComments.concat(action.comment)
+        else {
+          postCopy.comments = [action.comment].concat(postCopy.comments)
+          postCopy.commentsCount++
+        }
+        let postsCopy = [...state.posts]
+        postsCopy[postsCopy.indexOf(post)] = postCopy
+        return {...state, posts: postsCopy}
       }
-      else {
-        post.comments = [action.comment].concat(post.comments)
-        post.commentsCount++
-      }
-
-      return {
-        ...state,
-        posts: [...state.posts]
-      }
+      return {...state}
     }
     case ADD_POST: {
       if(state.ownerId && state.ownerId === action.post.creator.id) {
@@ -204,47 +209,74 @@ const profilePostsReducer = (state: InitialStateType = initialState, action: any
           posts: [action.post, ...state.posts],
         }
       }
-      return state
+      return {...state}
     }
     case SET_REPLIES: {
       let post = state.posts.filter(post => post.id === action.postId)[0]
       if(post.comments) {
         let comment = post.comments.filter(comment => comment.id === action.commentId)[0]
-        if(comment) {
-          comment.replies = comment.replies.concat(action.replies)
-          comment.repliesCount = action.allRepliesCount
-          post.comments = [...post.comments]
+        if(!!comment) {
+          let commentCopy = copyComment(comment)
+          commentCopy.replies = commentCopy.replies.concat(action.replies)
+          commentCopy.repliesCount = action.allRepliesCount
+          let postCopy = copyPost(post)
+          postCopy.comments[postCopy.comments.indexOf(comment)] = commentCopy
+          let postsCopy = [...state.posts]
+          postsCopy[postsCopy.indexOf(post)] = postCopy
+          return {...state, posts: postsCopy}
         }
-      }
-      return {
-        ...state,
-        posts: [...state.posts]
       }
     }
     case SET_POST_REACTIONS: {
       let post = state.posts.find(post => post.id === action.postId)
       if(post) {
+        let postCopy = copyPost(post)
         if(action.offsetId) {
-          post.reactions = post.reactions.concat(action.reactions)
+          postCopy.reactions = postCopy.reactions.concat(action.reactions)
         } else {
-          post.reactions = action.reactions
+          postCopy.reactions = action.reactions
         }
-        post.reactionsCount = action.reactionsCount
+        postCopy.reactionsCount = action.reactionsCount
+        let postsCopy = [...state.posts]
+        postsCopy[postsCopy.indexOf(post)] = postCopy
+        return {...state, posts: postsCopy}
       }
-
-      return {
-        ...state,
-        posts: [...state.posts]
-      }
+      return {...state}
     }
     case SET_COMMENT_REACTIONS: {
-      return {
-        ...state
+      let post = state.posts.find(post => post.id === action.postId)
+      if(!!post) {
+        let postCopy = copyPost(post)
+
+        if(action.rootId) {
+          let root = post.comments.filter(comment => comment.id === action.rootId)[0]
+          if(!!root) {
+            let rootCopy = copyComment(root)
+            let reply = root.replies.filter(reply => reply.id === action.commentId)[0]
+            if(!!reply) {
+              let replyCopy = copyComment(reply)
+              replyCopy.reactionsCount = action.reactionsCount
+              rootCopy.replies[rootCopy.replies.indexOf(reply)] = replyCopy
+              postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
+            }
+          }
+        } else {
+          let comment = post.comments.filter(comment => comment.id === action.commentId)[0]
+          if(comment) {
+            let commentCopy = copyComment(comment)
+            commentCopy.reactionsCount = action.reactionsCount
+            postCopy.comments[postCopy.comments.indexOf(comment)] = commentCopy
+          }
+        }
+        let postsCopy = [...state.posts]
+        postsCopy[postsCopy.indexOf(post)] = postCopy
+        return { ...state, posts: postsCopy}
       }
+      return {...state}
     }
     case CLEAR_POST_COMMENTS: {
-      let dpost = state.posts.filter(post => post.id === action.postId)[0]
-      dpost.comments = []
+      let post = state.posts.filter(post => post.id === action.postId)[0]
+      post.comments = []
       return {
         ...state,
         posts: [...state.posts]
@@ -252,241 +284,235 @@ const profilePostsReducer = (state: InitialStateType = initialState, action: any
     }
     case EDIT_REACTION: {
       let post = state.posts.filter(post => post.id === action.postId)[0]
-      let reaction = post.requesterReaction
-      if(reaction) {
-        let updatedReaction: ReactionType = {
-          creator: reaction.creator,
-          id: reaction.id,
-          timestamp: reaction.timestamp,
-          type: action.reactionType
-        }
-        let prevReactionType = post.requesterReaction?.type
-        post.requesterReaction = updatedReaction
-
-        let newReactionCountInfo = post.reactionsCount.find(reactionsCountItem => reactionsCountItem.type === post.requesterReaction?.type)
-        let prevReactionCountInfo = post.reactionsCount.find(reactionsCountItem => reactionsCountItem.type === prevReactionType)
-
-        if(newReactionCountInfo) {
-          newReactionCountInfo.count++
-        }
-        else {
-          post.reactionsCount.push({type: action.reactionType, count: 1})
-        }
-        if(prevReactionCountInfo) {
-          prevReactionCountInfo.count--
-        }
+      if(!!post) {
+        let postsCopy = [...state.posts]
+        let postCopy = copyPost(post)
+        let prevReaction = postCopy.requesterReaction
+        const prevReactionType = prevReaction ? prevReaction.type : null
+        postCopy.requesterReaction = action.reaction
+        editReactionsCount(postCopy.reactionsCount, action.reaction.type, prevReactionType)
+        postsCopy[postsCopy.indexOf(post)] = postCopy
+        return {...state, posts: postsCopy}
       }
-      return state
+      return {...state}
     }
     case DELETE_REACTION: {
       let post = state.posts.filter(post => post.id === action.postId)[0]
-      if(post) {
-        let reactionType = post.requesterReaction?.type
-        post.requesterReaction = null
-        let currentReactionCountInfo = post.reactionsCount.find(reactionsCountItem => reactionsCountItem.type === reactionType)
-
-        if(currentReactionCountInfo) {
-          currentReactionCountInfo.count--
-        }
-        return {
-          ...state,
-          posts: [...state.posts]
-        }
+      if(!!post) {
+        let postsCopy = [...state.posts]
+        let postCopy = copyPost(post)
+        const prevReactionType = post.requesterReaction ?
+          post.requesterReaction.type : null
+        postCopy.requesterReaction = null
+        editReactionsCount(postCopy.reactionsCount, null, prevReactionType)
+        postsCopy[postsCopy.indexOf(post)] = postCopy
+        return {...state, posts: postsCopy}
       }
-      return state
+      return {...state}
     }
     case ADD_CURRENT_USER_REACTION: {
       let post = state.posts.filter(post => post.id === action.postId)[0]
-      post.requesterReaction = action.reaction
+      if(!!post) {
+        let postsCopy = [...state.posts]
+        let postCopy = copyPost(post)
+        postCopy.requesterReaction = action.reaction
+        editReactionsCount(postCopy.reactionsCount, action.reaction.type, null)
+        postsCopy[postsCopy.indexOf(post)] = postCopy
+        return {...state, posts: postsCopy}
+      }
+      return {...state}
+    }
+    case REPLACE_CURRENT_USER_REACTION: {
+      const post = state.posts.filter(post => post.id === action.postId)[0]
+      if(!!post) {
+        let postsCopy = [...state.posts]
+        let postCopy = copyPost(post)
+        const prevReactionType = post.requesterReaction ?
+          post.requesterReaction.type : null
+        postCopy.requesterReaction = action.reaction
 
-      let currentReactionCountInfo = post.reactionsCount.find(reactionsCountItem => {
-        return reactionsCountItem.type === action.reaction.type
-      })
-      if(currentReactionCountInfo) {
-        currentReactionCountInfo.count++ 
+        editReactionsCount(postCopy.reactionsCount, action.reaction.type, prevReactionType)
+        postsCopy[postsCopy.indexOf(post)] = postCopy
+        return {...state, posts: postsCopy}
       }
-      else {
-        post.reactionsCount.push({ type: action.reaction.type, count: 1})
-      }
-
-      return {
-        ...state,
-        posts: [...state.posts]
-      }
+      return {...state}
     }
     case EDIT_POST_COMMENT: {
-      let post = state.posts.find(post => post.id === action.postId)
+      let postsCopy = [...state.posts]
+      let post = postsCopy.find(post => post.id === action.postId)
+
       if(post) {
+        let postCopy = copyPost(post)
         if(action.rootId) {
           let root = post.comments.find(comment => action.rootId === comment.id)
           if(root) {
+            let rootCopy = copyComment(root)
             let reply = root.replies.find(reply => action.commentId === reply.id)
             if(reply) {
-              const index = root.replies.indexOf(reply)
-              root.replies[index] = action.comment
-              root.replies = [...root.replies]
-              const indexOfRoot = post.comments.indexOf(root)
-              post.comments[indexOfRoot] = {...root}
-              post.comments = [...post.comments]
+              rootCopy.replies[root.replies.indexOf(reply)] = action.comment
+              postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
+              postsCopy[postsCopy.indexOf(post)] = postCopy
             }
           }
         } 
         else {
           let comment = post.comments.find(comment => action.commentId === comment.id)
           if(comment) {
-            comment.text = action.comment.text
-            comment.attachment = action.comment.attachment
+            postCopy.comments[postCopy.comments.indexOf(comment)] = action.comment
+            postsCopy[postsCopy.indexOf(post)] = postCopy
           }
         }
-      }
-      return {
-        ...state,
-        posts: [...state.posts]
-      }
-    }
-    case ADD_CURRENT_USER_COMMENT_REACTION: {
-
-      let post = state.posts.find(post => post.id === action.postId)
-      if(post) {
-        if(action.rootId) {
-          let root = post.comments.find(comment => action.rootId === comment.id)
-          if(root) {
-            let reply = root.replies.find(reply => action.commentId === reply.id)
-            if(reply) {
-              reply.requesterReaction = action.reaction
-              let currentReactionCountInfo = reply.reactionsCount.find(reactionsCountItem => reactionsCountItem.type === action.reaction.type)
-              if(currentReactionCountInfo) {
-                currentReactionCountInfo.count++ 
-              }
-              else {
-                reply.reactionsCount.push({ type: action.reaction.type, count: 1})
-              }
-            }
-            let commentIndexInPostComments = post.comments.indexOf(root)
-            post.comments[commentIndexInPostComments] = {...root}
-          }
-        }
-        else {
-          let comment = post.comments.find(comment => action.commentId === comment.id)
-          if(comment) {
-            comment.requesterReaction = action.reaction
-
-            let currentReactionCountInfo = comment.reactionsCount.find(reactionsCountItem => reactionsCountItem.type === action.reaction.type)
-            if(currentReactionCountInfo) {
-              currentReactionCountInfo.count++ 
-            }
-            else {
-              comment.reactionsCount.push({ type: action.reaction.type, count: 1})
-            }
-          }
-        }
-        post.comments = [...post.comments]
-      }
-      return {
-        ...state,
-      }
-    }
-    case EDIT_COMMENT_REACTION: {
-      let post = state.posts.find(post => post.id === action.postId)
-      if(post) {
-        if(action.rootId) {
-          let root = post.comments.find(comment => action.rootId === comment.id)
-          if(root) {
-            let reply = root.replies.find(reply => action.commentId === reply.id)
-            if(reply) {
-              
-              let reaction = reply.requesterReaction
-              let prevType: number
-  
-              if(reaction) {
-                prevType = reaction.type
-                reaction.type = action.reactionType
-                reply.requesterReaction = {...reaction}
-              }
-              let newReactionCountInfo = reply.reactionsCount.find(reactionsCountItem => reactionsCountItem.type === action.reactionType)
-              let prevReactionCountInfo = reply.reactionsCount.find(reactionsCountItem => reactionsCountItem.type === prevType)
-
-              if(newReactionCountInfo) {
-                newReactionCountInfo.count++
-              }
-              else {
-                reply.reactionsCount.push({type: action.reactionType, count: 1})
-              }
-              if(prevReactionCountInfo) {
-                prevReactionCountInfo.count--
-              }
-            }
-            let rootIndexInPostComments = post.comments.indexOf(root)
-            post.comments[rootIndexInPostComments] = {...root}
-          }
-        }
-        else {
-          let comment = post.comments.find(comment => action.commentId === comment.id)
-          if(comment) {
-            let reaction = comment.requesterReaction
-            let prevType: number
-
-            if(reaction) {
-              prevType = reaction.type
-              reaction.type = action.reactionType
-              comment.requesterReaction = {...reaction}
-            }
-            let newReactionCountInfo = comment.reactionsCount.find(reactionsCountItem => reactionsCountItem.type === action.reactionType)
-            let prevReactionCountInfo = comment.reactionsCount.find(reactionsCountItem => reactionsCountItem.type === prevType)
-
-            if(newReactionCountInfo) {
-              newReactionCountInfo.count++
-            }
-            else {
-              comment.reactionsCount.push({type: action.reactionType, count: 1})
-            }
-
-            if(prevReactionCountInfo) {
-              prevReactionCountInfo.count--
-            }
-          }
-        }
-        post.comments = [...post.comments]
+        return {...state, posts: postsCopy}
       }
       return {...state}
     }
-    case DELETE_COMMENT_REACTION: {
-      let post = state.posts.find(post => post.id === action.postId)
+    case ADD_CURRENT_USER_COMMENT_REACTION: {
+      let postsCopy = [...state.posts]
+      let post = postsCopy.find(post => post.id === action.postId)
+
       if(post) {
+        let postCopy = copyPost(post)
         if(action.rootId) {
           let root = post.comments.find(comment => action.rootId === comment.id)
           if(root) {
+            let rootCopy = copyComment(root)
             let reply = root.replies.find(reply => action.commentId === reply.id)
             if(reply) {
-              let requesterReactionType = reply.requesterReaction ? reply.requesterReaction.type : null
-              reply.requesterReaction = null
-              let currentReactionCountInfo = reply.reactionsCount.find(reactionsCountItem => reactionsCountItem.type === requesterReactionType)
-
-              if(currentReactionCountInfo) {
-                currentReactionCountInfo.count--
-              }
+              let replyCopy = copyComment(reply)
+              replyCopy.requesterReaction = action.reaction
+              editReactionsCount(replyCopy.reactionsCount, action.reaction.type, null)
+              rootCopy.replies[rootCopy.replies.indexOf(reply)] = replyCopy
+              postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
+              postsCopy[postsCopy.indexOf(post)] = postCopy
             }
-            let rootIndexInPostComments = post.comments.indexOf(root)
-            post.comments[rootIndexInPostComments] = {...root}
           }
         }
         else {
           let comment = post.comments.find(comment => action.commentId === comment.id)
           if(comment) {
-            let requesterReactionType = comment.requesterReaction ? comment.requesterReaction.type : null
-            comment.requesterReaction = null
-            let currentReactionCountInfo = comment.reactionsCount.find(reactionsCountItem => reactionsCountItem.type === requesterReactionType)
-            if(currentReactionCountInfo) {
-              currentReactionCountInfo.count--
+            let commentCopy = copyComment(comment)
+            commentCopy.requesterReaction = action.reaction
+            editReactionsCount(commentCopy.reactionsCount, action.reaction.type, null)
+            postCopy.comments[postCopy.comments.indexOf(comment)] = commentCopy
+            postsCopy[postsCopy.indexOf(post)] = postCopy
+          }
+        }
+        return {...state, posts: postsCopy}
+      }
+      return {...state}
+    }
+    case REPLACE_CURRENT_USER_COMMENT_REACTION: {
+      let postsCopy = [...state.posts]
+
+      let post = postsCopy.find(post => post.id === action.postId)
+      if(post) {
+        let postCopy = copyPost(post)
+        if(action.rootId) {
+          let root = post.comments.find(comment => action.rootId === comment.id)
+          if(root) {
+            let rootCopy = copyComment(root)
+            let reply = root.replies.find(reply => action.commentId === reply.id)
+            if(reply) {
+              let replyCopy = copyComment(reply)
+              let prevReactionType = replyCopy.requesterReaction ? replyCopy.requesterReaction.type : null
+              replyCopy.requesterReaction = action.reaction
+              editReactionsCount(replyCopy.reactionsCount, action.reaction.type, prevReactionType)
+              rootCopy.replies[rootCopy.replies.indexOf(reply)] = replyCopy
+              postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
+              postsCopy[postsCopy.indexOf(post)] = postCopy
             }
+          }
+        }
+        else {
+          let comment = post.comments.find(comment => action.commentId === comment.id)
+          if(!!comment) {
+            let commentCopy = copyComment(comment)
+            let prevReactionType = commentCopy.requesterReaction ? commentCopy.requesterReaction.type : null
+            commentCopy.requesterReaction = action.reaction
+            editReactionsCount(commentCopy.reactionsCount, action.reaction.type, prevReactionType)
+            postCopy.comments[postCopy.comments.indexOf(comment)] = commentCopy
+            postsCopy[postsCopy.indexOf(post)] = postCopy
           }
         }
         post.comments = [...post.comments]
       }
+      return {...state, posts: postsCopy}
+    }
+    case EDIT_COMMENT_REACTION: {
+      let postsCopy = [...state.posts]
+      let post = state.posts.find(post => post.id === action.postId)
 
-      return {
-        ...state
+      if(post) {
+        let postCopy = copyPost(post)
+        if(action.rootId) {
+          let root = post.comments.find(comment => action.rootId === comment.id)
+          if(root) {
+            let reply = root.replies.find(reply => action.commentId === reply.id)
+            let rootCopy = copyComment(root)
+            if(reply) {
+              let replyCopy = copyComment(reply)
+              let prevReactionType = replyCopy.requesterReaction
+                ? replyCopy.requesterReaction.type : null
+              replyCopy.requesterReaction = action.reaction
+              editReactionsCount(replyCopy.reactionsCount, action.reaction.type, prevReactionType)
+              rootCopy.replies[rootCopy.replies.indexOf(reply)] = replyCopy
+              postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
+              postsCopy[postsCopy.indexOf(post)] = postCopy
+            }
+          }
+        } else {
+          let comment = post.comments.find(comment => action.commentId === comment.id)
+          if(comment) {
+            let commentCopy = copyComment(comment)
+            let prevReactionType = commentCopy.requesterReaction
+              ? commentCopy.requesterReaction.type : null
+            commentCopy.requesterReaction = action.reaction
+            editReactionsCount(commentCopy.reactionsCount, action.reaction.type, prevReactionType)
+            postCopy.comments[postCopy.comments.indexOf(comment)] = commentCopy
+            postsCopy[postsCopy.indexOf(post)] = postCopy
+          }
+        }
       }
+      return {...state, posts: postsCopy}
+    }
+    case DELETE_COMMENT_REACTION: {
+      let postsCopy = [...state.posts]
+      let post = postsCopy.find(post => post.id === action.postId)
+
+      if(post) {
+        let postCopy = copyPost(post)
+        if(action.rootId) {
+          let root = post.comments.find(comment => action.rootId === comment.id)
+          if(root) {
+            let rootCopy = copyComment(root)
+            let reply = root.replies.find(reply => action.commentId === reply.id)
+            if(reply) {
+              let replyCopy = copyComment(reply)
+              let requesterReactionType = replyCopy.requesterReaction
+                ? replyCopy.requesterReaction.type : null
+              replyCopy.requesterReaction = null
+              editReactionsCount(replyCopy.reactionsCount, null, requesterReactionType)
+              rootCopy.replies[rootCopy.replies.indexOf(reply)] = replyCopy
+              postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
+              postsCopy[postsCopy.indexOf(post)] = postCopy
+            }
+          }
+        }
+        else {
+          let comment = post.comments.find(comment => action.commentId === comment.id)
+          if(comment) {
+            let commentCopy = copyComment(comment)
+            let requesterReactionType = commentCopy.requesterReaction
+              ? commentCopy.requesterReaction.type : null
+            commentCopy.requesterReaction = null
+            editReactionsCount(commentCopy.reactionsCount, null, requesterReactionType)
+            postCopy.comments[postCopy.comments.indexOf(comment)] = commentCopy
+            postsCopy[postsCopy.indexOf(post)] = postCopy
+          }
+        }
+      }
+
+      return {...state, posts: postsCopy}
     }
     default:
       return state;
@@ -521,14 +547,20 @@ export const actions = {
   deleteCurrentUserPostReaction: (postId: string, reactionId: string) => (
     {type: DELETE_REACTION, postId, reactionId} as const
   ),
-  editCurrentUserPostReaction: (postId: string, reactionId: string, type: number) => (
-    {type: EDIT_REACTION, postId, reactionId, reactionType: type} as const
+  editCurrentUserPostReaction: (postId: string, reaction: ReactionType, type: number) => (
+    {type: EDIT_REACTION, postId, reaction} as const
   ),
   addCurrentUserPostReaction: (postId: string, reaction: ReactionType) => (
     {type: ADD_CURRENT_USER_REACTION, postId, reaction} as const
   ),
+  replaceCurrentUserPostReaction: (postId: string, reaction: ReactionType) => (
+    {type: REPLACE_CURRENT_USER_REACTION, postId, reaction} as const
+  ),
   addCurrentUserCommentReaction: (postId: string, commentId: string, rootId: string | null, reaction: ReactionType) => (
     {type: ADD_CURRENT_USER_COMMENT_REACTION, postId, commentId, rootId, reaction} as const
+  ),
+  replaceCurrentUserCommentReaction: (postId: string, commentId: string, rootId: string | null, reaction: ReactionType) => (
+    {type: REPLACE_CURRENT_USER_COMMENT_REACTION, postId, commentId, rootId, reaction} as const
   ),
   setCommentReactions: (postId: string, commentId: string, rootId: string | null, reactions: Array<ReactionType>, reactionsCount: object, offsetId: string | null) => (
     { type: SET_COMMENT_REACTIONS, postId, commentId, rootId, reactions, reactionsCount, offsetId} as const
@@ -536,8 +568,8 @@ export const actions = {
   deleteCurrentUserCommentReaction: (postId: string, commentId: string, rootId: string | null, reactionId: string) => (
     {type: DELETE_COMMENT_REACTION, postId, commentId, rootId, reactionId} as const
   ),
-  editCurrentUserCommentReaction: (postId: string, commentId: string, rootId: string | null, reactionId: string, reactionType: number) => (
-    {type: EDIT_COMMENT_REACTION, postId, commentId, reactionId, rootId, reactionType} as const
+  editCurrentUserCommentReaction: (postId: string, commentId: string, rootId: string | null, reaction: ReactionType) => (
+    {type: EDIT_COMMENT_REACTION, postId, commentId, rootId, reaction} as const
   ),
   setNewPostError: (text: string) => (
     {type: ADD_NEW_POST_ERROR, text: text} as const
@@ -861,6 +893,55 @@ export let createComment = (
   }
 }
 
+export let createPostReaction = (
+  postId: string,
+  type: number
+): ThunkType => {
+  return async (dispatch: any) => {
+    try {
+      let response = await profileAPI.createPostReaction(postId, type)
+      if(response.status === 201) {
+        let createdReactionId = response.data.id
+
+        let getCreatedReactionResponse = await profileAPI.getPostReaction(postId, createdReactionId)
+        if(getCreatedReactionResponse.status === 200) {
+          let reaction = getCreatedReactionResponse.data.reaction
+          dispatch(actions.addCurrentUserPostReaction(postId, reaction));
+        }
+      } 
+    }
+    catch (e) {
+      const error = e as AxiosError
+      if(error.response) {
+        if(error.response.status === 422 && error.response.data.errorCode === 228) {
+          let createdReactionId = error.response.data.reactionId
+
+          let editResponse = await profileAPI.editPostReaction(postId, createdReactionId, type)
+          if(editResponse.status === 200) {
+            let getResponse = await profileAPI.getPostReaction(postId, createdReactionId)
+            if(getResponse.status === 200) {
+              let reaction = getResponse.data.reaction
+              dispatch(actions.addCurrentUserPostReaction(postId, reaction));
+            }
+          }
+          
+          // let getCreatedReactionResponse = await profileAPI.getPostReaction(postId, createdReactionId)
+
+          // if(getCreatedReactionResponse.status === 200) {
+          //   let reaction = getCreatedReactionResponse.data.reaction
+          //   dispatch(actions.addCurrentUserPostReaction(postId, reaction));
+          // }
+
+        }
+        // dispatch(getReactions(postId, null, null))
+      }
+    }
+    finally {
+      dispatch(getReactions(postId, null, null))
+    }
+  }
+}
+
 export let editPostReaction = (
   postId: string,
   reactionId: string,
@@ -870,21 +951,65 @@ export let editPostReaction = (
     try {
       let response = await profileAPI.editPostReaction(postId, reactionId, type)
       if(response.status === 200) {
-        dispatch(actions.editCurrentUserPostReaction(postId, reactionId, type));
-      }
-    } catch (e) {
-      const error = e as AxiosError
-      if(error.response) {
-        if(error.response.status === 404) {
-          dispatch(actions.deleteCurrentUserPostReaction(postId, reactionId));
+        try {
+          let getResponse = await profileAPI.getPostReaction(postId, reactionId)
+          if(getResponse.status === 200) {
+            dispatch(actions.editCurrentUserPostReaction(postId, getResponse.data.reaction, type));
+          }
+        } catch (e) {}
+        
+        let response = await profileAPI.getPostReactions(postId, null, null)
+        if(response.status === 200) {
+          let data = response.data
+          await dispatch(actions.setPostReactions(postId, data.reactions, data.reactionsCount, null))
         }
       }
     }
-    let response = await profileAPI.getPostReactions(postId, null, null)
-    if(response.status === 200) {
-      let data = response.data
-      dispatch(actions.setPostReactions(postId, data.reactions, data.reactionsCount, null))
+    catch (e) {
+      const error = e as AxiosError
+      if(error.response) {
+        if(error.response.status === 404) {
+          try {
+            let response = await profileAPI.createPostReaction(postId, type)
+            if(response.status === 201) {
+              let createdReactionId = response.data.id
+      
+              let getCreatedReactionResponse = await profileAPI.getPostReaction(postId, createdReactionId)
+              if(getCreatedReactionResponse.status === 200) {
+                dispatch(actions.replaceCurrentUserPostReaction(postId, getCreatedReactionResponse.data.reaction));
+              }
+            } 
+          }
+          catch (e) {
+            const error = e as AxiosError
+            if(error.response) {
+              if(error.response.status === 422 && error.response.data.errorCode === 228) {
+                let createdReactionId = error.response.data.reactionId
+      
+                let editResponse = await profileAPI.editPostReaction(postId, createdReactionId, type)
+                if(editResponse.status === 200) {
+                  let getResponse = await profileAPI.getPostReaction(postId, createdReactionId)
+                  if(getResponse.status === 200) {
+                    let reaction = getResponse.data.reaction
+                    dispatch(actions.addCurrentUserPostReaction(postId, reaction));
+                  }
+                }
+                
+                // let getCreatedReactionResponse = await profileAPI.getPostReaction(postId, createdReactionId)
+      
+                // if(getCreatedReactionResponse.status === 200) {
+                //   let reaction = getCreatedReactionResponse.data.reaction
+                //   dispatch(actions.addCurrentUserPostReaction(postId, reaction));
+                // }
+      
+              }
+              // dispatch(getReactions(postId, null, null))
+            }
+          }
+        }
+      }
     }
+
   }
 }
 
@@ -912,42 +1037,6 @@ export let deletePostReaction = (
   }
 }
 
-export let createPostReaction = (
-  postId: string,
-  type: number
-): ThunkType => {
-  return async (dispatch: any) => {
-    try {
-      let response = await profileAPI.createPostReaction(postId, type)
-      if(response.status === 201) {
-        let createdReactionId = response.data.id
-        let getCreatedReactionResponse = await profileAPI.getPostReaction(postId, createdReactionId)
-        if(getCreatedReactionResponse.status === 200) {
-          let reaction = getCreatedReactionResponse.data.reaction
-          dispatch(actions.addCurrentUserPostReaction(postId, reaction));
-        }
-        dispatch(getReactions(postId, null, null))
-      } 
-    }
-    catch (e) {
-      const error = e as AxiosError
-      if(error.response) {
-          if(error.response.status === 422 && error.response.data.errorCode === 228) {
-          let createdReactionId = error.response.data.reactionId
-          let getCreatedReactionResponse = await profileAPI.getPostReaction(postId, createdReactionId)
-
-          if(getCreatedReactionResponse.status === 200) {
-            let reaction = getCreatedReactionResponse.data.reaction
-            dispatch(actions.addCurrentUserPostReaction(postId, reaction));
-          }
-        }
-        dispatch(getReactions(postId, null, null))
-      }
-    }
-
-  }
-}
-
 export let createCommentReaction = (
   postId: string,
   commentId: string,
@@ -963,23 +1052,37 @@ export let createCommentReaction = (
 
         if(getCreatedReactionResponse.status === 200) {
           let reaction = getCreatedReactionResponse.data.reaction
-          dispatch(actions.addCurrentUserCommentReaction(postId, commentId, rootId, reaction));
+          await dispatch(actions.addCurrentUserCommentReaction(postId, commentId, rootId, reaction));
         }
-
-      } 
-    } catch (e) {
+      }
+    }
+    catch (e) {
       const error = e as AxiosError
       if(error.response) {
-          if(error.response.status === 422 && error.response.data.errorCode === 228) {
+        if(error.response.status === 422 && error.response.data.code === 80) {
           let createdReactionId = error.response.data.reactionId
           let getCreatedReactionResponse = await profileAPI.getCommentReaction(commentId, createdReactionId)
 
           if(getCreatedReactionResponse.status === 200) {
             let reaction = getCreatedReactionResponse.data.reaction
-            dispatch(actions.addCurrentUserCommentReaction(postId, commentId, rootId, reaction));
+            if(reaction.type === type) {
+              await dispatch(actions.addCurrentUserCommentReaction(postId, commentId, rootId, reaction))
+            }
+            else {
+              let response = await profileAPI.editCommentReaction(commentId, reaction.id, type)
+              if(response.status === 200) {
+                let getReactionResponse = await profileAPI.getCommentReaction(commentId, reaction.id)
+                if(getReactionResponse.status === 200) {
+                  dispatch(actions.addCurrentUserCommentReaction(postId, commentId, rootId, getReactionResponse.data.reaction));
+                }
+              }
+            }
           }
         }
       }
+    }
+    finally {
+      dispatch(getCommentReactions(postId, commentId, rootId, null, null))
     }
   }
 }
@@ -996,13 +1099,34 @@ export let editCommentReaction = (
       let response = await profileAPI.editCommentReaction(commentId, reactionId, type)
 
       if(response.status === 200) {
-        dispatch(actions.editCurrentUserCommentReaction(postId, commentId, rootId, reactionId, type));
+        try {
+          let getResponse = await profileAPI.getCommentReaction(commentId, reactionId)
+          if(getResponse.status === 200) {
+            dispatch(actions.editCurrentUserCommentReaction(postId, commentId, rootId, getResponse.data.reaction));
+          }
+        } catch (e) {
+          const error = e as AxiosError
+        }
       }
-    } catch (e) {
+      // dispatch(getCommentReactions(postId, commentId, rootId, null, null))
+    }
+    catch (e) {
       const error = e as AxiosError
       if(error.response) {
         if(error.response.status === 404) {
-          dispatch(actions.deleteCurrentUserCommentReaction(postId, commentId, rootId, reactionId));
+          // dispatch(actions.deleteCurrentUserCommentReaction(postId, commentId, rootId, reactionId));
+          // await dispatch(createCommentReaction(postId, commentId, rootId, type))
+          let response = await profileAPI.createCommentReaction(commentId, type)
+          if(response.status === 201) {
+            let createdReactionId = response.data.id
+            let getCreatedReactionResponse = await profileAPI.getCommentReaction(commentId, createdReactionId)
+    
+            if(getCreatedReactionResponse.status === 200) {
+              let reaction = getCreatedReactionResponse.data.reaction
+              await dispatch(actions.replaceCurrentUserCommentReaction(postId, commentId, rootId, reaction))
+            }
+          }
+          
         }
       }
     }
@@ -1029,6 +1153,8 @@ export let deleteCommentReaction = (
           dispatch(actions.deleteCurrentUserCommentReaction(postId, commentId, rootId, reactionId));
         }
       }
+    } finally {
+      dispatch(getCommentReactions(postId, commentId, rootId, null, null)) // обновление количества реакций
     }
   }
 }
@@ -1045,6 +1171,56 @@ export let getCommentReactions = (
     if(response.status === 200) {
       let data = response.data
       dispatch(actions.setCommentReactions(postId, commentId, rootId, data.reactions, data.reactionsCount, null))
+    }
+  }
+}
+
+export const copyPost = (post: ProfilePostType): ProfilePostType => {
+  const reactionsCount: Array<ReactionsCountItem> = []
+  post.reactionsCount.forEach(item => {
+    reactionsCount.push({type: item.type, count: item.count})
+  })
+
+  return {
+    ...post,
+    comments: [...post.comments],
+    reactions: [...post.reactions],
+    reactionsCount
+  }
+}
+
+export const copyComment = (comment: PostCommentType): PostCommentType => {
+  const reactionsCount: Array<ReactionsCountItem> = []
+
+  comment.reactionsCount.forEach(item => {
+    reactionsCount.push({
+      type: item.type,
+      count: item.count
+    })
+  })
+
+  let copy = {
+    ...comment,
+    replies: [...comment.replies],
+    reactions: [...comment.reactions],
+    reactionsCount
+  }
+  return copy
+}
+
+const editReactionsCount = (reactionsCount: ReactionsCountItem[], newType: number | null, prevType: number | null) => {
+  if(prevType) {
+    let prevReactionCountInfo = reactionsCount.find(item => item.type === prevType)
+    if(prevReactionCountInfo) {
+      prevReactionCountInfo.count--
+    }
+  }
+  if(newType) {
+    let newReactionCountInfo = reactionsCount.find(item => item.type === newType)
+    if(newReactionCountInfo) {
+      newReactionCountInfo.count++
+    } else {
+      reactionsCount.push({type: newType, count: 1})
     }
   }
 }

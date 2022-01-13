@@ -6,7 +6,7 @@ import reactionsData from './ReactionsData.ts'
 
 const ReactionsList = React.memo(props => {
 
-  const {onReactionClick} = props
+  const {onReactionClick, showDelete, onDelete} = props
 
   const classes = useStyles();
 
@@ -25,6 +25,16 @@ const ReactionsList = React.memo(props => {
       elevation={3}
       className={classes.reactionsContainer}
     >
+      { showDelete && <div
+          className={classes.reactionContainer}
+          onClick={onDelete}
+        >
+          <div
+            className={classes.reactionImage}
+            style={{backgroundImage: `url(/images/reactions/delete.png)`}}
+          />
+        </div>
+      }
       { reactionsData.map(reaction => {
           return (
             <div
@@ -37,8 +47,6 @@ const ReactionsList = React.memo(props => {
                 // onMouseEnter={onReactionHover}
                 // onMouseLeave={onReactionUnhover}
                 // width='32' height='32'
-                src={reaction.src}
-                alt={reaction.emotion}
                 style={{backgroundImage: `url(${reaction.src})`}}
               />
             </div>

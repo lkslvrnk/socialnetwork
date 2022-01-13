@@ -57,6 +57,7 @@ const Reactions = React.memo(props => {
 
   const deleteReaction = () => {
     if(currentUserReaction) {
+      setAnchor(null)
       setReactionIsDeleting(true)
       onDeleteReaction()
     }
@@ -98,7 +99,7 @@ const Reactions = React.memo(props => {
       <div>
         <div style={{ position: 'relative' }} >
           <IconButton
-            onClick={currentUserReaction ? deleteReaction : openPopper}
+            onClick={openPopper}
             disableRipple
           >
             { reactionType
@@ -126,11 +127,7 @@ const Reactions = React.memo(props => {
           }}
           transition
         >
-          {({ TransitionProps }) => (
-            <Fade { ...TransitionProps } >
-              <ReactionsList onReactionClick={ onReactionClick } />
-            </Fade>
-          )}
+          <ReactionsList onReactionClick={ onReactionClick } onDelete={deleteReaction} showDelete={!!currentUserReaction} />
         </Popper>
       </div>
     </ClickAwayListener>

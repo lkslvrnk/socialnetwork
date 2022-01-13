@@ -1,3 +1,5 @@
+import { imagesStorage } from "../api/api";
+
 export function nFormatter(num, digits) {
     const lookup = [
         { value: 1, symbol: "" },
@@ -26,3 +28,19 @@ export function debounce(func, ms) {
       }, ms)
     }
   }
+
+export function createSimpleGalleryPhoto(id, preview, large) {
+  return {
+    id: id,
+    large: {
+      src: `${imagesStorage}/${large.src}`,
+      width: large.width,
+      height: large.height
+    },
+    preview: {
+      src: `${imagesStorage}/${preview.src}`,
+      width: preview.width,
+      height: preview.height
+    }
+  }
+}

@@ -83,6 +83,15 @@ export const profileAPI = {
     formData.append('width', width)
     return instance.post(`profile-pictures`, formData, { headers: { 'Content-Type': 'multipart/form-data' }})
   },
+  updateCover: (photo: any, x: string, y: string, width: string) => {
+    let formData = new FormData()
+    formData.append('photo', photo)
+    //formData.append('medium', medium)
+    formData.append('x', x)
+    formData.append('y', y)
+    formData.append('width', width)
+    return instance.post(`profile-covers`, formData, { headers: { 'Content-Type': 'multipart/form-data' }})
+  },
   createPhoto: (image: any, addCreator: string, albumId: string) => {
     let formData = new FormData()
     formData.append('image', image)

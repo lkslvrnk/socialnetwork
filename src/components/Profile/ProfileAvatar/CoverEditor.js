@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import Slider from '@material-ui/core/Slider';
 import {connect, useDispatch} from 'react-redux'
 import {compose} from 'redux'
-import {updateAvatar, createPhoto} from '../../../redux/profile_reducer'
+import {updateCover} from '../../../redux/profile_reducer'
 import Button from "@material-ui/core/Button";
 import Input from '@material-ui/core/Input';
 import Dialog from '@material-ui/core/Dialog';
@@ -18,14 +18,19 @@ import AvatarEditor from 'react-avatar-editor'
 import { useMediaQuery } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import ButtonWithCircularProgress from '../../Common/ButtonWithCircularProgress';
+import Cropper from "react-cropper";
+import "cropperjs/dist/cropper.css";
 
-const MyAvatarEditor = props => {
+const CoverEditor = props => {
+  let [selectedFile, setSelectedFile] = useState(null)
   let [selectedImage, setSelectedImage] = useState(null)
+  const [cropData, setCropData] = useState("#");
   let [showCancelDialog, setShowCancelDialog] = useState(false)
-  let [scaleValue, setScaleValue] = useState(1)
+  let [scaleValue, setScaleValue] = useState(0.3)
   const { t } = useTranslation();
   const dispatch = useDispatch()
-
+  const [cropper, setCropper] = useState()
+  const defaultSrc = "https://img2.akspic.ru/previews/5/7/1/6/6/166175/166175-gubka_bob-multfilm-multik-bikini_bottom-nikelodeon-500x.jpg";
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.down('xs'));
   const [isUpdating, setIsUpdating] = useState(false)
@@ -40,26 +45,21 @@ const MyAvatarEditor = props => {
     if(file) {
       const {type} = file
       if(type && (type.endsWith('jpeg') || type.endsWith('png') || type.endsWith('jpg'))) {
-        setSelectedImage(file)
+        setSelectedFile(file)
+        const reader = new FileReader();
+        reader.onload = () => {
+          setSelectedImage(reader.result)
+        };
+        reader.readAsDataURL(file);
       }
     }
   }
-
-  let editorRef = React.useRef(null)
 
   React.useEffect(() => {
     if(!props.show) {
       setSelectedImage(null)
     }
   }, [props.show])
-
-  let onMinus = () => {
-    if(scaleValue > 1) setScaleValue(scaleValue - 0.1)
-  }
-
-  let onPlus = () => {
-    if(scaleValue < 10) setScaleValue(scaleValue + 0.1)
-  }
 
   let close = () => {
     setShowCancelDialog(false)
@@ -76,26 +76,27 @@ const MyAvatarEditor = props => {
   }
 
   const onCrop = async () => {
-    if(editorRef.current !== null) {
+    if (typeof cropper !== "undefined") {
       setIsUpdating(true)
 
-      let rect = editorRef.current.getCroppingRect()
-
-      let img = new Image()
-      img.src = window.URL.createObjectURL(selectedImage)
-
-      img.onload = () => {
-        let y = img.height * rect.y
-        let x = img.width * rect.x
-        let width = img.width * rect.width
-        dispatch(updateAvatar(selectedImage, x, y, width, props.currentUserId))
-          .then(
-            () => setIsUpdating(false),
-            () => setIsUpdating(false),
-          )
-      } 
+      const data = cropper.getData()
+      const x = data.x
+      const y = data.y
+      const width = data.width
+      dispatch(updateCover(selectedFile, x, y, width, props.currentUserId))
+        .then(
+          () => setIsUpdating(false),
+          () => setIsUpdating(false),
+        )
     }
   }
+
+  const getCropData = () => {
+    if (typeof cropper !== "undefined") {
+      console.log(cropper.getData())
+      setCropData(cropper.getCroppedCanvas().toDataURL());
+    }
+  };
 
   return (
     <Dialog
@@ -110,35 +111,28 @@ const MyAvatarEditor = props => {
         }
       </DialogTitle>
         {selectedImage && 
-          <div style={{display: 'flex', justifyContent: 'center'}}>
-            <AvatarEditor
-              ref={editorRef}
-              image={selectedImage}
-              width={300}
-              height={300}
-              border={[8, 8]}
-              color={[255, 255, 255, 0.8]}
-              scale={scaleValue}
-              borderRadius={1100}
+          <div style={{ maxWidth: 800 }}>
+            <Cropper
+              style={{overflow: 'hidden'}}
+              zoomTo={scaleValue}
+              initialAspectRatio={3.03}
+              aspectRatio={3.03}
+              src={selectedImage}
+              viewMode={1}
+              minCropBoxHeight={10}
+              background={false}
+              responsive={true}
+              autoCropArea={1}
+              checkOrientation={false}
+              onInitialized={(instance) => {
+                setCropper(instance);
+              }}
+              guides={true}
+              dragMode='move'
             />
           </div>
         }
       <DialogContent>
-        {selectedImage && 
-          <div style={{display: 'flex', alignItems: 'center'}}>
-            <IconButton onClick={onMinus} children={<RemoveIcon />} />
-              <Slider
-                step={0.1}
-                min={1}
-                max={10}
-                value={scaleValue}
-                onChange={onScaleChange} 
-                aria-labelledby="continuous-slider"
-                style={{margin: '0 8px'}}
-              />
-            <IconButton size="small" onClick={onPlus} children={<AddIcon />} />
-          </div>
-        }
         {!selectedImage &&
           <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
             <div style={{marginBottom: 16}}>
@@ -162,7 +156,7 @@ const MyAvatarEditor = props => {
         }
       </DialogContent>
       <DialogActions>
-      {selectedImage && 
+        {selectedImage && 
         <>
           <Button 
             onClick={() => setSelectedImage(null)}
@@ -194,5 +188,5 @@ const MyAvatarEditor = props => {
 let mapStateToProps = state => ({})
 
 export default compose(
-  connect(mapStateToProps, { updateAvatar, createPhoto }),
-)(MyAvatarEditor);
+  connect(mapStateToProps),
+)(CoverEditor);

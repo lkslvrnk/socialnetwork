@@ -147,6 +147,16 @@ export let updateAvatar = (photo: any, x: string, y: string, width: string, user
   }
 }
 
+export let updateCover = (photo: any, x: string, y: string, width: string, userId: string): ThunkType => {
+  return async (dispatch) => {
+    let response = await profileAPI.updateCover(photo, x, y, width)
+    if(response.status === 201) {
+      dispatch(cleanProfile())
+      dispatch(getUserById(userId))
+    }
+  }
+}
+
 export let createPhoto = (image: any): ThunkType => async (dispatch) => {
   let response = await profileAPI.createPhoto(image, '0', '-1')
   return response

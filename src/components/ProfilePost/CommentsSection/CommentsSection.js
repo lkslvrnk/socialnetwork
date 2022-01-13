@@ -97,7 +97,6 @@ const CommentsSection = React.memo(props => {
                 postId={postId}
                 postCreatorId={postCreatorId}
                 commentData={comment}
-                currentUserReaction={comment.requesterReaction}
                 isReply={false}
                 commentingIsDisabled={commentingIsDisabled}
                 inList={true}

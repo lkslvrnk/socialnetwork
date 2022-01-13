@@ -200,6 +200,11 @@ export const useStyles = makeStyles(theme => {
     loadMore: {
       display: 'flex', justifyContent: 'center'
     },
+    editButtonRoot: {
+      borderRadius: 100,
+      background: theme.palette.background.paper,
+      border: `2px solid ${theme.palette.divider}`,
+    },
     resize: theme.typography.body2
   }
 })

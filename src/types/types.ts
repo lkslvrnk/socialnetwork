@@ -167,14 +167,23 @@ export type ProfileType = {
   banned: boolean
   acceptMessages: boolean
   picture: ProfilePictureType | null
+  cover: ProfileCoverType | null
   username: string
   acceptedConnections: Array<ConnectionType>
   allAcceptedConnections: number
   postsCount: number
   pictures: Array<ProfilePictureType>
+  covers: Array<ProfileCoverType>
 }
 
 export type ProfilePictureType = {
+  id: string
+  creator: PhotoCreatorType
+  timestamp: number
+  versions: PictureVersionsType
+}
+
+export type ProfileCoverType = {
   id: string
   creator: PhotoCreatorType
   timestamp: number

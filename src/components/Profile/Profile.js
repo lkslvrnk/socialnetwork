@@ -13,7 +13,7 @@ import {
 } from '../../redux/profile_posts_reducer'
 import { addPhoto } from '../../redux/photos_reducer'
 import {
-  Avatar, Button, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Paper
+  Avatar, Button, IconButton, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Paper
 } from '@material-ui/core';
 import { usePrevious } from '../../hooks/hooks.js';
 import PostForm from './PostForm.js';
@@ -47,17 +47,22 @@ import RssFeedIcon from '@material-ui/icons/RssFeed';
 import TypographyLink from '../Common/TypographyLink.jsx';
 import SubscriptionsIcon from '@material-ui/icons/Subscriptions';
 import Info from './Info.js';
+import MyAvatarEditor from './ProfileAvatar/MyAvatarEditor.js';
+import CoverEditor from './ProfileAvatar/CoverEditor.js';
 
 const Profile = React.memo(props => {
 
   const { postsLoaded, deletePost, restorePost, posts, currentUserId, profile, profileLoaded, postsCursor, postsCount } = props
   
+  console.log('Profile rerender')
+
   const mobile = useMediaQuery('(max-width: 860px)')
 
   const isAuthenticated = !!currentUserId
   
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [viewerIsOpen, setViewerIsOpen] = useState(false);
+  const [showAvatarEditor, setShowAvatarEditor] = useState(false)
 
   const params = useParams()
   const dispatch = useDispatch()
@@ -112,6 +117,7 @@ const Profile = React.memo(props => {
     ) {
       dispatch(getPosts(profile.id, 5, null, 'DESC', 2, 'DESC'))
     }
+    setShowAvatarEditor(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile])
 
@@ -134,9 +140,9 @@ const Profile = React.memo(props => {
   
   reversedPictures.forEach((picture) => {
     const id = picture.id
-    const smallSrc = `${imagesStorage}${picture.versions.small}`
+    const smallSrc = `${imagesStorage}${picture.versions.small.src}`
     // const largeSrc = `${imagesStorage}${picture.versions.large}`
-    const originalSrc = `${imagesStorage}${picture.versions.original}`
+    const originalSrc = `${imagesStorage}${picture.versions.original.src}`
     preparedSmallPictures.push({id, src: smallSrc})
     preparedLargePictures.push({
       id,
@@ -245,20 +251,34 @@ const Profile = React.memo(props => {
     <div
       className={classes.cover}
       style={{
-        backgroundImage: profileLoaded ? `url(${coverSrc})` : 'none',
+        backgroundImage: profileLoaded ? `url(${profile.cover ? `${imagesStorage}${profile.cover.versions.cropped_large}` : coverSrc })` : 'none',
       }}
     >
+      { isOwnProfile && <Paper className={classes.editButtonRoot} style={{position: 'absolute', bottom: 5, right: 5}} >
+        <IconButton
+          size='small'
+          onClick={() => setShowAvatarEditor(true)}
+        >
+          <EditIcon />
+        </IconButton>
+      </Paper>
+      }
     { !profileLoaded &&
-      <Skeleton variant='rect'
-        style={{
-          borderTopLeftRadius: 3,
-          borderTopRightRadius: 3,
-          position: 'absolute',
-          top: 0, left: 0, bottom: 0, right: 0,
-          paddingBottom: '33%'
-        }}
-      />
+        <Skeleton variant='rect'
+          style={{
+            borderTopLeftRadius: 3,
+            borderTopRightRadius: 3,
+            position: 'absolute',
+            top: 0, left: 0, bottom: 0, right: 0,
+            paddingBottom: '33%'
+          }}
+        />
     }
+        <CoverEditor
+          currentUserId={currentUserId} 
+          show={showAvatarEditor} 
+          setShow={setShowAvatarEditor}
+        />
     </div>
   )
 

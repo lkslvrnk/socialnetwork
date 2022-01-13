@@ -47,7 +47,7 @@ const ProfileAvatar: FC<PropsType> = memo((props: PropsType) => {
   
   const picture = useSelector(getProfilePicture)
   // @ts-ignore
-  const pictureSrc: any = picture && `${imagesStorage}${picture.versions['cropped_medium']}`
+  const pictureSrc: any = picture && `${imagesStorage}${picture.versions['cropped_large']}`
 
   const classes = useStyles({ avatar: picture });
   const [showAvatarEditor, setShowAvatarEditor] = useState(false)

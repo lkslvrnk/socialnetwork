@@ -1,4 +1,4 @@
-import { Button, CardActions, Checkbox, ClickAwayListener, IconButton, MenuItem, MenuList, Paper, Popper, TextField, useTheme } from '@material-ui/core'
+import { Button, CardActions, Checkbox, ClickAwayListener, Dialog, DialogActions, DialogContent, IconButton, MenuItem, MenuList, Paper, Popper, TextField, Typography, useTheme } from '@material-ui/core'
 import React, { useState, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import PhotoGallery from '../Common/PhotoGallery'
@@ -17,6 +17,9 @@ import {
   editPost,
   patchPost
 } from '../../redux/profile_posts_reducer'
+import SimplePhotoGallery from '../Common/SimplePhotoGallery'
+import { createSimpleGalleryPhoto } from '../../helper/helperFunctions'
+import AcceptDialog from '../Common/AcceptDialog'
 
 const PostForm = props => {
   const { onSubmit, editMode, setEditMode, text, currentAttachments, commentingIsDisabled, isPublic, onEditFinish, editingPostId} = props
@@ -42,8 +45,9 @@ const PostForm = props => {
   const [disableComments, setDisableComments] = useState(editMode ? commentingIsDisabled : false)
   const [error, setError] = useState('')
   const [photoUploadError, setPhotoUploadError] = useState(false)
+  const [showErrorDialog, setShowErrorDialog] = useState(false)
 
-  //console.log(attachments)
+  // console.log(attachments)
 
   let handleImageUpload = async (event) => {
     const files = event.target.files
@@ -56,11 +60,16 @@ const PostForm = props => {
       if(!type) {
         continue
       }
+      if((files.length + attachments.length) > 8) {
+        setShowErrorDialog(t("Can't add more than 8 photos"))
+        photoInput.current.value = ''
+        return
+      }
       if((type && type.endsWith('jpeg')) || (type.endsWith('png')) || (type.endsWith('jpg'))) { 
         let filename = file.name
         let fileId = file.name + Date.now()
         setProgressObjects(prev => {
-          let progressInfo = {filename, loaded: 0, total: -1, fileId: fileId}
+          let progressInfo = {filename, loaded: 0, total: -1, fileId: fileId, percents: 0}
           return [...prev, progressInfo]
         })
         pseudoFiles.push({fileId: fileId, filename, type, realFile: file})
@@ -75,30 +84,20 @@ const PostForm = props => {
       let pseudoFile = pseudoFiles[i]
       
       try {
-        let response = await dispatch(createPostPhoto(pseudoFile.realFile, (progressEvent) => {
-          setProgressObjects(prev => {
-            let progressInfo = prev.find(progressInfoItem => progressInfoItem.fileId === pseudoFile.fileId)
-
-            if(progressInfo) {
-              if(progressInfo.total === -1) {
-                progressInfo.total = progressEvent.total
-              }
-              progressInfo.loaded = progressEvent.loaded
-            }
-            return [...prev]
-          })
-        }))
+        let response = await dispatch(createPostPhoto(pseudoFile.realFile, () => {}))
 
         if(response.status === 201) {
           response = await dispatch(getPostPhoto(response.data.id))
           if(response.status === 200) {
-            let returnedPhoto = response.data.photo
-            let photo = {
-              id: returnedPhoto.id,
-              originalSrc: `${imagesStorage}/${returnedPhoto.versions[0]}`,
-              mediumSrc: `${imagesStorage}/${returnedPhoto.versions[2]}`
-            }
+            let returned = response.data.photo
+            let photo = createSimpleGalleryPhoto(returned.id, returned.versions[2], returned.versions[0])
             setAttachments(prev => [...prev, photo])
+            
+            setProgressObjects(prev => {
+              return prev.filter(prevProgress => {
+                return prevProgress.fileId !== pseudoFile.fileId
+              })
+            })
           }
         }
       }
@@ -298,23 +297,17 @@ const PostForm = props => {
 
         <div style={{ marginBottom: 8}}>
           { progressObjects.map(e => {
-            let percents = 0
-            
-            if(e.total > -1 && e.loaded) {
-              percents = Math.floor((e.loaded / e.total) * 100)
-            }
-            if(percents === 100) {
-              return undefined
-            }
-            return <div style={{display: 'flex', alignItems: 'center', marginBottom: 8}}>
+            // Не работает onDownloadProgress при загрузке данных из сервера, поэтому не получается сделать на 100% правдивую шкалу,
+            // поэтому я решил просто добавить анимацию загрузки без заполнения
+            return <div key={e.fileId} style={{display: 'flex', alignItems: 'center', marginBottom: 8}}>
               <div style={{ marginRight: 16}} >{e.filename}</div>
-              <LinearProgress style={{width: 150, height: 10}} variant="determinate" value={percents} />
+              <LinearProgress style={{width: 150, height: 10}} />
             </div>
           })}
         </div>
 
         <div>
-          <PhotoGallery
+          <SimplePhotoGallery
             passedImages={attachments ? attachments : []}
             editMode={true}
             spacing={1}
@@ -380,6 +373,23 @@ const PostForm = props => {
       </CardActions>
       
       { isSubmitting && <LinearProgress /> }
+      <Dialog
+        onClose={() => setShowErrorDialog(false)}
+        open={!!showErrorDialog}
+      >
+        <DialogContent >
+          <Typography variant='body2'>{showErrorDialog}</Typography>
+        </DialogContent>
+        
+        <DialogActions>
+          <Button
+            onClick={() => setShowErrorDialog(false)}
+          >
+            {t('Ok')}
+          </Button>
+        </DialogActions>
+        
+      </Dialog>
 
     </div>
   )

@@ -14,7 +14,7 @@ import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import { getReplies } from '../../../redux/profile_posts_reducer'
 import { getCurrentUserId, getCurrentUserPicture } from '../../../redux/auth_selectors'
 import Preloader from '../../Common/Preloader/Preloader';
-import { nFormatter } from '../../../helper/helperFunctions.js'
+import { createSimpleGalleryPhoto, nFormatter } from '../../../helper/helperFunctions.js'
 import { NavLink } from 'react-router-dom';
 import { imagesStorage } from '../../../api/api';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
@@ -28,18 +28,20 @@ import {
   restoreComment
 } from '../../../redux/profile_posts_reducer'
 import { PhotoSlider } from 'react-photo-view';
+import SimplePhotoGallery from '../../Common/SimplePhotoGallery';
 
 const Comment = React.memo(props => {
   const {
     postId,
     postCreatorId,
     commentData,
-    currentUserReaction,
     isReply,
     commentingIsDisabled,
     onRespond,
     userIsAuthenticated
   } = props
+
+  console.log('comment rerender')
 
   const classes = useStyles({isReply: isReply})
   const { t } = useTranslation()
@@ -72,7 +74,7 @@ const Comment = React.memo(props => {
   const isEditable = differenceInHours < 24
 
   const [viewerIsOpen, setViewerIsOpen] = useState(false);
-  const viewerPhotos = !!commentData.attachment ? [{src: `${imagesStorage}${commentData.attachment.originalSrc}`}] : []
+  const viewerPhotos = !!commentData.attachment ? [{src: `${imagesStorage}${commentData.attachment.versions[0].src}`}] : []
 
   const onRespondToReplyClick = (comment) => {
     setReplied(comment)
@@ -169,22 +171,25 @@ const Comment = React.memo(props => {
   }
 
   const handleReactionClick = (type) => {
+
     if(!userIsAuthenticated || isReacting) {
       return
     }
     let commentId = commentData.id
+    let requesterReaction = commentData.requesterReaction
 
-    if(currentUserReaction) {
-      let currentUserReactionId = currentUserReaction.id
+    if(requesterReaction) {
+      
+      let requesterReactionId = requesterReaction.id
 
-      if(type === currentUserReaction.type) {
+      if(type === requesterReaction.type) {
         beforeReacting(type)
-        dispatch(deleteCommentReaction(postId, commentId, commentData.rootId, currentUserReactionId))
+        dispatch(deleteCommentReaction(postId, commentId, commentData.rootId, requesterReactionId))
           .then(onReactionClickEnd, onReactionClickEnd)
       }
-      else if(type !== currentUserReaction.type) {
+      else if(type !== requesterReaction.type) {
         beforeReacting(type)
-        dispatch(editCommentReaction(postId, commentId, commentData.rootId, currentUserReactionId, type))
+        dispatch(editCommentReaction(postId, commentId, commentData.rootId, requesterReactionId, type))
           .then(onReactionClickEnd, onReactionClickEnd)
       }
     }
@@ -288,6 +293,35 @@ const Comment = React.memo(props => {
     repliedCreatorName = `${repliedCreator.firstName} ${repliedCreator.lastName}`
   }
 
+  let commentAttachment = null
+  if(!!commentData.attachment) {
+    const attachment = commentData.attachment
+    const medium = attachment.versions[2]
+    let maxSize = 150
+    const width = medium.width
+    const height = medium.height
+    if(width > height) {
+      maxSize = maxSize * (width / height)
+    }
+
+    commentAttachment = (
+      <div style={{maxWidth: maxSize, maxHeight: maxSize}}>
+        <SimplePhotoGallery
+          centering={false}
+          passedImages={[
+            createSimpleGalleryPhoto(
+              commentData.attachment.id,
+              medium,
+              commentData.attachment.versions[0]
+            )
+          ]}
+          spacing={1}
+          imageBorderRadius={2}
+        />
+      </div>
+    )
+  }
+
   const commentContent = (
     <div className={classes.content} >
       <div className={classes.commentText} >
@@ -306,18 +340,7 @@ const Comment = React.memo(props => {
         <Typography component='span' variant='body2'>{commentData.text}</Typography>
       </div>
 
-      { commentData.attachment && 
-        <div style={{marginTop: commentData.text ? 8 : 0, maxWidth: 150}} >
-          { commentData.attachment && 
-            <img
-              alt='comment-attachment'
-              style={{width: '100%', cursor: 'pointer'}}
-              src={`${imagesStorage}/${commentData.attachment.mediumSrc}`}
-              onClick={() => setViewerIsOpen(true)}
-            />
-          }
-        </div>
-      }
+      {commentAttachment}
     </div>
   )
 
@@ -433,7 +456,6 @@ const Comment = React.memo(props => {
         postId={postId}
         postCreatorId={postCreatorId}
         commentData={reply}
-        currentUserReaction={reply.requesterReaction}
         replies={[]}
         isReply={true}
         commentingIsDisabled={commentingIsDisabled}
