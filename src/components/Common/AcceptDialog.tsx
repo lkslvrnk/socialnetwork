@@ -7,9 +7,17 @@ import DialogActions from '@material-ui/core/DialogActions';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 
-const AcceptDialog = React.memo((
-  {show, setShow, onYes, title, text}
-) => {
+type AcceptDialogType = {
+  show: boolean,
+  setShow: Function,
+  onYes: Function,
+  title: string,
+  text: string
+}
+
+const AcceptDialog: React.FC<AcceptDialogType> = React.memo((props: AcceptDialogType) => {
+  const { show, setShow, onYes, title, text } = props
+  
   const { t } = useTranslation();
   const handleClose = () => {
     setShow(false)
@@ -31,7 +39,7 @@ const AcceptDialog = React.memo((
           {t('Cancel')}
         </Button>
         <Button
-          onClick={onYes}
+          onClick={() => onYes()}
         >
           {t('Yes')}
         </Button>

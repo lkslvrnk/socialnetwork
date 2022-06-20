@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import { ConnectionType, } from '../../types/types';
-import { Avatar, Button, CircularProgress, Typography } from '@material-ui/core';
-import { imagesStorage } from '../../api/api';
+import { Avatar, Badge, Button, CircularProgress, Typography } from '@material-ui/core';
 import { useStyles } from './ConnectionsStyles';
 import TypographyLink from '../Common/TypographyLink';
 
@@ -11,15 +10,16 @@ type IncomingConnectionPropsType = {
   connection: ConnectionType
   handleAccept: Function
   handleDelete: Function
+  lastRequestsCheck: number
 }
 
 const IncomingConnection: React.FC<IncomingConnectionPropsType> = React.memo((props: IncomingConnectionPropsType) => {
-  const {connection, handleAccept, handleDelete} = props
+  const {connection, handleAccept, handleDelete, lastRequestsCheck} = props
   const { t } = useTranslation()
   const classes = useStyles()
 
   const initiator = connection.initiator
-  const userPicture = `${imagesStorage}${initiator.picture}`
+  const userPicture = `${initiator.picture}`
   const userFullName = `${initiator.firstName} ${initiator.lastName}`
   const userLink = `/i/${initiator.username}`
 
@@ -48,15 +48,29 @@ const IncomingConnection: React.FC<IncomingConnectionPropsType> = React.memo((pr
     }
   }
 
-  return (
-    <div className={ classes.connection } key={connection.id} >
-      <Avatar
-        component={NavLink}
-        to={userLink}
-        className={classes.avatar}
-        src={userPicture}
-      />
+  let isNew = connection.createdAt > lastRequestsCheck
 
+  return (
+    <div
+      className={ classes.connection }
+      key={connection.id}
+    >
+      <Badge
+        badgeContent={ isNew ? 'new' : 0 }
+        color='primary'
+        overlap="circular"
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+      >
+        <Avatar
+          component={NavLink}
+          to={userLink}
+          className={classes.avatar}
+          src={userPicture}
+        />
+      </Badge>
       <div style={{flexGrow: 1}}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <TypographyLink variant='body2' to={userLink} style={{marginBottom: 8}} children={<b>{ userFullName }</b>} />

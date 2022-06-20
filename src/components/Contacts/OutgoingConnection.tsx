@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import { ConnectionType } from '../../types/types';
-import { Avatar, Button, CircularProgress,Typography } from '@material-ui/core';
-import { imagesStorage } from '../../api/api';
+import { Avatar, Typography } from '@material-ui/core';
 import { useStyles } from './ConnectionsStyles';
 import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress';
 
@@ -19,7 +18,7 @@ const OutgoingConnection: React.FC<OutgoingConnectionPropsType> = React.memo((pr
   const { t } = useTranslation()
   
   const target = connection.target
-  const userPicture = `${imagesStorage}${target.picture}`
+  const userPicture = `${target.picture}`
   const userFullName = `${target.firstName} ${target.lastName}`
   const userLink = `/i/${target.username}`
 

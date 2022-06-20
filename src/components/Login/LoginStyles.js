@@ -11,15 +11,19 @@ export const useStyles = makeStyles(theme => ({
     width: '100%'
   },
   formContainer: {
+    maxWidth: 400,
     padding: theme.spacing(2),
     flexDirection: 'column',
     display: 'flex',
     alignItems: 'center',
     minWidth: 200,
-    maxWidth: 500,
     [theme.breakpoints.down("xs")]: {
       width: '100%'
     },
+  },
+  error: {
+    whiteSpace: 'wrap',
+    wordBreak: 'break-word'
   },
   submit: {
     margin: theme.spacing(3, 0, 2),

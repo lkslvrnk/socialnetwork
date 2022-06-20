@@ -33,14 +33,55 @@ export function createSimpleGalleryPhoto(id, preview, large) {
   return {
     id: id,
     large: {
-      src: `${imagesStorage}/${large.src}`,
+      src: large.src,
       width: large.width,
       height: large.height
     },
     preview: {
-      src: `${imagesStorage}/${preview.src}`,
+      src: preview.src,
       width: preview.width,
       height: preview.height
     }
   }
+}
+
+export function elementsCollectionToSimpleArray(elements) {
+  const simpleArray = []
+  elements.forEach(m => {
+    simpleArray.push(m)
+  })
+  return simpleArray
+}
+
+export const hideBodyYScrollbar = () => {
+  const body = document.getElementsByTagName('body')[0]
+  if(body) {
+    body.style.overflowY = 'hidden'
+    body.style.marginRight = '12px'
+  } 
+}
+
+export const showBodyYScrollbar = () => {
+  const body = document.getElementsByTagName('body')[0]
+  if(body) {
+    body.style.overflowY = 'scroll'
+    body.style.marginRight = '0px'
+  }
+}
+
+export function randomIntFromInterval(min, max) {
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
+
+export function getRandomColorForAvatar() {
+  const colors = [
+    '#2ecc71',
+    '#3498db',
+    '#8e44ad',
+    '#e67e22',
+    '#e74c3c',
+    '#1abc9c',
+    '#2c3e50'
+  ]
+  return colors[randomIntFromInterval(1, 7) - 1]
 }

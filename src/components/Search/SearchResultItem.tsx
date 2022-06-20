@@ -10,6 +10,7 @@ import { ProfileType } from '../../types/types.js';
 import { imagesStorage } from '../../api/api';
 import { acceptConnection, createConnection, deleteConnection } from '../../redux/users_reducer';
 import ConnectionAction from '../Common/ConnectionAction';
+import NavLinkAvatar from '../Common/NavLinkAvatar';
 
 type SearchResultItemType = {
   found: ProfileType
@@ -21,48 +22,50 @@ const SearchResultItem: React.FC<SearchResultItemType> = React.memo((props: Sear
   const { t } = useTranslation()
   const dispatch = useDispatch()
 
-  const userPicture = found.picture ? `${imagesStorage}/${found.picture.versions.cropped_small}` : ''
+  const userPicture = found.picture ? `${found.picture.versions.cropped_small}` : ''
   const userFullName = `${found.firstName} ${found.lastName}`
   const userLink = `/i/${found.username}`
 
-  const connection = found.connection
+  // const connection = found.connection
 
-  let offerReceived = !!connection && !connection.isAccepted && connection.initiator.id === found.id
-  let offerSend = !!connection && !connection.isAccepted && connection.initiator.id !== found.id
-  let areConnected = !!connection && connection?.isAccepted
+  // let offerReceived = !!connection && !connection.isAccepted && connection.initiator.id === found.id
+  // let offerSend = !!connection && !connection.isAccepted && connection.initiator.id !== found.id
+  // let areConnected = !!connection && connection?.isAccepted
 
-  const onCreateConnection = (subscribe: number) => {
-    if(!!found) {
-      return dispatch(createConnection(found.id, subscribe))
-    }
-  }
+  // const onCreateConnection = (subscribe: number) => {
+  //   if(!!found) {
+  //     return dispatch(createConnection(found.id, subscribe))
+  //   }
+  // }
 
-  const onDeleteConnection = () => {
-    if(!!connection) {
-      return dispatch(deleteConnection(found.id, connection.id))
-    }
-  }
+  // const onDeleteConnection = () => {
+  //   if(!!connection) {
+  //     return dispatch(deleteConnection(found.id, connection.id))
+  //   }
+  // }
 
-  const onAcceptConnection = () => {
-    if(!!connection) {
-      return dispatch(acceptConnection(found.id, connection.id))
-    }
-  }
+  // const onAcceptConnection = () => {
+  //   if(!!connection) {
+  //     return dispatch(acceptConnection(found.id, connection.id))
+  //   }
+  // }
 
-  const onRejectConnection = () => {
-    if(!!connection) {
-      return dispatch(deleteConnection(found.id, connection.id))
-    }
-  }
+  // const onRejectConnection = () => {
+  //   if(!!connection) {
+  //     return dispatch(deleteConnection(found.id, connection.id))
+  //   }
+  // }
 
   return (
     <Paper className={ classes.result } >
-      <Avatar
-        component={ NavLink }
-        to={ userLink }
-        className={ classes.avatar }
-        src={ userPicture }
+      <div className={classes.avatar}>
+        <NavLinkAvatar
+        picture={userPicture}
+        to={userLink}
+        width={80}
+        name={userFullName}
       />
+      </div>
 
       <div style={{ flexGrow: 1 }}>
         <div style={{ marginBottom: 8 }}>
@@ -75,7 +78,7 @@ const SearchResultItem: React.FC<SearchResultItemType> = React.memo((props: Sear
             <b>{ userFullName }</b>
           </Typography>
         </div>
-        <ConnectionAction
+        {/* <ConnectionAction
           areConnected={areConnected}
           offerReceived={offerReceived}
           offerSent={offerSend}
@@ -83,7 +86,7 @@ const SearchResultItem: React.FC<SearchResultItemType> = React.memo((props: Sear
           onAccept={onAcceptConnection}
           onReject={onRejectConnection}
           onDelete={onDeleteConnection}
-        />
+        /> */}
       </div>
 
     </Paper>

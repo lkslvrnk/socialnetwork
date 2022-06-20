@@ -18,16 +18,16 @@ export const useStyles = makeStyles(theme => {
         marginRight: 0,
       },
       '& > div': {
-        marginBottom: theme.spacing(2),
+        marginBottom: theme.spacing(1),
       },
     },
     result: {
-      padding: theme.spacing(2),
+      padding: theme.spacing(1),
       display: 'flex'
     },
     avatar: {
-      width: 80,
-      height: 80,
+      // width: 80,
+      // height: 80,
       marginRight: 16
     },
     inputRoot: {

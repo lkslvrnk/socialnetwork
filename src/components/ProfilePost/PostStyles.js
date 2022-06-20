@@ -1,10 +1,15 @@
 
 import { makeStyles } from "@material-ui/core";
+import { deepOrange } from '@material-ui/core/colors';
 
 export const useStyles = makeStyles((theme) => ({
   root: {
     paddingTop: 2,
     paddingBottom: 2
+  },
+  avatarBorder: {
+    border: `2px solid ${theme.palette.divider}`,
+    borderRadius: 100
   },
   card: {
     overflow: 'visible',
@@ -36,7 +41,8 @@ export const useStyles = makeStyles((theme) => ({
   },
   avatar: {
     width: 50,
-    height: 50
+    height: 50,
+    background: deepOrange[500]
   },
   reactionMiniImage: {
     display: 'block'
@@ -139,8 +145,8 @@ export const useStyles = makeStyles((theme) => ({
   mostPopularReactionsItem: {
     display: 'block',
     marginRight: 2,
-    height: 21,
-    width: 21,
+    height: 26,
+    width: 26,
     backgroundSize: '100%'
   },
   hide: {

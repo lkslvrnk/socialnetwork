@@ -7,8 +7,8 @@ import { Avatar, ClickAwayListener, IconButton, Typography } from '@material-ui/
 import { imagesStorage } from '../../api/api';
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import MenuListItemWithProgress from '../Common/MenuListItemWithProgress';
-import { useStyles } from './ConnectionsStyles';
 import PopperMenu from '../Common/PopperMenu';
+import { useStyles } from './ConnectionsStyles';
 
 type AcceptedConnectionPropsType = {
   connection: ConnectionType

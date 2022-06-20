@@ -3,18 +3,25 @@ import { makeStyles } from "@material-ui/core";
 export const useStyles = makeStyles((theme) => ({
   avatar: {
     [theme.breakpoints.down("xs")]: {
-      display: 'none'
+      // display: 'none'
     },
+    width: 36,
+    height: 36
+  },
+  avatarBorder: {
+    // border: `2px solid ${theme.palette.divider}`,
+    // borderRadius: 100,
     marginRight: theme.spacing(1),
-    width: theme.spacing(5),
-    height: theme.spacing(5)
   },
   pickEmojiButton: {
     [theme.breakpoints.down("xs")]: {
     },
   },
   createCommentButton: {
-    marginLeft: 8
+    marginLeft: 8,
+    border: `1px solid ${theme.palette.divider}`,
+    padding: 2,
+    borderRadius: 1000
   },
   fieldTextSize: theme.typography.body2,
   fieldContainer: {
@@ -23,6 +30,7 @@ export const useStyles = makeStyles((theme) => ({
   },
   field: {
     display: 'flex',
+    alignItems: 'center'
   },
   underField: {
     ...theme.styles.flexRowAlignCenter,

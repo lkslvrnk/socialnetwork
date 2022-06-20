@@ -2,7 +2,7 @@ import { makeStyles } from "@material-ui/core";
 
 export const useStyles = makeStyles((theme) => {
 
-  let forLikesAndDislikes = {
+  let likesAndDislikes = {
     display: 'flex',
     alignItems: 'center',
     position: 'relative'
@@ -11,24 +11,41 @@ export const useStyles = makeStyles((theme) => {
   return {
     comment: {
       display: 'flex',
-      padding: props => props.isReply ? 0 : theme.spacing(0, 2),
-      marginTop: theme.spacing(1.5),
+      wordBreak: 'break-all',
+      alignItems: 'start',
+      '&:hover $menuButton': {
+        visibility: 'visible'
+      }
     },
-    creatorAvatar: {
-      width: theme.spacing(5),
-      height: theme.spacing(5),
+    rootComment: {
+      paddingLeft: 16,
+      paddingRight: 8,
+    },
+    reply: {
+      // paddingLeft: 0,
+      // paddingRight: 0
+    },
+    menuButton: {
+      visibility: 'hidden',
+    },
+    dropDownIconWrapper: {
+      height: 22, width: 16, display: 'flex', alignItems: 'center', justifyContent: 'center'
+    },
+    avatarBorder: {
+      border: `2px solid ${theme.palette.divider}`,
+      borderRadius: 100
     },
     nameAndDate: {
       display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'start'
+      justifyContent: 'start',
+      flexWrap: 'wrap'
     },
     commentBody: {
       borderRadius: theme.spacing(2),
       borderTopLeftRadius: 0,
       paddingLeft: theme.spacing(1),
       position: 'relative',
-      marginBottom: theme.spacing(0.5),
+      flexGrow: 1
     },
     creatorNameLink: {
       color: theme.palette.text.primary,
@@ -38,8 +55,7 @@ export const useStyles = makeStyles((theme) => {
       padding: theme.spacing(0.5, 1),
     },
     header: {
-      marginBottom: theme.spacing(0.5),
-      display: 'flex'
+      display: 'flex',
     },
     creatorName: {
       color: theme.palette.text.primary,
@@ -55,7 +71,7 @@ export const useStyles = makeStyles((theme) => {
     },
     replyButton: {
       cursor: 'default',
-      marginLeft: 16
+      marginLeft: 2
     },
     replyButtonActive: {
       cursor: 'pointer',
@@ -63,14 +79,22 @@ export const useStyles = makeStyles((theme) => {
         textDecoration: 'underline'
       }
     },
+    repliedName: {
+      '&:hover': {
+        textDecoration: 'underline'
+      }
+    },
     underComment: {
       ...theme.styles.flexRowAlignCenter,
-      padding: theme.spacing(0.5, 1),
+      padding: theme.spacing(0, 1),
       color: theme.palette.text.secondary,
       fontSize: '0.840rem',
       fontWeight: 500,
       wordBreak: "keep-all",
-      height: theme.spacing(3)
+      marginLeft: props => props.isReply ? 36 : 52,
+      marginRight: 10,
+      flexWrap: 'wrap',
+      marginBottom: theme.spacing(1.5),
     },
     underCommentDivider: {
       marginLeft: 'auto',
@@ -87,16 +111,17 @@ export const useStyles = makeStyles((theme) => {
     },
     reactions: {
       display: 'flex',
-      alignItems: 'center'
+      alignItems: 'center',
+      marginRight: 8
     },
     likes: {
-      ...forLikesAndDislikes
+      ...likesAndDislikes
     },
     likesCount: {
       marginLeft: 4, marginRight: 8
     },
     dislikes: {
-      ...forLikesAndDislikes
+      ...likesAndDislikes
     },
     dislikesCount: {
       marginLeft: 4
@@ -109,8 +134,8 @@ export const useStyles = makeStyles((theme) => {
       backgroundSize: '100%'
     },
     repliesContainer: {
-      marginLeft: theme.spacing(8),
-      marginBottom: theme.spacing(1)
+      marginLeft: theme.spacing(7.5),
+      marginBottom: theme.spacing(1),
     },
     metadateContainer: {
       border: `1px solid ${theme.palette.common.paper}`,
@@ -124,13 +149,17 @@ export const useStyles = makeStyles((theme) => {
       margin: `${theme.spacing(1)}px ${theme.spacing(1.5)}px ${theme.spacing(2)}px 0`,
       "& > :first-child": {
         marginRight: theme.spacing(2)
+      },
+      position: 'relative',
+      '&:hover': {
+        textDecoration: 'underline'
       }
     },
     toggleRepliesVisibilityButton: {
-      marginTop: theme.spacing(1),
       display: 'flex',
       alignItems: 'center',
       cursor: 'pointer',
+      position: 'relative'
     },
     newReplyFieldContainer: {
       marginTop: theme.spacing(1),

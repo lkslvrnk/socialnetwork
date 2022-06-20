@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react'
 import { useTranslation } from 'react-i18next'
-import {NavLink} from 'react-router-dom'
+import {NavLink, useHistory} from 'react-router-dom'
 import { useStyles } from './SearchStyles.js'
 import { ClickAwayListener, Divider, List, ListItem } from '@material-ui/core'
 import Typography from "@material-ui/core/Typography"
@@ -8,12 +8,15 @@ import Paper from "@material-ui/core/Paper"
 import SearchIcon from "@material-ui/icons/Search"
 import { Avatar, InputBase } from '@material-ui/core'
 import { debounce } from '../../helper/helperFunctions.js'
-import { appAPI, imagesStorage } from '../../api/api'
+import { appAPI } from '../../api/api'
 import Preloader from '../Common/Preloader/Preloader.jsx'
+import SimpleAvatar from '../Common/SimpleAvatar'
+import KeyboardArrowRightIcon from '@material-ui/icons/KeyboardArrowRight';
 
 const Search = React.memo(props => {
   const { t } = useTranslation()
   const classes = useStyles()
+  const history = useHistory();
 
   const [searchResults, setSearchResults] = useState({
     items: [],
@@ -23,6 +26,20 @@ const Search = React.memo(props => {
   const [searchText, setSearchText] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [showSearchingPanel, setShowSearchingPanel] = useState(false)
+
+  const onEnterPress = (event) => {
+    if(event.key === 'Enter') {
+      event.preventDefault()
+      history.push(`/search?query=${searchText}`)
+      setSearchText('')
+      setSearchResults({
+        items: [],
+        cursor: null,
+        allCount: null
+      })
+      setShowSearchingPanel(false)
+    }
+  }
 
   useEffect(() => {
     if(searchText) {
@@ -42,7 +59,7 @@ const Search = React.memo(props => {
         })
       }
     } catch (err) {
-      console.log(err)
+      // console.log(err)
     } finally {
       setIsSearching(false)
     }
@@ -88,6 +105,7 @@ const Search = React.memo(props => {
             ? classes.inputInputWithOpenPanel
             : classes.inputInput
         }}
+        onKeyPress={onEnterPress}
         inputProps={{ 'aria-label': 'search' }}
       />
     </>
@@ -96,30 +114,32 @@ const Search = React.memo(props => {
   const resultItems = searchResults.items
 
   const renderResults = resultItems.map((user, index) => {
-    let name = `${user.firstname} ${user.lastname}`
-    let picture = user.picture && `${imagesStorage}${user.picture}`
+    // console.log(user)
+    let name = `${user.firstName} ${user.lastName}`
+    let picture = user.picture ? user.picture.versions.cropped_small : null
     let link = `/i/${user.username}`
     return (
-      <>
-        <ListItem
-          button
-          onClick={ removeSearch}
-          component={NavLink}
-          to={link}
-        >
-          <div className={classes.searchResultItem} >
-            <Avatar
-              src={picture}
-            />
-            <Typography
-              variant='body2'
-              style={{ marginLeft: 16}}
-              children={name}
-              color='textPrimary'
-            />
-          </div>
-        </ListItem>
-      </>
+      <ListItem
+        button
+        onClick={ removeSearch}
+        component={NavLink}
+        to={link}
+        key={user.id}
+      >
+        <div className={classes.searchResultItem} >
+          <SimpleAvatar
+            picture={picture}
+            width={40}
+            name={name}
+          />
+          <Typography
+            variant='subtitle2'
+            style={{ marginLeft: 16}}
+            children={name}
+            color='textPrimary'
+          />
+        </div>
+      </ListItem>
     )
   })
 
@@ -131,7 +151,7 @@ const Search = React.memo(props => {
         { renderInput }
 
         { showSearchingPanel &&
-          <Paper className={ classes.searchPanel }>
+          <Paper elevation={3} className={ classes.searchPanel }>
             { isSearching ?
               <div className={classes.preloader} >
                 <Preloader />
@@ -156,6 +176,8 @@ const Search = React.memo(props => {
                 >
                   {t('Show all results')}
                 </Typography>
+                <KeyboardArrowRightIcon color='action'/>
+                
               </NavLink>
             </>
             }

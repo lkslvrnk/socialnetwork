@@ -18,6 +18,8 @@ import AvatarEditor from 'react-avatar-editor'
 import { useMediaQuery } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import ButtonWithCircularProgress from '../../Common/ButtonWithCircularProgress';
+import AcceptDialog from '../../Common/AcceptDialog';
+import { useSnackbar } from 'notistack';
 
 const MyAvatarEditor = props => {
   let [selectedImage, setSelectedImage] = useState(null)
@@ -30,6 +32,8 @@ const MyAvatarEditor = props => {
   const matches = useMediaQuery(theme.breakpoints.down('xs'));
   const [isUpdating, setIsUpdating] = useState(false)
   const input = useRef(null)
+
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar()
 
   const onScaleChange = (event, newValue) => {
     setScaleValue(newValue)
@@ -53,12 +57,36 @@ const MyAvatarEditor = props => {
     }
   }, [props.show])
 
-  let onMinus = () => {
-    if(scaleValue > 1) setScaleValue(scaleValue - 0.1)
+  const minusInterval = React.useRef(null)
+
+  let onMinusClick = () => {
+    setScaleValue(prev => prev > 1 ? prev - 0.1 : prev)
   }
 
-  let onPlus = () => {
-    if(scaleValue < 10) setScaleValue(scaleValue + 0.1)
+  let onMinusPress = () => {
+    minusInterval.current = setInterval(() => {
+      setScaleValue(prev => prev > 1 ? prev - 0.1 : prev)
+    }, 100)
+  }
+
+  let onMinusPressEnd = () => {
+    clearInterval(minusInterval.current)
+  }
+
+  const plusInterval = React.useRef(null)
+
+  let onPlusClick = () => {
+    setScaleValue(prev => prev < 10 ? prev + 0.1 : prev)
+  }
+
+  let onPlusPress = () => {
+    plusInterval.current = setInterval(() => {
+      setScaleValue(prev => prev < 10 ? prev + 0.1 : prev)
+    }, 100)
+  }
+
+  let onPlusPressEnd = () => {
+    clearInterval(plusInterval.current)
   }
 
   let close = () => {
@@ -91,7 +119,10 @@ const MyAvatarEditor = props => {
         dispatch(updateAvatar(selectedImage, x, y, width, props.currentUserId))
           .then(
             () => setIsUpdating(false),
-            () => setIsUpdating(false),
+            (err) => {
+              setIsUpdating(false)
+              enqueueSnackbar('Avatar was not created', {variant: 'error'})
+            }
           )
       } 
     }
@@ -99,50 +130,64 @@ const MyAvatarEditor = props => {
 
   return (
     <Dialog
-      onClose={openCancelDialog}
+      onClose={isUpdating ? () => {} : openCancelDialog}
       open={props.show}
       fullScreen={selectedImage && matches}
     >
-      <DialogTitle >
-        {selectedImage
-          ? t('Select region')
-          : t('Select image')
-        }
-      </DialogTitle>
-        {selectedImage && 
-          <div style={{display: 'flex', justifyContent: 'center'}}>
-            <AvatarEditor
-              ref={editorRef}
-              image={selectedImage}
-              width={300}
-              height={300}
-              border={[8, 8]}
-              color={[255, 255, 255, 0.8]}
-              scale={scaleValue}
-              borderRadius={1100}
-            />
-          </div>
-        }
-      <DialogContent>
+      { selectedImage &&
+        <DialogTitle >
+          {t('Select region')}
+        </DialogTitle>
+      }
+        
+      {selectedImage && 
+        <div style={{display: 'flex', justifyContent: 'center', position: 'relative'}}>
+          {isUpdating && <div style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0}}/>}
+          <AvatarEditor
+            ref={editorRef}
+            image={selectedImage}
+            width={300}
+            height={300}
+            border={[8, 8]}
+            color={[255, 255, 255, 0.8]}
+            scale={scaleValue}
+            borderRadius={1100}
+          />
+        </div>
+      }
+      <DialogContent style={{flexGrow: 0, overflow: 'visible'}}>
         {selectedImage && 
           <div style={{display: 'flex', alignItems: 'center'}}>
-            <IconButton onClick={onMinus} children={<RemoveIcon />} />
-              <Slider
-                step={0.1}
-                min={1}
-                max={10}
-                value={scaleValue}
-                onChange={onScaleChange} 
-                aria-labelledby="continuous-slider"
-                style={{margin: '0 8px'}}
-              />
-            <IconButton size="small" onClick={onPlus} children={<AddIcon />} />
+            <IconButton
+              onMouseDown={onMinusPress}
+              onMouseUp={onMinusPressEnd}
+              onClick={onMinusClick}
+              children={<RemoveIcon />}
+              disabled={isUpdating}
+            />
+            <Slider
+              step={0.1}
+              min={1}
+              max={10}
+              value={scaleValue}
+              onChange={onScaleChange} 
+              aria-labelledby="continuous-slider"
+              style={{margin: '0 8px'}}
+              disabled={isUpdating}
+            />
+            <IconButton
+              onMouseDown={onPlusPress}
+              onMouseUp={onPlusPressEnd}
+              onClick={onPlusClick}
+              children={<AddIcon />}
+              disabled={isUpdating}
+            />
           </div>
         }
         {!selectedImage &&
           <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
             <div style={{marginBottom: 16}}>
-              {t('Please upload a photo, we support JPG and PNG files')}
+              {t('upload an avatar')}
             </div>
             
             <input
@@ -166,6 +211,7 @@ const MyAvatarEditor = props => {
         <>
           <Button 
             onClick={() => setSelectedImage(null)}
+            disabled={isUpdating}
           >
             {t('Back')}
           </Button>
@@ -180,7 +226,7 @@ const MyAvatarEditor = props => {
         </>
        }
       </DialogActions>
-      <YesCancelDialog
+      <AcceptDialog
         show={showCancelDialog}
         setShow={setShowCancelDialog}
         onYes={close}

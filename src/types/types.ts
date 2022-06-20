@@ -212,6 +212,7 @@ export type ConnectionType = {
   target: UserType
   isAccepted: boolean
   deleted: boolean
+  createdAt: number
 }
 
 export type ContactType = {
@@ -236,6 +237,15 @@ export type UserType = {
   firstName: string
   lastName: string
   picture: string
+  username: string
+}
+
+export type UserDataType = {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  picture: string | null
   username: string
 }
 

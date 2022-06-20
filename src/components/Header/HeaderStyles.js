@@ -4,6 +4,9 @@ export const useStyles = makeStyles(theme => ({
   grow: {
     flexGrow: 1,
   },
+  appBar: {
+    borderBottom: `1px solid ${theme.palette.divider}`
+  },
   toolbar: {
     minHeight: 48, 
     maxHeight: 48
@@ -11,7 +14,7 @@ export const useStyles = makeStyles(theme => ({
   openDrawerButton: {
   },
   drawerRoot: {
-    '@media (min-width: 860px)': {
+    '@media (min-width: 600px)': {
       display: 'none'
     },
   },
@@ -58,7 +61,7 @@ export const useStyles = makeStyles(theme => ({
     }
   },
   rightMenuButton: {
-    '@media (max-width: 860px)': {
+    '@media (max-width: 599px)': {
       display: 'none'
     },
   },
@@ -76,12 +79,12 @@ export const useStyles = makeStyles(theme => ({
     marginLeft: 'auto'
   },
   logo: {
-    marginRight: 16,
+    marginRight: 8,
     flexShrink: 0,
-    width: 40,
+    //width: 40,
     height: 40,
     borderRadius: '10em',
-    backgroundSize: 40
+    // backgroundSize: 40
   }
 }));
 

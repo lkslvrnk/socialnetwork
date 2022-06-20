@@ -10,6 +10,7 @@ import profilePostsReducer from './profile_posts_reducer'
 import { reducer as formReducer } from 'redux-form'
 import subscriptionsReducer from "./subscriptions_reducer";
 import usersReducer from "./users_reducer";
+import chatsReducer from "./chats_reducer";
 
 let rootReducer = combineReducers({
     auth: authReducer,
@@ -21,7 +22,8 @@ let rootReducer = combineReducers({
     feed: feedReducer,
     profilePosts: profilePostsReducer,
     subscriptions: subscriptionsReducer,
-    users: usersReducer
+    users: usersReducer,
+    chats: chatsReducer
 });
 
 export type InferActionsTypes<T> = T extends { [keys: string]: (...args: any[]) => infer U } ? U : never

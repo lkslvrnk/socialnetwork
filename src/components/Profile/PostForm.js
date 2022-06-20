@@ -102,7 +102,11 @@ const PostForm = props => {
         }
       }
       catch(err) {
-        // console.log(err)
+        setProgressObjects(prev => {
+          return prev.filter(prevProgress => {
+            return prevProgress.fileId !== pseudoFile.fileId
+          })
+        })
       } 
     }
   }
@@ -300,7 +304,7 @@ const PostForm = props => {
             // Не работает onDownloadProgress при загрузке данных из сервера, поэтому не получается сделать на 100% правдивую шкалу,
             // поэтому я решил просто добавить анимацию загрузки без заполнения
             return <div key={e.fileId} style={{display: 'flex', alignItems: 'center', marginBottom: 8}}>
-              <div style={{ marginRight: 16}} >{e.filename}</div>
+              <div style={{ marginRight: 16, wordBreak: 'break-all'}} >{e.filename}</div>
               <LinearProgress style={{width: 150, height: 10}} />
             </div>
           })}
@@ -362,7 +366,7 @@ const PostForm = props => {
           }
           <Button
             variant='contained'
-            disabled={isSubmitting || (!postText.length && !attachments.length)}
+            disabled={isSubmitting || (!postText.length && !attachments.length) || progressObjects.length > 0}
             disableElevation
             style={{ textTransform: 'none'}}
             onClick={ handleSubmit }

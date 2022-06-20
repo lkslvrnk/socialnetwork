@@ -21,21 +21,34 @@ import { useSelector } from 'react-redux'
 import { getCurrentUserUsername } from '../../../redux/auth_selectors';
 import RssFeedIcon from '@material-ui/icons/RssFeed';
 import DynamicFeedIcon from '@material-ui/icons/DynamicFeed';
+import { Badge } from '@material-ui/core'
+import ForumIcon from '@material-ui/icons/Forum';
 
 const useStyles = makeStyles((theme) => ({
   formControl: {},
   selectEmpty: {
     marginTop: theme.spacing(2),
   },
+  selectLanguage: {
+    // color: 'red',
+    '& .MuiSelect-select': {
+      // color: 'blue',
+      fontSize: theme.typography.body2.fontSize,
+      // border: '3px solid white'
+    }
+  }
 }));
 
 const Drawer = React.memo((
   {appearanceSwitcher, renderExitListItem, show, setShow, language, languages, onSetLanguage, currentUserId}
 ) => {
   const currentUserUsername = useSelector(getCurrentUserUsername)
-
+  const newRequestsCount = useSelector(state => state.auth.newRequestsCount)
   const { t } = useTranslation();
+  const unreadChatsIds = useSelector(state => state.chats.unreadChatsIds)
+
   const classes = useStyles()
+  // console.log(classes)
   const handleDrawerOpen = () => {
     setShow(true);
   };
@@ -45,11 +58,12 @@ const Drawer = React.memo((
   };
 
   let navLinks = [
-    { to: '', name: t('Feed'), icon: DynamicFeedIcon },
-    { to: `i/${currentUserUsername}`, name: t('My profile'), icon: HomeIcon },
-    { to: `i/${currentUserUsername}/contacts`, name: t('Contacts'), icon: PeopleIcon },
-    { to: `i/${currentUserUsername}/subscriptions`, name: t('Subscriptions'), icon: SubscriptionsIcon },
-    { to: `i/${currentUserUsername}/subscribers`, name: t('Subscribers'), icon: RssFeedIcon },
+    { key: 1, to: '', name: t('Feed'), icon: DynamicFeedIcon, count: 0  },
+    { key: 2, to: `i/${currentUserUsername}`, name: t('My profile'), icon: HomeIcon, count: 0  },
+    { key: 3, to: `chats`, name: t('Chats'), icon: ForumIcon, count: unreadChatsIds.length },
+    { key: 4, to: `i/${currentUserUsername}/contacts`, name: t('Contacts'), icon: PeopleIcon, count: newRequestsCount  },
+    { key: 5, to: `i/${currentUserUsername}/subscriptions`, name: t('Subscriptions'), icon: SubscriptionsIcon, count: 0  },
+    { key: 6, to: `i/${currentUserUsername}/subscribers`, name: t('Subscribers'), icon: RssFeedIcon, count: 0  },
   ]
 
   let linksList = navLinks.map(link => {
@@ -61,12 +75,25 @@ const Drawer = React.memo((
     }
 
     return (
-      <React.Fragment key={link.to}>
+      <React.Fragment key={link.key}>
         <ListItem
           button component={NavLink} to={path}
           onClick={handleDrawerClose}
         >
-          <ListItemIcon>{<link.icon />}</ListItemIcon>
+          { link.count ?
+            <Badge
+              badgeContent={link.count}
+              color="secondary"
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'left',
+              }}
+            >
+              <ListItemIcon>{<link.icon />}</ListItemIcon>
+            </Badge>
+            :
+            <ListItemIcon>{<link.icon />}</ListItemIcon>
+          }
           <ListItemText primary={t(link.name)} />
         </ListItem>
         <Divider />
@@ -81,6 +108,7 @@ const Drawer = React.memo((
 
         <InputLabel id="demo-simple-select-label">{t('Language')}</InputLabel>
         <Select
+          className={classes.selectLanguage}
           labelId="demo-simple-select-label"
           id="demo-simple-select"
           value={language}
@@ -88,7 +116,7 @@ const Drawer = React.memo((
         >
         {languages.map(item => {
           return (
-            <MenuItem key={item.short} value={item.short}>
+            <MenuItem key={item.short} dense value={item.short}>
               {item.name}
             </MenuItem>
         )})}

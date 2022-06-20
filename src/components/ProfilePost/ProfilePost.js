@@ -24,6 +24,8 @@ import PopperMenu from '../Common/PopperMenu.jsx'
 import MenuListItemWithProgress from '../Common/MenuListItemWithProgress.jsx'
 import TypographyLink from '../Common/TypographyLink.jsx'
 import {
+  restorePost,
+  deletePost,
   editPostReaction,
   deletePostReaction,
   createPostReaction,
@@ -31,6 +33,8 @@ import {
 } from '../../redux/profile_posts_reducer'
 import SimplePhotoGallery from '../Common/SimplePhotoGallery.js'
 import { createSimpleGalleryPhoto } from '../../helper/helperFunctions.js'
+import NavLinkAvatar from '../Common/NavLinkAvatar'
+import { getFirstLetter } from '../../helper/helperFunctionsTs'
 
 const ProfilePost = React.memo(props => {
   const {
@@ -38,14 +42,13 @@ const ProfilePost = React.memo(props => {
     onOwnWall,
     embeddedPost,
     userIsAuthenticated,
-    onDelete,
-    onRestore
+    place
  } = props
 
   const dispatch = useDispatch()
   const classes = useStyles();
   const { t } = useTranslation();
-  console.log('post rerender')
+  // console.log('post rerender')
 
   const [editMode, setEditMode] = useState(false);
   const [shareMenuAnchor, setShareMenuAnchor] = useState(null)
@@ -73,9 +76,7 @@ const ProfilePost = React.memo(props => {
   
   const creatorLink = `/i/${postData.creator.username}`
   const picture = useSelector(getCurrentUserPicture)
-  const creatorPicture = onOwnWall
-    ? `${imagesStorage}${picture}`
-    : `${imagesStorage}${postData.creator.picture}`
+  const creatorPicture = postData.creator.picture
   const postCreatorFullName = `${postData.creator.firstName} ${postData.creator.lastName}`
 
   const hasMedia = postData.attachments.length > 0
@@ -88,11 +89,11 @@ const ProfilePost = React.memo(props => {
 
   const handleRestore = () => {
     setIsRestoring(true)
-    onRestore(postData.id)
+    dispatch(restorePost(postData.id, place))
       .then(
         () =>  setIsRestoring(false),
         () => {
-          setRestoreError('Не удалось восстановить пост')
+          setRestoreError(t('Failed to restore post'))
           setTimeout(() => setRestoreError(''), 3000)
           setIsRestoring(false)
         }
@@ -143,11 +144,11 @@ const ProfilePost = React.memo(props => {
     setMenuDisabled(true)
     setCommentingIsToggling(true)
     if(postData.commentingIsDisabled) {
-      await dispatch(patchPost(postData.id, 'comments_are_disabled', 0))
+      await dispatch(patchPost(postData.id, 'comments_are_disabled', 0, place))
       setMenuDisabled(false)
       setCommentingIsToggling(false)
     } else {
-      await dispatch(patchPost(postData.id, 'comments_are_disabled', 1))
+      await dispatch(patchPost(postData.id, 'comments_are_disabled', 1, place))
       setMenuDisabled(false)
       setCommentingIsToggling(false)
     }
@@ -161,7 +162,7 @@ const ProfilePost = React.memo(props => {
       setIsDeleting(false)
       setMenuDisabled(false)
     }
-    onDelete(postData.id).then(onEnd, onEnd)
+    dispatch(deletePost(postData.id, place)).then(onEnd, onEnd)
   }
   
   let allReactionsCount = 0;
@@ -184,15 +185,15 @@ const ProfilePost = React.memo(props => {
   // console.log(topReactionsTypes)
 
   const onCreateReaction = reactionType => {
-    return dispatch(createPostReaction(postData.id, reactionType))
+    return dispatch(createPostReaction(postData.id, reactionType, place))
   }
 
   const onEditReaction = reactionType => {
-    return dispatch(editPostReaction(postData.id, postData.requesterReaction.id, reactionType))
+    return dispatch(editPostReaction(postData.id, postData.requesterReaction.id, reactionType, place))
   }
 
   const onDeleteReaction = () => {
-    return dispatch(deletePostReaction(postData.id, postData.requesterReaction.id))
+    return dispatch(deletePostReaction(postData.id, postData.requesterReaction.id, place))
   }
 
   const renderShareMenu = (
@@ -248,7 +249,7 @@ const ProfilePost = React.memo(props => {
 
   if(embeddedPost) {
     const photos = []
-    embeddedPost.photos.map(p => photos.push({img: baseUrl + p}))
+    embeddedPost.photos.map(p => photos.push({img: p}))
 
     renderEmbedded = (
       <CardMedia className={classes.embeddedPostMedia}>
@@ -265,8 +266,8 @@ const ProfilePost = React.memo(props => {
               component={NavLink} to={creatorLink}
               aria-label="recipe" 
               className={classes.avatar}
-              src={`${baseUrl}${embeddedPost.creatorAvatar}`}
-            />
+              src={embeddedPost.creatorAvatar}
+            ></Avatar>
           }
         />
         <Divider />
@@ -324,7 +325,7 @@ const ProfilePost = React.memo(props => {
 
         <PopperMenu open={!!postMenuAnchor} anchorEl={postMenuAnchor} dense>
           {onOwnWall ?
-            <>
+            <div>
             { isEditable &&
               <MenuItem disabled={menuDisabled} onClick={onEditClick} >
                 {t('Edit')}
@@ -345,13 +346,13 @@ const ProfilePost = React.memo(props => {
                 {t(postData.commentingIsDisabled
                   ? 'Enable comments' : 'Disable comments')}
               </MenuListItemWithProgress>
-            </>
+            </div>
             :
-            <>
+            
               <MenuItem disabled={menuDisabled} >
                 {t('Complain')}
               </MenuItem>
-            </>
+            
           }
         </PopperMenu>
       </div>
@@ -400,7 +401,7 @@ const ProfilePost = React.memo(props => {
           )
         })}
         { allReactionsCount > 0 &&
-          <div><SimpleText>{ allReactionsCount }</SimpleText></div>
+          <div style={{marginLeft: 8}}><SimpleText>{ allReactionsCount }</SimpleText></div>
         }
       </div>
       { postData.commentsCount > 0 &&
@@ -411,6 +412,8 @@ const ProfilePost = React.memo(props => {
     </>
   )
 
+  const postLink = `/i/posts/${postData.id}`
+
   return (
     <Card
       className={classes.card}
@@ -419,17 +422,30 @@ const ProfilePost = React.memo(props => {
         className={classes.postHeader}
         action={ !editMode && userIsAuthenticated && postMenu }
         title={
-          <TypographyLink to={creatorLink} children={postCreatorFullName} />
+          <TypographyLink
+          to={creatorLink}
+          children={postCreatorFullName}
+          style={{wordBreak: 'break-all'}}
+        />
         }
         subheader={
-          moment(postData.timestamp).format("DD MMMM HH:mm")
+          <TypographyLink
+            to={postLink}
+            children={moment(postData.timestamp).format("DD MMMM HH:mm")}
+            style={{wordBreak: 'break-all'}}
+            color='textSecondary'
+            variant='body2'
+          />
         }
         avatar={
-          <Avatar
-            className={classes.avatar}
-            src={creatorPicture}
-            component={NavLink} to={creatorLink}
-          />
+          // <div className={classes.avatarBorder}>
+            <NavLinkAvatar
+              width={50}
+              to={creatorLink}
+              picture={creatorPicture}
+              name={postData.creator.firstName + ' ' + postData.creator.lastName}
+            />
+          // </div>
         }
       />
       { postData.text && !editMode &&
@@ -477,6 +493,7 @@ const ProfilePost = React.memo(props => {
           commentingIsDisabled={postData.commentingIsDisabled}
           userIsAuthenticated={userIsAuthenticated}
           onOwnWall={onOwnWall}
+          place={place}
         />
 
       </>

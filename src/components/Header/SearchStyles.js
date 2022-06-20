@@ -18,13 +18,11 @@ export const useStyles = makeStyles(theme => {
       '&:hover': {
         backgroundColor: alpha(theme.palette.common.white, 0.25),
       },
-      marginLeft: 0,
       width: '100%',
       [theme.breakpoints.up('sm')]: {
-        marginLeft: theme.spacing(1),
+        // marginLeft: theme.spacing(1),
         width: 'auto',
       },
-
     },
     searchIcon: {
       padding: theme.spacing(0, 2),
@@ -54,25 +52,30 @@ export const useStyles = makeStyles(theme => {
       },
     },
     searchPanel: {
-      border: `1px solid ${theme.palette.divider}`,
+      //border: `1px solid ${theme.palette.divider}`,
       position: 'absolute',
       marginTop: 8,
       width: theme.spacing(29),
+      overflow: 'hidden',
       [theme.breakpoints.down('xs')]: {
         position: 'fixed',
         width: 'auto',
         left: theme.spacing(1),
         right: theme.spacing(1),
-      }
+      },
+      background: theme.palette.type === 'dark' ? theme.palette.grey[700] : theme.palette.background.paper
     },
     searchResultItem: {
       display: 'flex',
       //padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
     },
     showAllResults: {
-      display: 'block',
-      padding: theme.spacing(1.5), textAlign: 'center',
-      backgroundColor: alpha(theme.palette.common.white, 0.25),
+      display: 'flex',
+      padding: theme.spacing(1.5),
+      textAlign: 'center',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+      // backgroundColor: alpha(theme.palette.common.white, 0.25),
     },
     preloader: {
       padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'center'

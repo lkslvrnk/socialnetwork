@@ -1,17 +1,24 @@
 import  axios from 'axios'
 import { ProfileType } from '../types/types';
+import Pusher from 'pusher-js'
 
-export const baseUrl = 'https://otval.space/api'
-// export const baseUrl = 'http://localhost:8000/api'
+export const baseUrl = 'https://sn-back-api.herokuapp.com/v1'
+// export const baseUrl = 'http://localhost:8000/v1'
+export const imagesStorage = `http://localhost:8000/images/forphotos/`
 
-// export const imagesStorage = `http://localhost:8000/images/forphotos/`
-export const imagesStorage = `https://otval.space/images/forphotos/`
-let websocketUrl = 'ws://localhost:1234/'
+Pusher.logToConsole = false;
+export const pusher = new Pusher('e6cbd9d805e4f4e0a599', {
+  cluster: 'eu'
+});
+
+export const pusher2 = new Pusher('e6cbd9d805e4f4e0a599', {
+  cluster: 'eu'
+});
 
 export const instance = axios.create({
   withCredentials: false,
   baseURL: baseUrl,
-  headers: {'Content-Type':  'application/json'}
+  headers: {'Content-Type': 'application/json'}
 })
 
 instance.interceptors.request.use(function (config) {
@@ -33,12 +40,12 @@ export const appAPI = {
   searchUsers(text: string, count: number | null, cursor: string | null) {
     const countParam = count ? `&count=${count}` : ''
     const cursorParam = cursor ? `&cursor=${cursor}` : ''
-    return instance.get<SearchUsersResponseType>(`/search?query=${text}${countParam}${cursorParam}&full-profile=1`)
+    return instance.get<SearchUsersResponseType>(`/search?query=${text}${countParam}${cursorParam}&fields=firstname,lastname,picture,username`)
   },
   searchUsersMini(text: string, count: number | null, cursor: string | null) {
     const countParam = count ? `&count=${count}` : ''
     const cursorParam = cursor ? `&cursor=${cursor}` : ''
-    return instance.get(`/search?query=${text}${countParam}${cursorParam}`)
+    return instance.get(`/search?query=${text}${countParam}${cursorParam}&fields=firstname,lastname,picture,username`)
   }
 }
 
@@ -46,34 +53,5 @@ export const usersAPI = {
   getUsers(currentPage: number | null = null, pageSize: number | null = null) {
     return instance.get(`users?page=${currentPage}&count=${pageSize}`)
       .then(response => response.data)
-  }
-}
-
-let websocketConnection: any = null;
-
-export const websocketsAPI = {
-  connectToWebsocket(userId: string, onMessage: (messageData: object, userId: string) => void, onError: () => void) {
-
-    websocketConnection = new WebSocket(`${websocketUrl}?token=lolkek&userId=${userId}`);
-    websocketConnection.onopen = function () {
-  	};
-    websocketConnection.onerror = function (error: any) {
-      onError()
-    };
-    websocketConnection.onmessage = function (message: any) {
-      onMessage(JSON.parse(message.data), userId)
-    }
-    websocketConnection.onclose = function () {
-    }
-  },
-  closeWebsocketConnection() {
-    if(websocketConnection !== null) {
-      if(websocketConnection.readyState) {
-        websocketConnection.close()
-      }
-    }
-  },
-  sendMessage: (queryString: string) => {
-    websocketConnection.send(`${websocketUrl}?token=lolkek&${queryString}`)
   }
 }

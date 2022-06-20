@@ -20,6 +20,7 @@ import { profileAPI } from '../../api/profile_api';
 import { ProfileType } from '../../types/types.js';
 import ProfileNotFound from '../Common/ProfileNotFound.js';
 import { usePrevious } from '../../hooks/hooks.js';
+import EmptyListStub from '../Common/EmptyListStub';
 
 const Subscriptions: React.FC = React.memo((props) => {
   const classes = useStyles()
@@ -136,13 +137,15 @@ const Subscriptions: React.FC = React.memo((props) => {
   if(!!subscriptions && !subscriptions.length) {
     return <section className={classes.subscriptions}>
       <Paper className={classes.noSubscriptions} >
-        <span role='img' aria-label='no-subscriptions' style={{ fontSize: '130px' }}>
-          🐯
-        </span>
 
+        <EmptyListStub
+          imageSrc='/images/animals/panda.png'
+          containerWidth={150}
+          containerHeight={150}
+        />
         <Typography variant='h6' >
           { isOwnSubscriptions
-            ? t("You have no subscriptions, use search to find users and subscribe to them")
+            ? t("empty own subscriptions")
             : t("User has no subscriptions")
           }
         </Typography>
@@ -155,21 +158,19 @@ const Subscriptions: React.FC = React.memo((props) => {
     return <Subscription key={subscribed.id} subscribed={subscribed} currentUserUsername={currentUserUsername}/>
   })
 
-  let skeletons = [1,2,3].map(skeleton => {
-    return <Paper><ConnectionSkeleton /></Paper>
+  let skeletons = [1,2,3].map((skeleton, index) => {
+    return <Paper key={index} ><ConnectionSkeleton /></Paper>
   })
 
   return <section className={classes.subscriptions}>
     <main className={classes.subscriptionsList}>
       { !!profile && !!subscriptions && subscriptions.length > 0 &&
         <Paper style={{padding: 16}}>
-          <Typography variant='body2' >
-            <b>
+          <Typography variant='subtitle2' >
             {isOwnSubscriptions
               ? `${t('My subscriptions')}`
               : `${t('Subscriptions of')} ${profile.firstName} ${profile.lastName}`
             }
-            </b>
           </Typography>
         </Paper>
       }

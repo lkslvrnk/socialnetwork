@@ -3,10 +3,11 @@ import { makeStyles } from "@material-ui/core";
 export const useStyles = makeStyles((theme) => ({
   commentsSection: {
     position: 'relative',
-    paddingBottom: 8
+    paddingBottom: 8,
+    // border: '1px solid white'
   },
   stickyNewCommentFieldContainer: {
-    padding: `0px 8px 0 16px`,
+    padding: `0px 16px`,
     marginTop: 8
   },
   commentsSorting: {
@@ -38,6 +39,10 @@ export const useStyles = makeStyles((theme) => ({
     padding: `${theme.spacing(1)}px 0`
   },
   showMore: {
-    cursor: 'pointer', display: 'flex'
+    cursor: 'pointer', display: 'flex',
+    marginBottom: 8,
+    '&:hover': {
+      textDecoration: 'underline'
+    }
   }
 }));

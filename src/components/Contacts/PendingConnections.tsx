@@ -9,6 +9,10 @@ import ConnectionSkeleton from './ConnectionSkeleton';
 import IncomingConnection from './IncomingConnection';
 import OutgoingConnection from './OutgoingConnection';
 import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress';
+import EmptyListStub from '../Common/EmptyListStub';
+import { useDispatch, useSelector } from 'react-redux';
+import { checkRequests } from '../../redux/auth_reducer';
+import { AppStateType } from '../../redux/redux_store';
 
 type PropsType = {
   incoming: Array<ConnectionType> | null
@@ -26,7 +30,6 @@ type PropsType = {
 }
 
 const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) => {
-  console.log(props)
   const {
     incoming, 
     outgoing, 
@@ -38,20 +41,28 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
     getMoreOutgoing,
     getMoreIncoming,
     incomingCursor,
-    outgoingCursor
+    outgoingCursor,
+    currentUserId
   } = props
 
   const classes = useStyles();
   const { t } = useTranslation()
   const location = useLocation()
   const params: any = useParams()
+  const dispatch = useDispatch()
 
   let queryParams = new URLSearchParams(location.search);
   let section: string | null = queryParams.get('section')
   const tabNumber = section === 'incoming' ? 0 : 1
 
+  const lastRequestsCheck = useSelector((state: AppStateType) => state.auth.lastRequestsCheck)
+  const [lastRequestsCheck1, setLastRequestsCheck1] = useState(lastRequestsCheck)
+
   useEffect(() => {
     document.title = t(tabNumber === 0 ? 'Incoming' : 'Outgoing')
+    if(tabNumber === 0 && currentUserId) {
+      dispatch(checkRequests(currentUserId))
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tabNumber])
 
@@ -77,12 +88,12 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
   const header = (
     <Tabs value={tabNumber} aria-label="simple tabs example">
       <Tab
-        label={`${t('Incoming')} ${incomingCount ? incomingCount : '' }`}
+        label={`${t('Incoming')} ${incomingCount ? `(${incomingCount})` : '' }`}
         component={NavLink}
         to={`/i/${params.username}/contacts?section=incoming`}
       />
       <Tab
-        label={`${t('Outgoing')} ${outgoingCount ? outgoingCount : ''}`}
+        label={`${t('Outgoing')} ${outgoingCount ? `(${outgoingCount})` : ''}`}
         component={NavLink}
         to={`/i/${params.username}/contacts?section=outgoing`}
       />
@@ -94,30 +105,33 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
     body = (
       <Paper>
         {[1, 2, 3].map((item, index) => {
-          return <>
+          return <div key={index}>
             <ConnectionSkeleton />
             { index !== (2) && <Divider />}
-          </>
+          </div>
         })}
       </Paper>
     )
   }
   else if(!!incoming && tabNumber === 0) {
     body = ( incoming.length > 0
-      ? incoming.map((conn, index) => <>
+      ? incoming.map((conn, index) => <div key={conn.id}>
           <IncomingConnection
-            key={conn.id}
             connection={conn}
             handleAccept={handleAccept}
             handleDelete={handleDeleteIncoming}
+            lastRequestsCheck={lastRequestsCheck1}
           />
           { index !== (incoming.length - 1) && <Divider />}
-        </>)
+        </div>)
       :
       <Paper className={classes.emptyList} >
-        <span role='img' aria-label='no-subscriptions' style={{ fontSize: '130px' }}>
-          🐼
-        </span>
+
+          <EmptyListStub
+            imageSrc='/images/animals/donkey.png'
+            containerWidth={150}
+            containerHeight={150}
+          />
         <Typography variant='h6' >
           {t('There are no incoming requests')}
         </Typography>
@@ -127,19 +141,22 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
   else if(!!outgoing && tabNumber === 1) {
     body = (
       outgoing.length > 0
-        ? outgoing.map((conn, index) => <>
+        ? outgoing.map((conn, index) => <div key={conn.id}>
             <OutgoingConnection
-              key={conn.id}
+              
               connection={conn}
               handleDelete={handleDeleteOutgoing}
             />
             { index !== (outgoing.length - 1) && <Divider />}
-          </>)
+          </div>)
         :
         <Paper className={classes.emptyList} >
-          <span role='img' aria-label='no-subscriptions' style={{ fontSize: '130px' }}>
-            🐻
-          </span>
+
+          <EmptyListStub
+            imageSrc='/images/animals/donkey.png'
+            containerWidth={150}
+            containerHeight={150}
+          />
           <Typography variant='h6' >
             {t('There are no outgoing requests')}
           </Typography>

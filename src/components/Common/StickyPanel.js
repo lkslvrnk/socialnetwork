@@ -1,10 +1,15 @@
 import React, {useEffect, useRef} from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStyles } from './StickyPanelStyles'
 
 const StickyPanel = ({top, children}) => {
 
   const classes = useStyles({top});
   const panel = useRef(null)
+  const { t } = useTranslation()
+
+  const currentTime = new Date()
+  const year = currentTime.getFullYear()
 
   useEffect(() => {
     let onScroll = () => {
@@ -41,6 +46,19 @@ const StickyPanel = ({top, children}) => {
       ref={panel}
     >
       {children}
+      <footer
+        className={classes.footer}
+        style={{
+
+        }}
+      >
+        <span>{t('Privacy')}</span> ·
+        <span>{t('Terms')}</span> ·
+        <span>{t('Advertising')}</span> ·
+        <span>{t('Ad Choices')}</span> ·
+        <span>{t('Cookies')}</span> · 
+        <span>Social Network © {year}</span>
+      </footer>
     </div>
   )
 }

@@ -52,16 +52,6 @@ const RightProfilePanel = ({onPhotoClick, pictures, infoSection}) => {
     >
       { infoSection }
       { photosSection }
-
-      <footer
-        style={{
-          padding: '0 8px 8px 8px',
-          textAlign: 'center'
-        }}
-      >
-        Privacy  · Terms  · Advertising  · Ad Choices   · Cookies  ·   · Social Network © 2022
-      </footer>
-
     </div>
   )
 }

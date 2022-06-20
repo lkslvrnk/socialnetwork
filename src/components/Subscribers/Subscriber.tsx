@@ -5,10 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { useStyles } from './SubscribersStyles.js'
 import { Avatar, Paper } from '@material-ui/core'
 import { ProfileType } from '../../types/types.js';
-import { imagesStorage } from '../../api/api';
 import { useDispatch } from 'react-redux';
 import { compose } from 'redux';
 import { withRedirectToLogin } from '../../hoc/withRedirectToLogin.js';
+import NavLinkAvatar from '../Common/NavLinkAvatar';
 
 type SubscriberPropsType = {
   subscriber: ProfileType
@@ -20,29 +20,31 @@ const Subscriber: React.FC<SubscriberPropsType> = React.memo((props: SubscriberP
   const { t } = useTranslation()
   const dispatch = useDispatch()
 
-  const userPicture = subscriber.picture ? `${imagesStorage}/${subscriber.picture.versions.cropped_small}` : ''
+  const userPicture = subscriber.picture ? `${subscriber.picture.versions.cropped_small}` : ''
   const userFullName = `${subscriber.firstName} ${subscriber.lastName}`
   const userLink = `/i/${subscriber.username}`
 
   return (
     <Paper className={ classes.subscription } >
-      <Avatar
-        component={ NavLink }
-        to={ userLink }
-        className={ classes.avatar }
-        src={ userPicture }
-      />
+      <div className={classes.avatar}>
+        <NavLinkAvatar
+          width={60}
+          picture={userPicture}
+          name={userFullName}
+          to={userLink}
+        />
+      </div>
 
       <div style={{ flexGrow: 1 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <Typography
             component={NavLink}
             to={userLink}
-            variant='body2'
+            variant='subtitle2'
             style={{ marginBottom: 8 }}
             color={ "textPrimary" }
           >
-            <b>{ userFullName }</b>
+            { userFullName }
           </Typography>
         </div>
       </div>

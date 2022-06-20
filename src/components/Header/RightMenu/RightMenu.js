@@ -16,7 +16,8 @@ import TranslateIcon from '@material-ui/icons/Translate';
 
 const useStyles = makeStyles(theme => ({
   rightMenu: {
-    minWidth: '250px'
+    // minWidth: 250,
+    // width: 300
   },
   languageSelectorHeader: {
     display: 'flex',
@@ -36,7 +37,7 @@ const RightMenu = React.memo((
   const [section, setSection] = useState(0) // Это свойство определяет что должно отображаться в окне
 
   const renderMainMenuButtons = (
-    <List>
+    <List dense>
       {appearanceSwitcher}
       
       <ListItem button onClick={() => setSection(1)}>
@@ -74,6 +75,7 @@ const RightMenu = React.memo((
             key={item.short}
             button onClick={() => onSetLanguage(item.short)}
             selected={language === item.short}
+            dense
           >
             <ListItemText>
               <Typography>{item.name}</Typography>

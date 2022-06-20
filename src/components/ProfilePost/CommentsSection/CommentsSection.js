@@ -1,10 +1,10 @@
-import React, {useState, useEffect } from 'react'
+import React, {useState, useEffect, useRef, useLayoutEffect } from 'react'
 import {  useDispatch, useSelector } from 'react-redux'
 import { useStyles } from './CommentsSectionStyles.js'
 import Comment from '../Comment/Comment.js'
 import NewComment from '../NewComment.js'
 import SimpleText from '../../Common/SimpleText.jsx'
-import { getCurrentUserId, getCurrentUserPicture } from '../../../redux/auth_selectors'
+import { getCurrentUserData, getCurrentUserData2, getCurrentUserId, getCurrentUserPicture } from '../../../redux/auth_selectors'
 import { getPostComments } from '../../../redux/profile_posts_selectors'
 import { useTranslation } from 'react-i18next'
 import { imagesStorage } from '../../../api/api'
@@ -13,42 +13,66 @@ import {
   getComments,
   createComment
 } from '../../../redux/profile_posts_reducer'
+import { usePreviousProps } from '@mui/utils'
+import { usePrevious } from '../../../hooks/hooks';
 
 const CommentsSection = React.memo(props => {
 
-  const { postId, commentsCount, commentingIsDisabled, userIsAuthenticated, postCreatorId } = props
+  const { postId, commentsCount, commentingIsDisabled, userIsAuthenticated, postCreatorId, place } = props
   const classes = useStyles()
   const { t } = useTranslation()
   const dispatch = useDispatch()
   const currentUserId = useSelector(getCurrentUserId)
-  const comments = useSelector(state => getPostComments(state, postId))
+  const comments = useSelector(state => getPostComments(state, postId, place))
   const picture = useSelector(getCurrentUserPicture)
-  const currentUserPicture = `${imagesStorage}/${picture}`
+  const currentUserPicture = picture
+  const currentUserData = useSelector(getCurrentUserData)
+  const currentUserFirstName = currentUserData.firstName
+  const currentUserLastName = currentUserData.lastName
 
-  const [qwe, setQwe] = useState(false)
+  const [showLoadMore, setShowLoadMore] = useState(false)
   const [commentsAreHidden] = useState(false)
   const [commentWithReplyFieldId, setCommentWithReplyFieldId] = useState(null)
   const reversed = [...comments].reverse()
 
   useEffect(() => {
     if(commentsCount && !comments.length) {
-      dispatch(getComments(currentUserId, postId, null, 2, 'DESC'))
+      dispatch(getComments(currentUserId, postId, null, 2, 'DESC', place))
     }
   }, [commentsCount, comments.length, currentUserId, postId, dispatch])
   const commentsLength = comments.length
 
+  const commentsSectionRef = useRef(null)
+  const prevHeight = useRef(commentsSectionRef.current?.getBoundingClientRect().height)
+  const prevComments = usePrevious(comments)
+
+  useLayoutEffect(() => {
+    const currentHeight = commentsSectionRef.current?.getBoundingClientRect().height
+    const prevLastCommentId = prevComments?.length ? prevComments[0].id : '0'
+    const newCommentAdded = comments.length && comments[0].id > prevLastCommentId
+    if(newCommentAdded && prevHeight.current && currentHeight
+       && currentHeight > prevHeight.current
+    ) {
+      document.documentElement.scrollTop = document.documentElement.scrollTop + (currentHeight - prevHeight.current)
+    }
+  }, [commentsLength])
+
   useEffect(() => {
-    setQwe(false)
+    prevHeight.current = commentsSectionRef.current?.getBoundingClientRect().height
+  })
+
+  useEffect(() => {
+    setShowLoadMore(false)
   }, [commentsLength])
 
   const onShowMoreClick = () => {
-    setQwe(true)    
+    setShowLoadMore(true)    
     let offsetId = comments[comments.length - 1].id
-    dispatch(getComments(currentUserId, postId, offsetId, 5, 'DESC'))
+    dispatch(getComments(currentUserId, postId, offsetId, 5, 'DESC', place))
   }
 
   const createCommentCallback = async (text) => {
-    return dispatch(createComment(postId, text, null, null))
+    return dispatch(createComment(postId, text, null, null, place))
   }
 
   const renderNewCommentField = (
@@ -58,6 +82,9 @@ const CommentsSection = React.memo(props => {
         postId={postId}
         autoFocus={false}
         creatorPicture={currentUserPicture}
+        place={place}
+        creatorFirstName={currentUserFirstName}
+        creatorLastName={currentUserLastName}
       />
     </div>
   )
@@ -68,7 +95,7 @@ const CommentsSection = React.memo(props => {
       onClick={onShowMoreClick}
     >
       <SimpleText>{t('Load previous')}</SimpleText>
-      { qwe &&
+      { showLoadMore &&
         <div style={{marginLeft: 8}} >
           <CircularProgress color='secondary' size={15} />
         </div>
@@ -85,10 +112,10 @@ const CommentsSection = React.memo(props => {
   )
 
   return (
-    <div className={ classes.commentsSection } >
+    <div ref={commentsSectionRef} className={ classes.commentsSection } >
       { commentsCount > 0 && header }
 
-      <div style={{ display: commentsAreHidden ? 'none' : 'block' }}>
+      <div style={{ visibility: commentsAreHidden ? 'hidden' : 'visible' }}>
         { comments.length > 0 &&
           reversed.map((comment, index) => {
             return (
@@ -103,6 +130,7 @@ const CommentsSection = React.memo(props => {
                 commentWithReplyFieldId={commentWithReplyFieldId}
                 setCommentWithReplyFieldId={setCommentWithReplyFieldId}
                 userIsAuthenticated={userIsAuthenticated}
+                place={place}
               />
             )
           })

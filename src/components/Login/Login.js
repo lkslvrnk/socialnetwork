@@ -27,7 +27,7 @@ const Login = React.memo( props => {
     setIsSubmitting(true)
     dispatch(logIn(formData.email, formData.password))
       .then(response => {
-        setIsSubmitting(false)
+        // setIsSubmitting(false)
       }, err => {
         setIsSubmitting(false)
       })
@@ -93,8 +93,8 @@ const LoginForm = reduxForm({form: 'login'})(
           autoComplete="current-password"
         />
 
-        <div style={{padding: 8, display: 'flex', justifyContent: 'center'}}>
-          { error && <span style={{color: 'red'}}>{t(error)}</span> }
+        <div  style={{padding: 8, display: 'flex', justifyContent: 'center'}}>
+          { error && <span style={{color: 'red'}} className={classes.error}>{t(error)}</span> }
         </div>
 
         <ButtonWithCircularProgress

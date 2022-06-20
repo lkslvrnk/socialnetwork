@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { useParams} from 'react-router-dom'
+import { NavLink, useParams} from 'react-router-dom'
 import Typography from '@material-ui/core/Typography'
 import {useDispatch, useSelector} from 'react-redux'
 import { useTranslation } from 'react-i18next';
@@ -19,6 +19,7 @@ import { profileAPI } from '../../api/profile_api';
 import { ProfileType } from '../../types/types.js';
 import ProfileNotFound from '../Common/ProfileNotFound.js';
 import { usePrevious } from '../../hooks/hooks.js';
+import EmptyListStub from '../Common/EmptyListStub';
 
 const Subscriptions: React.FC = React.memo((props) => {
   const classes = useStyles()
@@ -119,7 +120,9 @@ const Subscriptions: React.FC = React.memo((props) => {
 
   const panel = <div className={classes.panel}>
     <StickyPanel top={55}>
-      <Paper style={{width: 300, height: 40}}>
+      <Paper style={{padding: 16}}>
+        <Typography variant='body2' color='textSecondary' style={{marginBottom: 8}}>Реклама</Typography>
+        <NavLink to='/kek' ><img style={{width: '100%'}} src='/images/rekl/333.jpg' /></NavLink>
       </Paper>
     </StickyPanel>
   </div>
@@ -127,9 +130,11 @@ const Subscriptions: React.FC = React.memo((props) => {
   if(!!subscribers && !subscribers.length) {
     return <section className={classes.subscriptions}>
       <Paper className={classes.noSubscriptions} >
-        <span role='img' aria-label='no-subscribers' style={{ fontSize: '130px' }}>
-          🐶
-        </span>
+        <EmptyListStub
+          imageSrc='/images/animals/hippopotamus.png'
+          containerWidth={150}
+          containerHeight={150}
+        />
 
         <Typography variant='h6' >
           { isOwnSubscriptions
@@ -150,20 +155,18 @@ const Subscriptions: React.FC = React.memo((props) => {
   })
 
   let skeletons = [1,2,3].map(skeleton => {
-    return <Paper><ConnectionSkeleton /></Paper>
+    return <Paper key={skeleton} ><ConnectionSkeleton /></Paper>
   })
 
   return <section className={classes.subscriptions}>
     <main className={classes.subscriptionsList}>
       { !!profile && !!subscribers && subscribers.length > 0 &&
       <Paper style={{padding: 16}}>
-        <Typography variant='body2' >
-          <b>
+        <Typography variant='subtitle2' >
           {isOwnSubscriptions
             ? `${t('My subscribers')} ${totalCount ? `(${totalCount})` : ''}`
             : `${t('Subscribers of')} ${profile.firstName} ${profile.lastName} ${totalCount ? `(${totalCount})` : ''}`
           }
-          </b>
         </Typography>
       </Paper>
       }

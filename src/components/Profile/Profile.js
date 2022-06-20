@@ -1,61 +1,48 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import RightProfilePanel from './RightProfilePanel/RightProfilePanel.js'
 import { connect, useDispatch, useSelector } from 'react-redux'
 import { compose } from 'redux'
 import { useTranslation } from 'react-i18next';
 import { useStyles } from './ProfileStyles';
-import 'emoji-mart/css/emoji-mart.css'
+// import 'emoji-mart/css/emoji-mart.css'
 import { change } from 'redux-form'
 import { cleanProfile, getUserById} from '../../redux/profile_reducer'
 import {
-  getPosts, createPost, deletePost, addPostPhoto,
-  removeNewPostPhoto, cleanNewPostPhotos, getMorePosts, restorePost
+  getPosts, createPost, addPostPhoto,
+  removeNewPostPhoto, cleanNewPostPhotos, getMorePosts, restorePost, deletePost, PROFILE_POSTS
 } from '../../redux/profile_posts_reducer'
 import { addPhoto } from '../../redux/photos_reducer'
 import {
-  Avatar, Button, IconButton, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Paper
+  Avatar, Button, IconButton, Paper
 } from '@material-ui/core';
-import { usePrevious } from '../../hooks/hooks.js';
+import { useImageViewer, usePrevious } from '../../hooks/hooks.js';
 import PostForm from './PostForm.js';
-import Preloader from '../Common/Preloader/Preloader.jsx';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import ProfileAvatar from './ProfileAvatar/ProfileAvatar';
 import Typography from "@material-ui/core/Typography";
 import StickyPanel from '../Common/StickyPanel.js';
-import moment from 'moment';
 import { Divider } from '@material-ui/core';
-import { NavLink, useParams } from 'react-router-dom';
+import { NavLink, useLocation, useParams } from 'react-router-dom';
 import { AvatarGroup } from '@material-ui/lab';
 import EditIcon from '@material-ui/icons/Edit';
 import Skeleton from '@material-ui/lab/Skeleton';
 import { getCurrentUserUsername } from '../../redux/auth_selectors';
-import { imagesStorage } from '../../api/api';
-import WcIcon from '@material-ui/icons/Wc';
-import LocationOnIcon from '@material-ui/icons/LocationOn';
-import CakeIcon from '@material-ui/icons/Cake';
 import ProfilePost from '../ProfilePost/ProfilePost.js';
 import PostSkeleton from '../Common/PostSkeleton.js';
 import Communication from './Communication.js';
 import PhotosSectionMobile from './PhotosSectionMobile.js';
 import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress.jsx';
-import PhotoViewer from '../PhotoViewer/PhotoViewer';
-import Carousel, { Modal, ModalGateway } from "react-images";
-import ImageGallery from 'react-image-gallery';
-import { PhotoProvider, PhotoConsumer, PhotoSlider } from 'react-photo-view';
+import { PhotoSlider } from 'react-photo-view';
 import 'react-photo-view/dist/index.css';
-import RssFeedIcon from '@material-ui/icons/RssFeed';
 import TypographyLink from '../Common/TypographyLink.jsx';
-import SubscriptionsIcon from '@material-ui/icons/Subscriptions';
 import Info from './Info.js';
-import MyAvatarEditor from './ProfileAvatar/MyAvatarEditor.js';
 import CoverEditor from './ProfileAvatar/CoverEditor.js';
+import EmptyListStub from '../Common/EmptyListStub';
+import ImageViewer from "react-simple-image-viewer";
+import CustomImageViewer from '../Common/CustomImageViewer.jsx';
 
 const Profile = React.memo(props => {
-
   const { postsLoaded, deletePost, restorePost, posts, currentUserId, profile, profileLoaded, postsCursor, postsCount } = props
-  
-  console.log('Profile rerender')
-
   const mobile = useMediaQuery('(max-width: 860px)')
 
   const isAuthenticated = !!currentUserId
@@ -63,6 +50,9 @@ const Profile = React.memo(props => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [viewerIsOpen, setViewerIsOpen] = useState(false);
   const [showAvatarEditor, setShowAvatarEditor] = useState(false)
+  let location = useLocation();
+
+  // console.log(location.state)
 
   const params = useParams()
   const dispatch = useDispatch()
@@ -74,21 +64,27 @@ const Profile = React.memo(props => {
   const usernameFromUrl = params.username
 
   const openLightbox = (index) => {
-    setCurrentImageIndex(index);
+    setCurrentImageIndex(index)
     setViewerIsOpen(true);
   }
 
   const closeLightbox = () => {
-    setCurrentImageIndex(0);
-    setViewerIsOpen(false);
+    setCurrentImageIndex(0)
+    setViewerIsOpen(false)
   };
 
   useEffect(() => {
-    if(!!profile) {
+    if(!profile) {
+      document.title = (location.state && location.state.firstName && location.state.lastName)
+        ? `${location.state.firstName} ${location.state.lastName}`
+        : 'Профиль пользователя'
+    }
+    else {
       document.title = ownerFullName
     }
+    document.documentElement.scrollTop = 0
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile])
+  }, [usernameFromUrl])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -113,7 +109,7 @@ const Profile = React.memo(props => {
 
   useEffect(() => {
     if((!postsLoaded || (!!profile && profile.id !== prevProfileId))
-      && (!!profile && profile.postsCount)
+      && (!!profile)
     ) {
       dispatch(getPosts(profile.id, 5, null, 'DESC', 2, 'DESC'))
     }
@@ -140,28 +136,25 @@ const Profile = React.memo(props => {
   
   reversedPictures.forEach((picture) => {
     const id = picture.id
-    const smallSrc = `${imagesStorage}${picture.versions.small.src}`
-    // const largeSrc = `${imagesStorage}${picture.versions.large}`
-    const originalSrc = `${imagesStorage}${picture.versions.original.src}`
+    const smallSrc = picture.versions.small.src
+    const originalSrc = picture.versions.original.src
     preparedSmallPictures.push({id, src: smallSrc})
-    preparedLargePictures.push({
-      id,
-      src: originalSrc
-    })
+    preparedLargePictures.push({ id, src: originalSrc})
   })
 
+
+  const [index, showImageViewer, openImageViewer, closeImageViewer] = useImageViewer()
+
+  const forImageViewer = []
+  preparedLargePictures.forEach(p => forImageViewer.push(p.src))
+
   const onAvatarClick = () => {
-    openLightbox(0)
+    openImageViewer(0)
   }
 
   const ownerFullName = !!profile && `${profile.firstName} ${profile.lastName}`
-
   const coverSrc = 'https://s1.1zoom.ru/big0/596/Evening_Forests_Mountains_Firewatch_Campo_Santo_549147_1280x720.jpg' 
-  
-
-  const isOwnProfile = usernameFromUrl === currentUserUsername
-  
-
+  const isOwnProfile = profile?.username === currentUserUsername
   const onOwnWall = currentUserId === (profile ? profile.id : '-1')
 
   const handleLoadMorePosts = async () => {
@@ -175,8 +168,6 @@ const Profile = React.memo(props => {
   let postsList = posts.map(post => {
     return (
       <ProfilePost
-        onDelete={() => deletePost(post.id)}
-        onRestore={() => restorePost(post.id)}
         onOwnWall={onOwnWall}
         key={post.id}
         postData={post}
@@ -184,6 +175,7 @@ const Profile = React.memo(props => {
         embeddedPost={post.embeddedPost}
         inList={true}
         userIsAuthenticated={currentUserId}
+        place={PROFILE_POSTS}
       />
     )
   })
@@ -221,14 +213,15 @@ const Profile = React.memo(props => {
       onClick={onAvatarClick}
       isOwnProfile={onOwnWall}
       currentUserId={currentUserId}
+      userFirstName={profile?.firstName || 'Unknown'}
+      userLastName={profile?.lastName || 'Unknown'}
     />
   )
 
   const avatar = (
     mobile
     ? renderProfilePicture
-    : 
-    <div className={classes.avatarFrame} >
+    :  <div className={classes.avatarFrame} >
       {renderProfilePicture}
     </div>
   )
@@ -251,7 +244,8 @@ const Profile = React.memo(props => {
     <div
       className={classes.cover}
       style={{
-        backgroundImage: profileLoaded ? `url(${profile.cover ? `${imagesStorage}${profile.cover.versions.cropped_large}` : coverSrc })` : 'none',
+        backgroundImage: profileLoaded
+          ? `url(${profile.cover ? profile.cover.versions.cropped_original: coverSrc })` : 'none',
       }}
     >
       { isOwnProfile && <Paper className={classes.editButtonRoot} style={{position: 'absolute', bottom: 5, right: 5}} >
@@ -263,22 +257,22 @@ const Profile = React.memo(props => {
         </IconButton>
       </Paper>
       }
-    { !profileLoaded &&
-        <Skeleton variant='rect'
-          style={{
-            borderTopLeftRadius: 3,
-            borderTopRightRadius: 3,
-            position: 'absolute',
-            top: 0, left: 0, bottom: 0, right: 0,
-            paddingBottom: '33%'
-          }}
-        />
-    }
-        <CoverEditor
-          currentUserId={currentUserId} 
-          show={showAvatarEditor} 
-          setShow={setShowAvatarEditor}
-        />
+      { !profileLoaded &&
+          <Skeleton variant='rect'
+            style={{
+              borderTopLeftRadius: 3,
+              borderTopRightRadius: 3,
+              position: 'absolute',
+              top: 0, left: 0, bottom: 0, right: 0,
+              paddingBottom: '33%'
+            }}
+          />
+      }
+      <CoverEditor
+        currentUserId={currentUserId} 
+        show={showAvatarEditor} 
+        setShow={setShowAvatarEditor}
+      />
     </div>
   )
 
@@ -338,16 +332,20 @@ const Profile = React.memo(props => {
             <div style={{position: 'relative', zIndex: 0}} >
             <AvatarGroup max={6}>
               { profile.acceptedConnections.map(conn => {
+                const target = conn.target
                 let pictureSrc = conn.initiator.id === profile.id
-                  ? conn.target.picture : conn.initiator.picture
-                let contactPicture = `${imagesStorage}/${pictureSrc}`
+                  ? target.picture : conn.initiator.picture
+                let contactPicture = pictureSrc
                 let contactLink = `/i/${conn.initiator.id === profile.id
-                  ? conn.target.username : conn.initiator.username}`
+                  ? target.username : conn.initiator.username}`
 
                 return <Avatar
                   key={conn.id}
                   component={NavLink}
-                  to={contactLink} 
+                  to={{
+                    state: {firstName: target.firstName, lastName: target.lastName},
+                    pathname: contactLink
+                  }} 
                   sx={{ width: 56, height: 56 }}
                   src={contactPicture}
                 />
@@ -389,6 +387,7 @@ const Profile = React.memo(props => {
       })}
     </div>
   )
+  // console.log(postsLoaded)
 
   const infoSection = <Info profile={profile} />
 
@@ -401,7 +400,7 @@ const Profile = React.memo(props => {
       }
       { mobile && preparedSmallPictures.length > 0 &&
         <PhotosSectionMobile
-          handlePhotoClick={openLightbox}
+          handlePhotoClick={openImageViewer}
           pictures={preparedSmallPictures}
           profileLoaded={profileLoaded}
         />
@@ -432,9 +431,11 @@ const Profile = React.memo(props => {
         }
         { !!profile && postsCount === 0 &&
           <Paper className={classes.noPosts} >
-            <span role='img' aria-label='no-posts' style={{ fontSize: '130px' }}>
-              🐱
-            </span>
+            <EmptyListStub
+              imageSrc='/images/animals/elephant.png'
+              containerWidth={150}
+              containerHeight={150}
+            />
             <Typography variant='h6' >
               {t('No posts yet')}
             </Typography>
@@ -457,7 +458,7 @@ const Profile = React.memo(props => {
         <StickyPanel top={55} >
           { profileLoaded ?
             <RightProfilePanel
-              onPhotoClick={openLightbox}
+              onPhotoClick={openImageViewer}
               pictures={preparedSmallPictures}
               isLoading={!Boolean(profile)}
               profile={profile}
@@ -482,14 +483,29 @@ const Profile = React.memo(props => {
           </Modal>
         ) : null}
       </ModalGateway> */}
-      <PhotoSlider 
+      {/* <PhotoSlider 
         images={preparedLargePictures}
         visible={viewerIsOpen}
         onClose={closeLightbox}
         index={currentImageIndex}
         onIndexChange={setCurrentImageIndex}
+      /> */}
+      {/* {isViewerOpen && <ImageViewer
+        src={forImageViewer}
+        currentIndex={currentImage}
+        onClose={closeImageViewer}
+        disableScroll={true}
+        backgroundStyle={{
+          backgroundColor: "rgba(26, 25, 25, 0.9)"
+        }}
+        closeOnClickOutside={true}
+      />} */}
+      <CustomImageViewer
+        show={showImageViewer}
+        src={forImageViewer}
+        currentIndex={index}
+        onClose={closeImageViewer}
       />
-
     </section>
   )
 
@@ -504,10 +520,10 @@ const Profile = React.memo(props => {
 let mapStateToProps = state => {
   return {
     newPostPhotos: state.profile.newPostPhotos,
-    postsLoaded: state.profilePosts.areLoaded,
-    posts: state.profilePosts.posts,
-    postsCursor: state.profilePosts.cursor,
-    postsCount: state.profilePosts.allCount,
+    postsLoaded: state.profilePosts.profilePostsAreLoaded,
+    posts: state.profilePosts.profilePosts,
+    postsCursor: state.profilePosts.profilePostsCursor,
+    postsCount: state.profilePosts.profileAllPostsCount,
     profile: state.profile.profile,
     profileLoaded: state.profile.profileLoaded,
     currentUserId: state.auth.id,

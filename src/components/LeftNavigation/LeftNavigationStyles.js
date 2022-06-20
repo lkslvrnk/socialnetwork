@@ -2,29 +2,11 @@ import { makeStyles } from "@material-ui/core/styles";
 
 export const useStyles = makeStyles(theme => {
   return {
-    // leftNav: {
-    //   position: 'fixed',
-    //   paddingLeft: theme.spacing(1),
-    //   display: 'grid',
-    //   gridGap: 8,
-    //   left: 0
-    // },
-    // leftNavContainer: {
-    //   width: 150,
-    //   '@media (max-width: 950px)': {
-    //     width: theme.spacing(8)
-    //   },
-    //   [theme.breakpoints.down("xs")]: {
-    //     display: 'none'
-    //   },
-    //   flexShrink: 0
-    // },
     leftNav: {
       position: 'fixed',
       paddingLeft: theme.spacing(1),
       display: 'grid',
-      gridGap: 8,
-      
+      gridGap: 8
     },
     leftNavContainer: {
       position: 'relative',
@@ -32,20 +14,16 @@ export const useStyles = makeStyles(theme => {
       right: '-4px',
       '@media (min-width: 1201px)': {
         position: 'absolute',
-        // border: '1px solid white',
         left: -150,
         width: 150,
       },
       '@media (min-width: 1001px)': {
-        //left: -150,
         width: 150,
       },
-
       [theme.breakpoints.down("xs")]: {
         display: 'none'
       },
       flexShrink: 0,
-      // border: '1px solid white',
     },
     leftNavItem: {
       display: 'flex',

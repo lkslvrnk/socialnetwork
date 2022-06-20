@@ -1,5 +1,4 @@
-import React, {useState, useEffect} from 'react';
-import Avatar from "@material-ui/core/Avatar";
+import React, {useState, useEffect, useRef, useLayoutEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 import { useDispatch, useSelector } from 'react-redux'
 import { useStyles } from './CommentStyles';
@@ -11,12 +10,10 @@ import NewComment from '../NewComment';
 import moment from 'moment'
 import { ThumbDown, ThumbDownOutlined, ThumbUp, ThumbUpOutlined } from '@material-ui/icons';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import { getReplies } from '../../../redux/profile_posts_reducer'
 import { getCurrentUserId, getCurrentUserPicture } from '../../../redux/auth_selectors'
 import Preloader from '../../Common/Preloader/Preloader';
 import { createSimpleGalleryPhoto, nFormatter } from '../../../helper/helperFunctions.js'
 import { NavLink } from 'react-router-dom';
-import { imagesStorage } from '../../../api/api';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import PopperMenu from '../../Common/PopperMenu';
 import MenuListItemWithProgress from '../../Common/MenuListItemWithProgress';
@@ -25,10 +22,12 @@ import {
   deleteComment,
   deleteCommentReaction,
   editCommentReaction,
-  restoreComment
+  restoreComment,
+  getReplies
 } from '../../../redux/profile_posts_reducer'
 import { PhotoSlider } from 'react-photo-view';
 import SimplePhotoGallery from '../../Common/SimplePhotoGallery';
+import NavLinkAvatar from '../../Common/NavLinkAvatar';
 
 const Comment = React.memo(props => {
   const {
@@ -38,10 +37,13 @@ const Comment = React.memo(props => {
     isReply,
     commentingIsDisabled,
     onRespond,
-    userIsAuthenticated
+    userIsAuthenticated,
+    place
   } = props
 
-  console.log('comment rerender')
+  useEffect(() => {
+    return () => console.log('unmount')
+  }, [])
 
   const classes = useStyles({isReply: isReply})
   const { t } = useTranslation()
@@ -53,10 +55,11 @@ const Comment = React.memo(props => {
   const [menuAnchor, setMenuAnchor] = useState(false)
   const [isRestoring, setIsRestoring] = useState(false)
   const [restoreError, setRestoreError] = useState('')
-  const [isReacting, setIsReacting] = useState(0)
+  const [reactionType, setReactionType] = useState(null)
   const [replied, setReplied] = useState(commentData)
   const [editMode, setEditMode] = useState(false)
   const [repliesAreLoading, setRepliesAreLoading] = useState(false)
+  
   const [focusTrigger, triggerFocus] = useState(false)
 
   const prevCommentingIsDisabled = usePrevious(commentingIsDisabled)
@@ -65,8 +68,10 @@ const Comment = React.memo(props => {
 
   const isOwnPost = currentUserId === postCreatorId
   const isOwnComment = currentUserId === commentData.creator.id
-  let newCommentCreatorPicture = `${imagesStorage}/${currentUserPicture}`
-  let creatorPicture = `${imagesStorage}/${commentData.creator.picture}`
+  let newCommentCreatorPicture = `${currentUserPicture}`
+  let creatorPicture = commentData.creator.picture
+  let creatorFirstName = commentData.creator.firstName
+  let creatorLastName = commentData.creator.lastName
 
   const creationDate = new Date(commentData.timestamp)
   const currentDate = Date.now()
@@ -74,7 +79,17 @@ const Comment = React.memo(props => {
   const isEditable = differenceInHours < 24
 
   const [viewerIsOpen, setViewerIsOpen] = useState(false);
-  const viewerPhotos = !!commentData.attachment ? [{src: `${imagesStorage}${commentData.attachment.versions[0].src}`}] : []
+  const viewerPhotos = !!commentData.attachment ? [{src: `${commentData.attachment.versions[0].src}`}] : []
+
+  const replies = commentData.replies
+  const repliesLength = replies.length
+
+  const repliesContRef = useRef(null)
+  const prevHeight = useRef(repliesContRef.current?.getBoundingClientRect().height)
+  const prevReplies = usePrevious(replies)
+
+  const repliesAreNotLoaded = !!commentData.repliesCount && commentData.replies.length === 0
+  const prevRepliesAreNotLoaded = usePrevious(repliesAreNotLoaded)
 
   const onRespondToReplyClick = (comment) => {
     setReplied(comment)
@@ -94,7 +109,7 @@ const Comment = React.memo(props => {
 
   const handleDelete = () => {
     setIsDeleting(true)
-    dispatch(deleteComment(commentData.id, postId, commentData.rootId))
+    dispatch(deleteComment(commentData.id, postId, commentData.rootId, place))
       .then(
         (response) => {
           setMenuAnchor(null)
@@ -109,7 +124,7 @@ const Comment = React.memo(props => {
 
   const handleRestore = () => {
     setIsRestoring(true)
-    dispatch(restoreComment(commentData.id, postId, commentData.rootId))
+    dispatch(restoreComment(commentData.id, postId, commentData.rootId, place))
     .then(
       (response) => {
         setIsRestoring(false)
@@ -120,8 +135,7 @@ const Comment = React.memo(props => {
       }
     )
   }
-
-  const replies = commentData.replies
+ 
   const reversedReplies = replies ? [...replies].reverse() : []
 
   useEffect(() => {
@@ -145,34 +159,33 @@ const Comment = React.memo(props => {
       const lastReply = commentData.replies[commentData.replies.length - 1]
       const offsetId = lastReply ? lastReply.id : null
       setRepliesAreLoading(true)
-      dispatch(getReplies(currentUserId, postId, commentData.id, offsetId, 3))
-        .then(() => setRepliesAreLoading(false))
+      dispatch(getReplies(currentUserId, postId, commentData.id, offsetId, 3, place))
+        .then(() => {
+          setRepliesAreLoading(false)
+        })
     }
   }
 
   const handleShowReplies = () => {
-    if(showReplies) {
-      return
-    }
+    if(showReplies) return
     setShowReplies(true)
     setRepliesAreLoading(true)
     if(commentData.repliesCount > replies.length && replies.length === 0) {
-      dispatch(getReplies(currentUserId, postId, commentData.id, null, 2))
+      dispatch(getReplies(currentUserId, postId, commentData.id, null, 2, place))
         .then(() => setRepliesAreLoading(false))
     }
   }
 
   const beforeReacting = (type) => {
-    setIsReacting(type)
+    setReactionType(type)
   }
 
   const onReactionClickEnd = () => {
-    setIsReacting(0)
+    setReactionType(null)
   }
 
   const handleReactionClick = (type) => {
-
-    if(!userIsAuthenticated || isReacting) {
+    if(!userIsAuthenticated || reactionType) {
       return
     }
     let commentId = commentData.id
@@ -184,18 +197,18 @@ const Comment = React.memo(props => {
 
       if(type === requesterReaction.type) {
         beforeReacting(type)
-        dispatch(deleteCommentReaction(postId, commentId, commentData.rootId, requesterReactionId))
+        dispatch(deleteCommentReaction(postId, commentId, commentData.rootId, requesterReactionId, place))
           .then(onReactionClickEnd, onReactionClickEnd)
       }
       else if(type !== requesterReaction.type) {
         beforeReacting(type)
-        dispatch(editCommentReaction(postId, commentId, commentData.rootId, requesterReactionId, type))
+        dispatch(editCommentReaction(postId, commentId, commentData.rootId, requesterReactionId, type, place))
           .then(onReactionClickEnd, onReactionClickEnd)
       }
     }
     else {
       beforeReacting(type)
-      dispatch(createCommentReaction(postId, commentId, commentData.rootId, type))
+      dispatch(createCommentReaction(postId, commentId, commentData.rootId, type, place))
         .then(onReactionClickEnd, onReactionClickEnd)
     }
   }
@@ -204,9 +217,7 @@ const Comment = React.memo(props => {
   const creatorFullName = `${commentData.creator.firstName} ${commentData.creator.lastName}`
 
   const handleClickAwayMenu = () => {
-    if(menuAnchor) {
-      setMenuAnchor(null)
-    }
+    if(menuAnchor) setMenuAnchor(null)
   }
 
   const handleEditClick = () => {
@@ -218,17 +229,20 @@ const Comment = React.memo(props => {
 
   const openMenu = (e) => setMenuAnchor(e.currentTarget)
 
-  const menu = (
+  const [disableMenu, setDisableMenu] = useState(false)
+  const [complaining, setComplaining] = useState(false)
+
+  const menu = !editMode && userIsAuthenticated && (
     <ClickAwayListener onClickAway={handleClickAwayMenu} >
       <div>
-        <IconButton size='small' onClick={openMenu}>
+        <IconButton size='small' onClick={openMenu} className={classes.menuButton}>
           <MoreVertIcon />
         </IconButton>
 
         <PopperMenu open={!!menuAnchor} anchorEl={menuAnchor} dense>
           { isOwnComment && isEditable &&
             <MenuItem
-              disabled={isDeleting}
+              disabled={disableMenu || isDeleting}
               onClick={handleEditClick}
               children={t('Edit')}
             />
@@ -236,7 +250,25 @@ const Comment = React.memo(props => {
           {(isOwnPost || isOwnComment) &&
             <MenuListItemWithProgress
               children={t('Delete')} onClick={handleDelete}
-              disabled={isDeleting} enableProgress={isDeleting}
+              disabled={disableMenu || isDeleting}
+              enableProgress={isDeleting}
+              progressSize={32}
+            />
+          }
+          {!isOwnComment &&
+            <MenuListItemWithProgress
+              children={t('Complain')}
+              onClick={() => {
+                setDisableMenu(true)
+                setComplaining(true)
+                setTimeout(() => {
+                  setMenuAnchor(null)
+                  setDisableMenu(false)
+                  setComplaining(false)
+                }, 1000)
+              }}
+              disabled={disableMenu || complaining}
+              enableProgress={complaining}
               progressSize={32}
             />
           }
@@ -258,7 +290,7 @@ const Comment = React.memo(props => {
           }
         </IconButton>
       </div>
-      { isReacting === 1 &&
+      { reactionType === 1 &&
         <div style={{ position: 'absolute' }}>
           <Preloader color='secondary' size={24} />
         </div>
@@ -279,7 +311,7 @@ const Comment = React.memo(props => {
           }
         </IconButton>
       </div>
-      { isReacting === 2 &&
+      { reactionType === 2 &&
         <div style={{ position: 'absolute'}} >
           <Preloader color='secondary' size={24} />
         </div>
@@ -288,9 +320,11 @@ const Comment = React.memo(props => {
   )
 
   let repliedCreatorName = ''
+  let repliedUsername = ''
   if(commentData.replied && commentData.replied.id !== commentData.rootId) {
     let repliedCreator = commentData.replied.creator
     repliedCreatorName = `${repliedCreator.firstName} ${repliedCreator.lastName}`
+    repliedUsername = repliedCreator.username
   }
 
   let commentAttachment = null
@@ -325,19 +359,12 @@ const Comment = React.memo(props => {
   const commentContent = (
     <div className={classes.content} >
       <div className={classes.commentText} >
-        { repliedCreatorName &&
-          <>
-            <Typography
-              component='span'
-              color='textSecondary'
-              children={repliedCreatorName}
-              variant='body2'
-              style={{ whiteSpace: 'nowrap'}}
-            />
-            <span>,&nbsp;</span>
-          </>
-        }
-        <Typography component='span' variant='body2'>{commentData.text}</Typography>
+        <Typography
+          component='span'
+          variant='body2'
+        >
+          {commentData.text}
+        </Typography>
       </div>
 
       {commentAttachment}
@@ -346,10 +373,7 @@ const Comment = React.memo(props => {
 
   const commentBody = (
     <div className={classes.commentBody} >
-
-      <div
-        className={classes.header}
-      >
+      <div className={classes.header}>
         <div className={classes.nameAndDate} >
           <Typography
             component={NavLink}
@@ -357,19 +381,31 @@ const Comment = React.memo(props => {
             variant='body2'
             children={creatorFullName}
             color='textPrimary'
+            // style={{marginRight:}}
           />
-
-          <Typography variant='body2' color='textSecondary' >
-            {moment(commentData.timestamp).format("DD MMMM HH:mm")}
-          </Typography>
-        </div>
-        
-
-        <div style={{marginLeft: 'auto'}} >
-          { !editMode && userIsAuthenticated && menu }
+          { repliedCreatorName &&
+            <span style={{ whiteSpace: 'nowrap'}}>
+              &nbsp;
+              <Typography
+                component='span'
+                color='textSecondary'
+                variant='body2'
+              >
+                {t('replied to')}
+              </Typography>
+              &nbsp;
+              <Typography
+                component={NavLink}
+                to={`/i/${repliedUsername}`}
+                color='textSecondary'
+                children={repliedCreatorName}
+                variant='body2'
+                className={classes.repliedName}
+              />
+            </span>
+          }
         </div>
       </div>
-
       { editMode
         ? <NewComment
             postId={postId}
@@ -378,6 +414,10 @@ const Comment = React.memo(props => {
             editingComment={commentData}
             onEditingFinish={() => setEditMode(false)}
             autoFocus={true}
+            place={place}
+            creatorPicture={creatorPicture}
+            creatorFirstName={creatorFirstName}
+            creatorLastName={creatorLastName}
           />
         : commentContent
       }
@@ -417,98 +457,96 @@ const Comment = React.memo(props => {
   const underComment = (
     !editMode &&
     <div className={classes.underComment}>
+      <Typography variant='body2' color='textSecondary' style={{marginRight: 8, textTransform: 'lowercase'}}>
+        {moment(commentData.timestamp).format("DD MMMM HH:mm")}
+      </Typography>
       <div className={classes.reactions} >
-
         <div className={classes.likes} >
           { likeButton }
-          { <span className={classes.likesCount} >
-              { likesCount > 0 && likesCount}
-            </span>
-          }
+          <span className={classes.likesCount} >
+            { likesCount > 0 && likesCount}
+          </span>
         </div>
-
         <div className={classes.dislikes} >
           { dislikeButton }
-          { <span className={classes.dislikesCount} >
-              { dislikesCount > 0 && dislikesCount }
-            </span>
-          }
+          <span className={classes.dislikesCount} >
+            { dislikesCount > 0 && dislikesCount }
+          </span>
         </div>
-
       </div>
 
       {!commentingIsDisabled && userIsAuthenticated &&
         <span
           className={classNames(classes.replyButton, classes.replyButtonActive)}
           onClick={ handleRespond }
+          style={{marginRight: 8}}
         >
-          <div style={{ textTransform: 'uppercase' }} >{t('Reply')}</div>
+          <Typography variant='body2'>{t('Reply')}</Typography>
         </span>
       }
-    </div>
-  )
-
-  const renderReplies = (
-    <>
-    {reversedReplies.map(reply => {
-      return <Comment
-        key={reply.id}
-        postId={postId}
-        postCreatorId={postCreatorId}
-        commentData={reply}
-        replies={[]}
-        isReply={true}
-        commentingIsDisabled={commentingIsDisabled}
-        inList={false}
-        onRespond={onRespondToReplyClick}
-        setReplied={setReplied}
-        userIsAuthenticated={userIsAuthenticated}
-      />
-    })}
-    </>
-  )
-
-  const repliesContainer = (
-    <div className={classes.repliesContainer} >
-
       { replies.length === 0 && commentData.repliesCount > 0 &&
         <div
           className={ classes.toggleRepliesVisibilityButton }
           onClick={handleShowReplies}
         >
-          <div><ArrowDropDownIcon style={{ display: 'block'}}/></div>
-          <div>
-            <SimpleText >
-              {`${t('Show replies')} (${commentData.repliesCount})`}
-            </SimpleText>
-          </div>
-          { repliesAreLoading &&
-            <div style={{ marginLeft: 16 }} >
-              <CircularProgress size={16} />
+          <div style={{ position: 'relative'}}>
+            <div className={classes.dropDownIconWrapper}>
+              <ArrowDropDownIcon  style={{ display: 'block'}}/>
+            </div>
+            { repliesAreLoading &&
+            <div style={{ position: 'absolute', top: 1, left: -2 }} >
+              <CircularProgress color='secondary' size={20} />
             </div>
           }
+          </div>
+          <span
+            className={classNames(classes.replyButton, classes.replyButtonActive)}
+          >
+            <Typography variant='body2'>{`${t('Replies')} (${commentData.repliesCount})`}</Typography>
+          </span>
         </div>
       }
+    </div>
+  )
+
+  const repliesContainer = !isReply && (
+    <div ref={repliesContRef} className={classes.repliesContainer} >
       { replies.length > 0 &&
-        <div style={{marginRight: 16}}>
+        <div style={{marginRight: 8}}>
           { commentData.repliesCount > replies.length && replies.length > 0 &&
             <div
               className={ classes.loadMoreRepliesButton }
               onClick={ handleRepliesLoad }
             >
-              <div><SimpleText >
-                {t('Load previous replies')}
-              </SimpleText></div>
-              { repliesAreLoading &&
-                <div><CircularProgress size={16} /></div>
+              <div style={{position: 'relative'}}>
+                <SimpleText>
+                  {t('Load previous replies')}
+                </SimpleText>
+                { repliesAreLoading &&
+                <div style={{position: 'absolute', top: 0, right: -20}}><CircularProgress size={16} color='secondary'/></div>
               }
+              </div>
             </div>
           }
           { commentData.repliesCount > replies.length && replies.length === 0 &&
             <CircularProgress color='secondary' />
           }
-
-          { renderReplies }
+          {reversedReplies.map(reply => {
+            return <Comment
+              key={reply.id}
+              postId={postId}
+              postCreatorId={postCreatorId}
+              commentData={reply}
+              replies={[]}
+              isReply={true}
+              commentingIsDisabled={commentingIsDisabled}
+              inList={false}
+              onRespond={onRespondToReplyClick}
+              setReplied={setReplied}
+              userIsAuthenticated={userIsAuthenticated}
+              place={place}
+            />
+          })}
         </div>
       }
       { showReplyField && !commentingIsDisabled && userIsAuthenticated &&
@@ -528,31 +566,35 @@ const Comment = React.memo(props => {
             autoFocus={true}
             focusTrigger={ focusTrigger }
             setShowReplyField={ setShowReplyField }
+            place={place}
+            creatorFirstName={creatorFirstName}
           />
         </div>
       }
-
     </div>
   )
 
+  const creatorName = commentData.creator.firstName + ' ' + commentData.creator.lastName
+  
   return (
-    <>
     <div className={classes.container}>
-      <div className={classes.comment} >
-        <Avatar
-          component={NavLink}
+      <div
+        className={classNames(
+          classes.comment,
+          isReply ? classes.reply : classes.rootComment
+        )}
+      >
+        <NavLinkAvatar
+          width={36}
           to={`/i/${commentData.creator.username}`}
-          className={classes.creatorAvatar}
-          src={creatorPicture}
+          picture={creatorPicture || null}
+          name={creatorName}
         />
-
-        <div style={{ flexGrow: 1}} >
-          { commentBody }
-          { underComment }
-        </div>
+        { commentBody }
+        { menu }
       </div>
-
-      { !isReply && repliesContainer }
+      { underComment }
+      { repliesContainer }
       <PhotoSlider
         images={viewerPhotos}
         visible={viewerIsOpen}
@@ -560,7 +602,6 @@ const Comment = React.memo(props => {
         index={0}
       />
     </div>
-  </>
   )
 })
 

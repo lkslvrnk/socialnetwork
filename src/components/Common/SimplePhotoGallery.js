@@ -1,11 +1,14 @@
-import React, {useState, useEffect, useRef} from 'react'
+import React, {useState, useEffect, useRef, useCallback} from 'react'
 import CancelTwoToneIcon from '@material-ui/icons/CancelTwoTone'
 import { PhotoSlider } from 'react-photo-view'
 import { useStyles } from './SimplePhotoGalleryStyles'
+import ImageViewer from "react-simple-image-viewer";
+import { useImageViewer } from '../../hooks/hooks';
+import CustomImageViewer from './CustomImageViewer';
 
 const SimplePhotoGallery = React.memo((props) => {
   const {imageBorderRadius, editMode, passedImages, spacing, setAttachments, centering = true} = props
-  const classes = useStyles()
+  
   const gallery = useRef(null)
   
   const preparedPhotos = []
@@ -25,18 +28,21 @@ const SimplePhotoGallery = React.memo((props) => {
     preparedLargePictures.push({src: photo.largeSrc})
   })
 
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [viewerIsOpen, setViewerIsOpen] = useState(false);
+  const [imageViewerCurrentIndex, showImageViewer, openImageViewer, closeImageViewer] = useImageViewer()
 
-  const openLightbox = (index) => {
-    setCurrentImageIndex(index);
-    setViewerIsOpen(true);
-  }
+  // useEffect(() => {
+  //   const body = document.getElementsByTagName('body')[0]
+  //   console.log(body)
+  //   if(body && showImageViewer) {
+  //     body.style.overflowY = 'hidden'
+  //     body.style.marginRight = '12px'
+  //   } else if(body && !showImageViewer) {
+  //     body.style.overflowY = 'scroll'
+  //     body.style.marginRight = '0px'
+  //   }
+  // }, [showImageViewer])
 
-  const closeLightbox = () => {
-    setCurrentImageIndex(0);
-    setViewerIsOpen(false);
-  };
+  const classes = useStyles({isViewerOpen: showImageViewer})
 
   function createPhotoObject(index, id, largeSrc, previewSrc, previewWidth, previewHeight) {
     const photo = {
@@ -154,7 +160,7 @@ const SimplePhotoGallery = React.memo((props) => {
           }}
         >
           <div
-            onClick={() => openLightbox(0)}
+            onClick={() => openImageViewer(0)}
             style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0,}}
           />
           { editMode &&
@@ -214,10 +220,9 @@ const SimplePhotoGallery = React.memo((props) => {
                       src={photo.previewSrc}
                       id={photo.id}
                       height={photo.heightPercents - (allSpacings / wrapperLength)}
-                      width={100} 
-                      editMode={editMode}
+                      width={100}
                       onClose={ () => onDeletePhoto(photo.id) }
-                      onClick={() => openLightbox(photo.index)}
+                      onClick={() => openImageViewer(photo.index)}
                     />
                     {currentPhoto < wrapperLength && <div style={{marginBottom: `${spacingHeightInWrapper}%`}}/>}
                   </>
@@ -266,7 +271,7 @@ const SimplePhotoGallery = React.memo((props) => {
                     height={wrapper.heightPercents}
                     width={photo.widthPercents} 
                     onClose={ () => onDeletePhoto(photo.id) }
-                    onClick={() => openLightbox(photo.index)}
+                    onClick={() => openImageViewer(photo.index)}
                   />
                 )
               })}
@@ -413,16 +418,34 @@ const SimplePhotoGallery = React.memo((props) => {
       }
     }
   }
-
+  // console.log(preparedLargePictures)
+  const forImageViewer = []
+  preparedLargePictures.forEach(p => forImageViewer.push(p.src))
   
   return <div style={{width: '100%'}} ref={gallery}>
     {readyPhotos}
-    <PhotoSlider 
+    {/* <PhotoSlider 
       images={preparedLargePictures}
       visible={viewerIsOpen}
       onClose={closeLightbox}
       index={currentImageIndex}
       onIndexChange={setCurrentImageIndex}
+    /> */}
+    {/* {showImageViewer && <ImageViewer
+        src={forImageViewer}
+        currentIndex={imageViewerCurrentIndex}
+        onClose={closeImageViewer}
+        disableScroll={true}
+        backgroundStyle={{
+          backgroundColor: "rgba(0,0,0,0.9)"
+        }}
+        closeOnClickOutside={true}
+    />} */}
+    <CustomImageViewer
+        show={showImageViewer}
+        src={forImageViewer}
+        currentIndex={imageViewerCurrentIndex}
+        onClose={closeImageViewer}
     />
   </div>
 })

@@ -7,14 +7,14 @@ import { feedAPI } from "../api/feed_api"
 import { AxiosError } from "axios"
 import { photosAPI } from "../api/photos_api"
 
-const ADD_POST = 'profile-posts/ADD-POST'
+const ADD_POST_TO_PROFILE_POSTS = 'profile-posts/ADD-POST-TO-PROFILE-POSTS'
 const ADD_COMMENT = 'profile-posts/ADD-COMMENT'
 const REMOVE_POST = 'profile-posts/REMOVE-POST';
-const SET_POSTS = 'profile-posts/SET-POSTS'
-const ADD_POSTS = 'profile-posts/ADD-POSTS'
-const SET_COMMENTS = 'profile-posts/SET_COMMENTS'
-const SET_REPLIES = 'profile-posts/SET_REPLIES'
-const CLEAR_POST_COMMENTS = 'profile-posts/CLEAR_POST_COMMENTS'
+const SET_PROFILE_POSTS = 'profile-posts/SET-POSTS'
+const ADD_PROFILE_POSTS = 'profile-posts/ADD-PROFILE-POSTS'
+const SET_COMMENTS = 'profile-posts/SET-COMMENTS'
+const SET_REPLIES = 'profile-posts/SET-REPLIES'
+const CLEAR_POST_COMMENTS = 'profile-posts/CLEAR-POST-COMMENTS'
 const SET_POST_IS_DELETED = 'profile-posts/SET-POST-IS-DELETED'
 const REMOVE_NEW_POST_PHOTO = 'profile-posts/REMOVE-NEW-POST-PHOTO'
 const SET_NEW_POST_PHOTO = 'profile-posts/SET-NEW-POST-PHOTO'
@@ -38,51 +38,125 @@ const SET_OWNER_ID_AND_POSTS_COUNT = 'profile-posts/SET-OWNER-ID'
 const REPLACE_CURRENT_USER_COMMENT_REACTION = 'profile-posts/REPLACE-CURRENT-USER-COMMENT-REACTION'
 const CLEAN = 'CLEAN'
 const INITIALIZE_FEED = 'INITIALIZE-FEED'
+const CLEAN_POST = 'profile-posts/CLEAN-POST'
+const CLEAN_FEED = 'profile-posts/CLEAN-FEED'
+const SET_FEED = 'profile-posts/SET-FEED'
+const ADD_POST_TO_FEED = 'profile-posts/ADD-POST-TO-FEED'
+const ADD_FEED_POSTS = 'profile-posts/ADD-FEED-POSTS'
+const SET_PROFILE_POST = 'profile-posts/SET-PROFILE-POST'
+
+export type Place = "profile_posts" | "feed" | "profile_post";
+export const PROFILE_POSTS = 'profile_posts'
+export const FEED = 'feed'
+export const PROFILE_POST = 'profile_post'
 
 let initialState = {
-  ownerId: null as string | null,
-  allCount: null as number | null,
-  posts: [] as Array<ProfilePostType>,
-  cursor: null as string | null,
-  areLoaded: false as boolean,
-  isFeed: false as boolean
+  profileOwnerId: null as string | null,
+  profileAllPostsCount: null as number | null,
+  profilePosts: [] as Array<ProfilePostType>,
+  profilePostsCursor: null as string | null,
+  profilePostsAreLoaded: false as boolean,
+  isFeed: false as boolean,
+
+  feed: [] as Array<ProfilePostType>,
+  feedCursor: null as string | null,
+  feedLoaded: false as boolean,
+
+  profilePost: null as ProfilePostType | null,
+  profilePostLoaded: false as boolean
 }
 
-const profilePostsReducer = (state: InitialStateType = initialState, action: any): InitialStateType => {
+const profilePostsReducer = (state: InitialStateType = initialState, action: ActionsType): InitialStateType => {
   switch (action.type) {
     case INITIALIZE_FEED:{
-      return {...state,isFeed: true}
+      return {...state, isFeed: true}
     }
     case CLEAN: {
       return {
-        ownerId: null,
-        allCount: null,
-        posts: [],
-        cursor: null,
-        areLoaded: false,
-        isFeed: false
+        profileOwnerId: null,
+        profileAllPostsCount: null,
+        profilePosts: [],
+        profilePostsCursor: null,
+        profilePostsAreLoaded: false,
+        isFeed: false,
+        feed: [],
+        feedCursor: null,
+        feedLoaded: false,
+        profilePost: null,
+        profilePostLoaded: false
       }
     }
-    case SET_OWNER_ID_AND_POSTS_COUNT: {
-      return {
-        ...state,
-        ownerId: action.id,
-        allCount: action.count,
-        areLoaded: action.count === 0,
-        posts: [...state.posts]
-      }
+    case SET_PROFILE_POST: {
+      return {...state, profilePost: action.post, profilePostLoaded: true}
     }
-    case PUT_POST: {
-      let post = state.posts.find(post => post.id === action.postId)
-      if(post) {
-        let postsCopy = [...state.posts]
-        postsCopy[postsCopy.indexOf(post)] = action.post
-        return {...state, posts: postsCopy}
+    case SET_PROFILE_POSTS: {
+      console.log(action)
+      let post = action.posts[0]
+      console.log()
+      if(state.profileOwnerId && !!post && state.profileOwnerId === post.creator.id) {
+        return {
+          ...state,
+          profilePostsAreLoaded: true,
+          profilePosts: action.posts,
+          profilePostsCursor: action.cursor,
+          profileAllPostsCount: action.count
+        }
+      }
+      return {...state, profilePostsAreLoaded: true, profileAllPostsCount: 0}
+    }
+    case SET_FEED: {
+      return { ...state, feedLoaded: true, feed: action.posts, feedCursor: action.cursor }
+    }
+    case ADD_PROFILE_POSTS: {
+      let post = action.posts[0]
+      if((state.profileOwnerId && state.profileOwnerId === post.creator.id)) {
+        return {
+          ...state,
+          profilePosts: state.profilePosts.concat(action.posts),
+          profilePostsCursor: action.cursor
+        }
+      }
+      return state
+    }
+    case ADD_POST_TO_PROFILE_POSTS: {
+      if(state.profileOwnerId && state.profileOwnerId === action.post.creator.id) {
+        return {
+          ...state,
+          profileAllPostsCount: state.profileAllPostsCount
+            ? state.profileAllPostsCount + 1 : null,
+          profilePosts: [action.post, ...state.profilePosts]
+        }
       }
       return {...state}
     }
+    case ADD_FEED_POSTS: {
+      if(state.feedLoaded) {
+        return {
+          ...state,
+          feed: [...state.feed, ...action.posts],
+          feedCursor: action.cursor
+        }
+      }
+      return {...state}
+    }
+    case SET_OWNER_ID_AND_POSTS_COUNT: {
+      console.log(action)
+      return {
+        ...state,
+        profileOwnerId: action.id,
+        profileAllPostsCount: action.count,
+        profilePostsAreLoaded: false,
+        profilePosts: [...state.profilePosts]
+      }
+    }
+    case PUT_POST: {
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
+      return returnStateWithReplacedPost(state, action.post, action.place)
+    }
     case PATCH_POST: {
-      let post = state.posts.find(post => post.id === action.postId)
+      console.log(action)
+      let post = findPost(state, action.postId, action.place)
       if(post) {
         let postCopy = copyPost(post)
         if(action.property === 'comments_are_disabled') {
@@ -90,429 +164,334 @@ const profilePostsReducer = (state: InitialStateType = initialState, action: any
         } else if(action.property === 'is_public') {
           postCopy.isPublic = action.value
         }
-        let postsCopy = [...state.posts]
-        postsCopy[postsCopy.indexOf(post)] = postCopy
-        return {...state, posts: postsCopy}
+        return returnStateWithReplacedPost(state, postCopy, action.place)
       }
       return {...state}
     }
     case SET_POST_IS_DELETED: {
-      let post = state.posts.find(post => post.id === action.postId)
-      if(post) {
-        let postCopy = copyPost(post)
-        postCopy.isDeleted = action.isDeleted
-        let postsCopy = [...state.posts]
-        postsCopy[postsCopy.indexOf(post)] = postCopy
-        return {...state, posts: postsCopy}
-      }
-      return {...state}
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
+      let postCopy = copyPost(post)
+      postCopy.isDeleted = action.isDeleted
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case SET_COMMENT_IS_DELETED: {
-      let post = state.posts.find(post => post.id === action.postId)
-      if(!!post) {
-        let postsCopy = [...state.posts]
-        let postCopy = copyPost(post)
-        postsCopy[postsCopy.indexOf(post)] = postCopy
-        if(action.rootId) {
-          let root = post.comments.find(comment => comment.id === action.rootId)
-          if(root) {
-            let rootCopy = copyComment(root)
-            let reply = rootCopy.replies.find(reply => reply.id === action.commentId)
-            if(reply) {
-              let replyCopy = copyComment(reply)
-              replyCopy.deleted = action.isDeleted
-              rootCopy.replies[rootCopy.replies.indexOf(reply)] = replyCopy
-              postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
-            }
-          }
-        } else {
-          let comment = post.comments.find(comment => comment.id === action.commentId)
-          if(comment) {
-            let commentCopy = copyComment(comment)
-            commentCopy.deleted = action.isDeleted
-            postCopy.comments[postCopy.comments.indexOf(comment)] = commentCopy
+      let post = findPost(state, action.postId, action.place)
+
+      if(!post) return {...state}
+      let postCopy = copyPost(post)
+      if(action.rootId) {
+        let root = findComment(post.comments, action.rootId)
+        if(root) {
+          let rootCopy = copyComment(root)
+          let reply = findComment(rootCopy.replies, action.commentId)
+          if(reply) {
+            let replyCopy = copyComment(reply)
+            replyCopy.deleted = action.isDeleted
+            replaceComment(rootCopy.replies, replyCopy)
+            replaceComment(postCopy.comments, rootCopy)
           }
         }
-        return {...state, posts: postsCopy}
+      } else {
+        let comment = findComment(post.comments, action.commentId)
+        if(comment) {
+          let commentCopy = copyComment(comment)
+          commentCopy.deleted = action.isDeleted
+          replaceComment(postCopy.comments, commentCopy)
+        }
       }
-      return {...state}
-    }
-    case SET_POSTS: {
-      let post = action.posts[0]
-      if(!action.isFeed && !state.isFeed && state.ownerId && !!post && state.ownerId === post.creator.id) {
-        return { ...state, areLoaded: true, posts: action.posts, cursor: action.cursor, allCount: action.count }
-      }
-      else if(action.isFeed && state.isFeed) {
-        return { ...state, areLoaded: true, posts: action.posts, cursor: action.cursor }
-      }
-      return state
-    }
-    case ADD_POSTS: {
-      let post = action.posts[0]
-
-      if((state.ownerId && state.ownerId === post.creator.id) || state.isFeed) {
-        return { ...state, areLoaded: true, posts: state.posts.concat(action.posts), cursor: action.cursor }
-      }
-      return state
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case SET_COMMENTS: {
-      let post = state.posts.filter(post => post.id === action.postId)[0]
-      if(!!post) {
-        let postCopy = copyPost(post)
-
-        if(postCopy.comments.length > 0) {
-          postCopy.comments = postCopy.comments.concat(action.comments)
-        } else {
-          postCopy.comments = action.comments
-        }
-        postCopy.commentsCount = action.allCommentsCount
-        let postsCopy = [...state.posts]
-        postsCopy[postsCopy.indexOf(post)] = postCopy
-        return {...state, posts: postsCopy}
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
+      let postCopy = copyPost(post)
+      if(postCopy.comments.length > 0) {
+        postCopy.comments = postCopy.comments.concat(action.comments)
+      } else {
+        postCopy.comments = action.comments
       }
-      return {...state}
+      postCopy.commentsCount = action.allCommentsCount
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case ADD_COMMENT: {
-      let post = state.posts.filter(post => post.id === action.postId)[0]
-      if(!!post) {
-        let postCopy = copyPost(post)
-        if(action.rootId) {
-          let root = post.comments.filter(comment => comment.id === action.rootId)[0]
-          if(!!root) {
-            let rootCopy = copyComment(root)
-            rootCopy.replies = [...[action.comment].concat(rootCopy.replies)]
-            rootCopy.repliesCount++
-            postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
-          }
-        }
-        else {
-          postCopy.comments = [action.comment].concat(postCopy.comments)
-          postCopy.commentsCount++
-        }
-        let postsCopy = [...state.posts]
-        postsCopy[postsCopy.indexOf(post)] = postCopy
-        return {...state, posts: postsCopy}
-      }
-      return {...state}
-    }
-    case ADD_POST: {
-      if(state.ownerId && state.ownerId === action.post.creator.id) {
-        return {
-          ...state,
-          allCount: state.allCount ? state.allCount + 1 : null,
-          posts: [action.post, ...state.posts]
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
+      let postCopy = copyPost(post)
+      if(action.rootId) {
+        let root = findComment(post.comments, action.rootId)
+        if(!!root) {
+          let rootCopy = copyComment(root)
+          rootCopy.replies = [action.comment].concat(rootCopy.replies)
+          rootCopy.repliesCount++
+          replaceComment(postCopy.comments, rootCopy)
         }
       }
-      else if(state.isFeed) {
-        return {
-          ...state,
-          posts: [action.post, ...state.posts],
-        }
+      else {
+        postCopy.comments = [action.comment].concat(postCopy.comments)
+        postCopy.commentsCount++
       }
-      return {...state}
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case SET_REPLIES: {
-      let post = state.posts.filter(post => post.id === action.postId)[0]
-      if(post.comments) {
-        let comment = post.comments.filter(comment => comment.id === action.commentId)[0]
-        if(!!comment) {
-          let commentCopy = copyComment(comment)
-          commentCopy.replies = commentCopy.replies.concat(action.replies)
-          commentCopy.repliesCount = action.allRepliesCount
-          let postCopy = copyPost(post)
-          postCopy.comments[postCopy.comments.indexOf(comment)] = commentCopy
-          let postsCopy = [...state.posts]
-          postsCopy[postsCopy.indexOf(post)] = postCopy
-          return {...state, posts: postsCopy}
-        }
-      }
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
+
+      let comment = findComment(post.comments, action.commentId)
+      if(!comment) return {...state}
+
+      let commentCopy = copyComment(comment)
+      commentCopy.replies = commentCopy.replies.concat(action.replies)
+      commentCopy.repliesCount = action.allRepliesCount
+      let postCopy = copyPost(post)
+      replaceComment(postCopy.comments, commentCopy)
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case SET_POST_REACTIONS: {
-      let post = state.posts.find(post => post.id === action.postId)
-      if(post) {
-        let postCopy = copyPost(post)
-        if(action.offsetId) {
-          postCopy.reactions = postCopy.reactions.concat(action.reactions)
-        } else {
-          postCopy.reactions = action.reactions
-        }
-        postCopy.reactionsCount = action.reactionsCount
-        let postsCopy = [...state.posts]
-        postsCopy[postsCopy.indexOf(post)] = postCopy
-        return {...state, posts: postsCopy}
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
+
+      let postCopy = copyPost(post)
+      if(action.offsetId) {
+        postCopy.reactions = postCopy.reactions.concat(action.reactions)
+      } else {
+        postCopy.reactions = action.reactions
       }
-      return {...state}
+      postCopy.reactionsCount = action.reactionsCount
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case SET_COMMENT_REACTIONS: {
-      let post = state.posts.find(post => post.id === action.postId)
-      if(!!post) {
-        let postCopy = copyPost(post)
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
 
-        if(action.rootId) {
-          let root = post.comments.filter(comment => comment.id === action.rootId)[0]
-          if(!!root) {
-            let rootCopy = copyComment(root)
-            let reply = root.replies.filter(reply => reply.id === action.commentId)[0]
-            if(!!reply) {
-              let replyCopy = copyComment(reply)
-              replyCopy.reactionsCount = action.reactionsCount
-              rootCopy.replies[rootCopy.replies.indexOf(reply)] = replyCopy
-              postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
-            }
-          }
-        } else {
-          let comment = post.comments.filter(comment => comment.id === action.commentId)[0]
-          if(comment) {
-            let commentCopy = copyComment(comment)
-            commentCopy.reactionsCount = action.reactionsCount
-            postCopy.comments[postCopy.comments.indexOf(comment)] = commentCopy
+      let postCopy = copyPost(post)
+      if(action.rootId) {
+        let root = findComment(post.comments, action.rootId)
+        if(!!root) {
+          let rootCopy = copyComment(root)
+          let reply = findComment(root.replies, action.commentId)
+          if(!!reply) {
+            let replyCopy = copyComment(reply)
+            replyCopy.reactionsCount = action.reactionsCount
+            replaceComment(rootCopy.replies, replyCopy)
+            replaceComment(postCopy.comments, rootCopy)
           }
         }
-        let postsCopy = [...state.posts]
-        postsCopy[postsCopy.indexOf(post)] = postCopy
-        return { ...state, posts: postsCopy}
+      } else {
+        let comment = findComment(post.comments, action.commentId)
+        if(comment) {
+          let commentCopy = copyComment(comment)
+          commentCopy.reactionsCount = action.reactionsCount
+          replaceComment(postCopy.comments, commentCopy)
+        }
       }
-      return {...state}
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case CLEAR_POST_COMMENTS: {
-      let post = state.posts.filter(post => post.id === action.postId)[0]
-      post.comments = []
-      return {
-        ...state,
-        posts: [...state.posts]
-      }
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
+      const postCopy = copyPost(post)
+      postCopy.comments = []
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case EDIT_REACTION: {
-      let post = state.posts.filter(post => post.id === action.postId)[0]
-      if(!!post) {
-        let postsCopy = [...state.posts]
-        let postCopy = copyPost(post)
-        let prevReaction = postCopy.requesterReaction
-        const prevReactionType = prevReaction ? prevReaction.type : null
-        postCopy.requesterReaction = action.reaction
-        editReactionsCount(postCopy.reactionsCount, action.reaction.type, prevReactionType)
-        postsCopy[postsCopy.indexOf(post)] = postCopy
-        return {...state, posts: postsCopy}
-      }
-      return {...state}
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
+      
+      let postCopy = copyPost(post)
+      let prevReaction = postCopy.requesterReaction
+      const prevReactionType = prevReaction ? prevReaction.type : null
+      postCopy.requesterReaction = action.reaction
+      editReactionsCount(postCopy.reactionsCount, action.reaction.type, prevReactionType)
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case DELETE_REACTION: {
-      let post = state.posts.filter(post => post.id === action.postId)[0]
-      if(!!post) {
-        let postsCopy = [...state.posts]
-        let postCopy = copyPost(post)
-        const prevReactionType = post.requesterReaction ?
-          post.requesterReaction.type : null
-        postCopy.requesterReaction = null
-        editReactionsCount(postCopy.reactionsCount, null, prevReactionType)
-        postsCopy[postsCopy.indexOf(post)] = postCopy
-        return {...state, posts: postsCopy}
-      }
-      return {...state}
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
+      let postCopy = copyPost(post)
+      const prevReactionType = post.requesterReaction
+        ? post.requesterReaction.type : null
+      postCopy.requesterReaction = null
+      editReactionsCount(postCopy.reactionsCount, null, prevReactionType)
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case ADD_CURRENT_USER_REACTION: {
-      let post = state.posts.filter(post => post.id === action.postId)[0]
-      if(!!post) {
-        let postsCopy = [...state.posts]
-        let postCopy = copyPost(post)
-        postCopy.requesterReaction = action.reaction
-        editReactionsCount(postCopy.reactionsCount, action.reaction.type, null)
-        postsCopy[postsCopy.indexOf(post)] = postCopy
-        return {...state, posts: postsCopy}
-      }
-      return {...state}
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
+      let postCopy = copyPost(post)
+      postCopy.requesterReaction = action.reaction
+      editReactionsCount(postCopy.reactionsCount, action.reaction.type, null)
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case REPLACE_CURRENT_USER_REACTION: {
-      const post = state.posts.filter(post => post.id === action.postId)[0]
-      if(!!post) {
-        let postsCopy = [...state.posts]
-        let postCopy = copyPost(post)
-        const prevReactionType = post.requesterReaction ?
-          post.requesterReaction.type : null
-        postCopy.requesterReaction = action.reaction
-
-        editReactionsCount(postCopy.reactionsCount, action.reaction.type, prevReactionType)
-        postsCopy[postsCopy.indexOf(post)] = postCopy
-        return {...state, posts: postsCopy}
-      }
-      return {...state}
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
+      let postCopy = copyPost(post)
+      const prevReactionType = post.requesterReaction
+        ? post.requesterReaction.type : null
+      postCopy.requesterReaction = action.reaction
+      editReactionsCount(postCopy.reactionsCount, action.reaction.type, prevReactionType)
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case EDIT_POST_COMMENT: {
-      let postsCopy = [...state.posts]
-      let post = postsCopy.find(post => post.id === action.postId)
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
 
-      if(post) {
-        let postCopy = copyPost(post)
-        if(action.rootId) {
-          let root = post.comments.find(comment => action.rootId === comment.id)
-          if(root) {
-            let rootCopy = copyComment(root)
-            let reply = root.replies.find(reply => action.commentId === reply.id)
-            if(reply) {
-              rootCopy.replies[root.replies.indexOf(reply)] = action.comment
-              postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
-              postsCopy[postsCopy.indexOf(post)] = postCopy
-            }
-          }
-        } 
-        else {
-          let comment = post.comments.find(comment => action.commentId === comment.id)
-          if(comment) {
-            postCopy.comments[postCopy.comments.indexOf(comment)] = action.comment
-            postsCopy[postsCopy.indexOf(post)] = postCopy
+      let postCopy = copyPost(post)
+      if(action.rootId) {
+        let root = findComment(post.comments, action.rootId)
+        if(root) {
+          let rootCopy = copyComment(root)
+          let reply = root.replies.find(reply => action.commentId === reply.id)
+          if(reply) {
+            replaceComment(rootCopy.replies, action.comment)
+            replaceComment(postCopy.comments, rootCopy)
           }
         }
-        return {...state, posts: postsCopy}
+      } 
+      else {
+        let comment = findComment(post.comments, action.commentId)
+        if(comment) {
+          replaceComment(postCopy.comments, action.comment)
+        }
       }
-      return {...state}
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case ADD_CURRENT_USER_COMMENT_REACTION: {
-      let postsCopy = [...state.posts]
-      let post = postsCopy.find(post => post.id === action.postId)
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
 
-      if(post) {
-        let postCopy = copyPost(post)
-        if(action.rootId) {
-          let root = post.comments.find(comment => action.rootId === comment.id)
-          if(root) {
-            let rootCopy = copyComment(root)
-            let reply = root.replies.find(reply => action.commentId === reply.id)
-            if(reply) {
-              let replyCopy = copyComment(reply)
-              replyCopy.requesterReaction = action.reaction
-              editReactionsCount(replyCopy.reactionsCount, action.reaction.type, null)
-              rootCopy.replies[rootCopy.replies.indexOf(reply)] = replyCopy
-              postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
-              postsCopy[postsCopy.indexOf(post)] = postCopy
-            }
+      let postCopy = copyPost(post)
+      postCopy.comments = [...postCopy.comments]
+      if(action.rootId) {
+        let root = findComment(post.comments, action.rootId)
+        if(root) {
+          let rootCopy = copyComment(root)
+          let reply = findComment(root.replies, action.commentId)
+          if(reply) {
+            let replyCopy = copyComment(reply)
+            replyCopy.requesterReaction = action.reaction
+            editReactionsCount(replyCopy.reactionsCount, action.reaction.type, null)
+            replaceComment(rootCopy.replies, replyCopy)
+            replaceComment(postCopy.comments, rootCopy)
           }
         }
-        else {
-          let comment = post.comments.find(comment => action.commentId === comment.id)
-          if(comment) {
-            let commentCopy = copyComment(comment)
-            commentCopy.requesterReaction = action.reaction
-            editReactionsCount(commentCopy.reactionsCount, action.reaction.type, null)
-            postCopy.comments[postCopy.comments.indexOf(comment)] = commentCopy
-            postsCopy[postsCopy.indexOf(post)] = postCopy
-          }
-        }
-        return {...state, posts: postsCopy}
       }
-      return {...state}
+      else {
+        let comment = findComment(post.comments, action.commentId)
+        if(comment) {
+          let commentCopy = copyComment(comment)
+          commentCopy.requesterReaction = action.reaction
+          editReactionsCount(commentCopy.reactionsCount, action.reaction.type, null)
+          replaceComment(postCopy.comments, commentCopy)
+        }
+      }
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case REPLACE_CURRENT_USER_COMMENT_REACTION: {
-      let postsCopy = [...state.posts]
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
 
-      let post = postsCopy.find(post => post.id === action.postId)
-      if(post) {
-        let postCopy = copyPost(post)
-        if(action.rootId) {
-          let root = post.comments.find(comment => action.rootId === comment.id)
-          if(root) {
-            let rootCopy = copyComment(root)
-            let reply = root.replies.find(reply => action.commentId === reply.id)
-            if(reply) {
-              let replyCopy = copyComment(reply)
-              let prevReactionType = replyCopy.requesterReaction ? replyCopy.requesterReaction.type : null
-              replyCopy.requesterReaction = action.reaction
-              editReactionsCount(replyCopy.reactionsCount, action.reaction.type, prevReactionType)
-              rootCopy.replies[rootCopy.replies.indexOf(reply)] = replyCopy
-              postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
-              postsCopy[postsCopy.indexOf(post)] = postCopy
-            }
+      let postCopy = copyPost(post)
+      postCopy.comments = [...postCopy.comments]
+      if(action.rootId) {
+        let root = findComment(post.comments, action.rootId)
+        if(root) {
+          let rootCopy = copyComment(root)
+          let reply = findComment(root.replies, action.commentId)
+          if(reply) {
+            let replyCopy = copyComment(reply)
+            let prevReactionType = replyCopy.requesterReaction
+              ? replyCopy.requesterReaction.type : null
+            replyCopy.requesterReaction = action.reaction
+            editReactionsCount(replyCopy.reactionsCount, action.reaction.type, prevReactionType)
+            replaceComment(rootCopy.replies, replyCopy)
+            replaceComment(postCopy.comments, rootCopy)
           }
         }
-        else {
-          let comment = post.comments.find(comment => action.commentId === comment.id)
-          if(!!comment) {
-            let commentCopy = copyComment(comment)
-            let prevReactionType = commentCopy.requesterReaction ? commentCopy.requesterReaction.type : null
-            commentCopy.requesterReaction = action.reaction
-            editReactionsCount(commentCopy.reactionsCount, action.reaction.type, prevReactionType)
-            postCopy.comments[postCopy.comments.indexOf(comment)] = commentCopy
-            postsCopy[postsCopy.indexOf(post)] = postCopy
-          }
-        }
-        post.comments = [...post.comments]
       }
-      return {...state, posts: postsCopy}
+      else {
+        let comment = findComment(post.comments, action.commentId)
+        if(!!comment) {
+          let commentCopy = copyComment(comment)
+          let prevReactionType = commentCopy.requesterReaction ? commentCopy.requesterReaction.type : null
+          commentCopy.requesterReaction = action.reaction
+          editReactionsCount(commentCopy.reactionsCount, action.reaction.type, prevReactionType)
+          replaceComment(postCopy.comments, commentCopy)
+        }
+      }
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case EDIT_COMMENT_REACTION: {
-      let postsCopy = [...state.posts]
-      let post = state.posts.find(post => post.id === action.postId)
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
 
-      if(post) {
-        let postCopy = copyPost(post)
-        if(action.rootId) {
-          let root = post.comments.find(comment => action.rootId === comment.id)
-          if(root) {
-            let reply = root.replies.find(reply => action.commentId === reply.id)
-            let rootCopy = copyComment(root)
-            if(reply) {
-              let replyCopy = copyComment(reply)
-              let prevReactionType = replyCopy.requesterReaction
-                ? replyCopy.requesterReaction.type : null
-              replyCopy.requesterReaction = action.reaction
-              editReactionsCount(replyCopy.reactionsCount, action.reaction.type, prevReactionType)
-              rootCopy.replies[rootCopy.replies.indexOf(reply)] = replyCopy
-              postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
-              postsCopy[postsCopy.indexOf(post)] = postCopy
-            }
-          }
-        } else {
-          let comment = post.comments.find(comment => action.commentId === comment.id)
-          if(comment) {
-            let commentCopy = copyComment(comment)
-            let prevReactionType = commentCopy.requesterReaction
-              ? commentCopy.requesterReaction.type : null
-            commentCopy.requesterReaction = action.reaction
-            editReactionsCount(commentCopy.reactionsCount, action.reaction.type, prevReactionType)
-            postCopy.comments[postCopy.comments.indexOf(comment)] = commentCopy
-            postsCopy[postsCopy.indexOf(post)] = postCopy
+      let postCopy = copyPost(post)
+      postCopy.comments = [...postCopy.comments]
+      if(action.rootId) {
+        let root = findComment(post.comments, action.rootId)
+        if(root) {
+          let reply = findComment(root.replies, action.commentId)
+          let rootCopy = copyComment(root)
+          rootCopy.replies = [...rootCopy.replies]
+          if(reply) {
+            let replyCopy = copyComment(reply)
+            let prevReactionType = replyCopy.requesterReaction
+              ? replyCopy.requesterReaction.type : null
+            replyCopy.requesterReaction = action.reaction
+            editReactionsCount(replyCopy.reactionsCount, action.reaction.type, prevReactionType)
+            replaceComment(rootCopy.replies, replyCopy)
+            replaceComment(postCopy.comments, rootCopy)
           }
         }
+      } else {
+        let comment = findComment(post.comments, action.commentId)
+        if(comment) {
+          let commentCopy = copyComment(comment)
+          let prevReactionType = commentCopy.requesterReaction
+            ? commentCopy.requesterReaction.type : null
+          commentCopy.requesterReaction = action.reaction
+          editReactionsCount(commentCopy.reactionsCount, action.reaction.type, prevReactionType)
+          replaceComment(postCopy.comments, commentCopy)
+        }
       }
-      return {...state, posts: postsCopy}
+      
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     case DELETE_COMMENT_REACTION: {
-      let postsCopy = [...state.posts]
-      let post = postsCopy.find(post => post.id === action.postId)
+      let post = findPost(state, action.postId, action.place)
+      if(!post) return {...state}
 
-      if(post) {
-        let postCopy = copyPost(post)
-        if(action.rootId) {
-          let root = post.comments.find(comment => action.rootId === comment.id)
-          if(root) {
-            let rootCopy = copyComment(root)
-            let reply = root.replies.find(reply => action.commentId === reply.id)
-            if(reply) {
-              let replyCopy = copyComment(reply)
-              let requesterReactionType = replyCopy.requesterReaction
-                ? replyCopy.requesterReaction.type : null
-              replyCopy.requesterReaction = null
-              editReactionsCount(replyCopy.reactionsCount, null, requesterReactionType)
-              rootCopy.replies[rootCopy.replies.indexOf(reply)] = replyCopy
-              postCopy.comments[postCopy.comments.indexOf(root)] = rootCopy
-              postsCopy[postsCopy.indexOf(post)] = postCopy
-            }
-          }
-        }
-        else {
-          let comment = post.comments.find(comment => action.commentId === comment.id)
-          if(comment) {
-            let commentCopy = copyComment(comment)
-            let requesterReactionType = commentCopy.requesterReaction
-              ? commentCopy.requesterReaction.type : null
-            commentCopy.requesterReaction = null
-            editReactionsCount(commentCopy.reactionsCount, null, requesterReactionType)
-            postCopy.comments[postCopy.comments.indexOf(comment)] = commentCopy
-            postsCopy[postsCopy.indexOf(post)] = postCopy
+      let postCopy = copyPost(post)
+      postCopy.comments = [...postCopy.comments]
+      if(action.rootId) {
+        let root = findComment(post.comments, action.rootId)
+        if(root) {
+          let rootCopy = copyComment(root)
+          let reply = findComment(root.replies, action.commentId)
+          if(reply) {
+            let replyCopy = copyComment(reply)
+            let requesterReactionType = replyCopy.requesterReaction
+              ? replyCopy.requesterReaction.type : null
+            replyCopy.requesterReaction = null
+            editReactionsCount(replyCopy.reactionsCount, null, requesterReactionType)
+            replaceComment(rootCopy.replies, replyCopy)
+            replaceComment(postCopy.comments, rootCopy)
           }
         }
       }
-
-      return {...state, posts: postsCopy}
+      else {
+        let comment = findComment(post.comments, action.commentId)
+        if(comment) {
+          let commentCopy = copyComment(comment)
+          let requesterReactionType = commentCopy.requesterReaction
+            ? commentCopy.requesterReaction.type : null
+          commentCopy.requesterReaction = null
+          editReactionsCount(commentCopy.reactionsCount, null, requesterReactionType)
+          replaceComment(postCopy.comments, commentCopy)
+        }
+      }
+      return returnStateWithReplacedPost(state, postCopy, action.place)
     }
     default:
       return state;
@@ -520,56 +499,63 @@ const profilePostsReducer = (state: InitialStateType = initialState, action: any
 }
 
 export const actions = {
-  setPosts: (posts: Array<PostType>, cursor: string | null, count: number | null, isFeed: boolean) => ({ type: SET_POSTS, posts, cursor, count, isFeed } as const),
-  addPosts: (posts: Array<PostType>, cursor: string | null) => ({ type: ADD_POSTS, posts: posts, cursor: cursor } as const),
+  setProfilePost: (post: PostType | null) => ({type: SET_PROFILE_POST, post} as const),
+  setProfilePosts: (posts: Array<PostType>, cursor: string | null, count: number | null) => ({ type: SET_PROFILE_POSTS, posts, cursor, count } as const),
+  setFeed: (posts: Array<PostType>, cursor: string | null) => ({ type: SET_FEED, posts, cursor } as const),
+  addPosts: (posts: Array<PostType>, cursor: string | null) => ({ type: ADD_PROFILE_POSTS, posts: posts, cursor: cursor } as const),
+  addFeedPosts: (posts: PostType[], cursor: string | null) => ({
+    type: ADD_FEED_POSTS, posts, cursor
+  } as const),
   setNewPostPhoto: (photo: PhotoType) => ({ type: SET_NEW_POST_PHOTO, photo: photo } as const),
   removePost: (postId: string) => ({ type: REMOVE_POST, postId: postId } as const),
-  setPostIsDeleted: (postId: string, isDeleted: boolean) => ({ type: SET_POST_IS_DELETED, postId: postId, isDeleted: isDeleted } as const),
-  setCommentIsDeleted: (commentId: string, isDeleted: boolean, postId: string, rootId: string | null) => (
-    { type: SET_COMMENT_IS_DELETED, commentId, isDeleted, postId, rootId } as const
+  setPostIsDeleted: (postId: string, isDeleted: boolean, place: Place) => ({ type: SET_POST_IS_DELETED, postId: postId, isDeleted: isDeleted, place } as const),
+  setCommentIsDeleted: (commentId: string, isDeleted: boolean, postId: string, rootId: string | null, place: Place) => (
+    { type: SET_COMMENT_IS_DELETED, commentId, isDeleted, postId, rootId, place } as const
   ),
-  setComments: (comments: Array<PostCommentType>, allCommentsCount: number, postId: string) => ({ type: SET_COMMENTS, postId: postId, comments: comments, allCommentsCount: allCommentsCount} as const),
-  setReplies: (replies: Array<PostCommentType>, allRepliesCount: number, postId: string, commentId: string) => (
-    { type: SET_REPLIES, postId: postId, commentId: commentId, replies: replies, allRepliesCount: allRepliesCount} as const
+  setComments: (comments: Array<PostCommentType>, allCommentsCount: number, postId: string, place: Place) => ({
+    type: SET_COMMENTS, postId: postId, comments: comments, allCommentsCount: allCommentsCount, place
+  } as const),
+  setReplies: (replies: Array<PostCommentType>, allRepliesCount: number, postId: string, commentId: string, place: Place) => (
+    { type: SET_REPLIES, postId: postId, commentId: commentId, replies: replies, allRepliesCount: allRepliesCount, place} as const
   ),
-  setPostReactions: (postId: string, reactions: Array<ReactionType>, reactionsCount: ReactionsCountItem[], offsetId: string | null) => (
-    { type: SET_POST_REACTIONS, postId, reactions, reactionsCount, offsetId} as const
+  setPostReactions: (postId: string, reactions: Array<ReactionType>, reactionsCount: ReactionsCountItem[], offsetId: string | null, place: Place) => (
+    { type: SET_POST_REACTIONS, postId, reactions, reactionsCount, offsetId, place} as const
   ),
   removeNewPostPhoto: (src: string) => ({ type: REMOVE_NEW_POST_PHOTO, src: src } as const),
   cleanNewPostPhotos: () => ({ type: CLEAN_NEW_POST_PHOTOS } as const),
-  clearPostComments: (postId: string) => ({ type: CLEAR_POST_COMMENTS, postId: postId} as const),
+  clearPostComments: (postId: string, place: Place) => ({ type: CLEAR_POST_COMMENTS, postId, place} as const),
   addPost: (post: PostType) => (
-    {type: ADD_POST, post} as const
+    {type: ADD_POST_TO_PROFILE_POSTS, post} as const
   ),
-  addComment: (postId: string, rootId: string| null, repliedId: string | null, comment: PostCommentType) => (
-    {type: ADD_COMMENT, postId, rootId, repliedId, comment} as const
+  addComment: (postId: string, rootId: string| null, repliedId: string | null, comment: PostCommentType, place: Place) => (
+    {type: ADD_COMMENT, postId, rootId, repliedId, comment, place} as const
   ),
-  deleteCurrentUserPostReaction: (postId: string, reactionId: string) => (
-    {type: DELETE_REACTION, postId, reactionId} as const
+  deleteCurrentUserPostReaction: (postId: string, reactionId: string, place: Place) => (
+    {type: DELETE_REACTION, postId, reactionId, place} as const
   ),
-  editCurrentUserPostReaction: (postId: string, reaction: ReactionType, type: number) => (
-    {type: EDIT_REACTION, postId, reaction} as const
+  editCurrentUserPostReaction: (postId: string, reaction: ReactionType, type: number, place: Place) => (
+    {type: EDIT_REACTION, postId, reaction, place} as const
   ),
-  addCurrentUserPostReaction: (postId: string, reaction: ReactionType) => (
-    {type: ADD_CURRENT_USER_REACTION, postId, reaction} as const
+  addCurrentUserPostReaction: (postId: string, reaction: ReactionType, place: Place) => (
+    {type: ADD_CURRENT_USER_REACTION, postId, reaction, place} as const
   ),
-  replaceCurrentUserPostReaction: (postId: string, reaction: ReactionType) => (
-    {type: REPLACE_CURRENT_USER_REACTION, postId, reaction} as const
+  replaceCurrentUserPostReaction: (postId: string, reaction: ReactionType, place: Place) => (
+    {type: REPLACE_CURRENT_USER_REACTION, postId, reaction, place} as const
   ),
-  addCurrentUserCommentReaction: (postId: string, commentId: string, rootId: string | null, reaction: ReactionType) => (
-    {type: ADD_CURRENT_USER_COMMENT_REACTION, postId, commentId, rootId, reaction} as const
+  addCurrentUserCommentReaction: (postId: string, commentId: string, rootId: string | null, reaction: ReactionType, place: Place) => (
+    {type: ADD_CURRENT_USER_COMMENT_REACTION, postId, commentId, rootId, reaction, place} as const
   ),
-  replaceCurrentUserCommentReaction: (postId: string, commentId: string, rootId: string | null, reaction: ReactionType) => (
-    {type: REPLACE_CURRENT_USER_COMMENT_REACTION, postId, commentId, rootId, reaction} as const
+  replaceCurrentUserCommentReaction: (postId: string, commentId: string, rootId: string | null, reaction: ReactionType, place: Place) => (
+    {type: REPLACE_CURRENT_USER_COMMENT_REACTION, postId, commentId, rootId, reaction, place} as const
   ),
-  setCommentReactions: (postId: string, commentId: string, rootId: string | null, reactions: Array<ReactionType>, reactionsCount: object, offsetId: string | null) => (
-    { type: SET_COMMENT_REACTIONS, postId, commentId, rootId, reactions, reactionsCount, offsetId} as const
+  setCommentReactions: (postId: string, commentId: string, rootId: string | null, reactions: Array<ReactionType>, reactionsCount: Array<ReactionsCountItem>, offsetId: string | null, place: Place) => (
+    { type: SET_COMMENT_REACTIONS, postId, commentId, rootId, reactions, reactionsCount, offsetId, place} as const
   ),
-  deleteCurrentUserCommentReaction: (postId: string, commentId: string, rootId: string | null, reactionId: string) => (
-    {type: DELETE_COMMENT_REACTION, postId, commentId, rootId, reactionId} as const
+  deleteCurrentUserCommentReaction: (postId: string, commentId: string, rootId: string | null, reactionId: string, place: Place) => (
+    {type: DELETE_COMMENT_REACTION, postId, commentId, rootId, reactionId, place} as const
   ),
-  editCurrentUserCommentReaction: (postId: string, commentId: string, rootId: string | null, reaction: ReactionType) => (
-    {type: EDIT_COMMENT_REACTION, postId, commentId, rootId, reaction} as const
+  editCurrentUserCommentReaction: (postId: string, commentId: string, rootId: string | null, reaction: ReactionType, place: Place) => (
+    {type: EDIT_COMMENT_REACTION, postId, commentId, rootId, reaction, place} as const
   ),
   setNewPostError: (text: string) => (
     {type: ADD_NEW_POST_ERROR, text: text} as const
@@ -577,14 +563,14 @@ export const actions = {
   setConnection: (connection: ConnectionType | null) => (
     {type: SET_CONNECTION, connection} as const
   ),
-  editPost: (postId: string, post: PostType) => (
-    {type: PUT_POST, postId, post} as const
+  editPost: (postId: string, post: PostType, place: Place) => (
+    {type: PUT_POST, postId, post, place} as const
   ),
-  patchPost: (postId: string, property: string, value: any) => (
-    {type: PATCH_POST, postId, property, value} as const
+  patchPost: (postId: string, property: string, value: any, place: Place) => (
+    {type: PATCH_POST, postId, property, value, place} as const
   ),
-  editPostComment: (postId: string, commentId: string, comment: PostCommentType, rootId: string | null) => (
-    {type: EDIT_POST_COMMENT, postId, commentId, comment, rootId} as const
+  editPostComment: (postId: string, commentId: string, comment: PostCommentType, rootId: string | null, place: Place) => (
+    {type: EDIT_POST_COMMENT, postId, commentId, comment, rootId, place} as const
   ),
   setPostsOwnerAndAllCount: (id: string, count: number) => (
     {type: SET_OWNER_ID_AND_POSTS_COUNT, id, count} as const
@@ -612,29 +598,29 @@ export let initFeed = (): ThunkType => async (dispatch) => {
   dispatch(actions.initializeFeed());
 }
 
-export let getFeedPosts = (count: number | null): ThunkType => {
-  return async (dispatch) => {
-    let response = await feedAPI.getFeedPosts(count, null)
-
-    if(response.status === HttpStatusCode.OK) {
-      const responseData = response.data
-      dispatch(actions.setPosts(responseData.items, responseData.cursor, null, true))
-    }
-  }
-}
-
 export let getMoreFeedPosts = (count: number | null, cursor: string): ThunkType => {
   return async (dispatch) => {
     try {
       let response = await feedAPI.getFeedPosts(count, cursor)
       if(response.status === 200) {
-        dispatch(actions.addPosts(response.data.items, response.data.cursor));
+        dispatch(actions.addFeedPosts(response.data.items, response.data.cursor));
       }
       return response
     } catch (err) {
       // console.log(err)
     }
 
+  }
+}
+
+export let getFeedPosts = (count: number | null): ThunkType => {
+  return async (dispatch) => {
+    let response = await feedAPI.getFeedPosts(count, null)
+
+    if(response.status === HttpStatusCode.OK) {
+      const responseData = response.data
+      dispatch(actions.setFeed(responseData.items, responseData.cursor))
+    }
   }
 }
 
@@ -650,9 +636,20 @@ export let getPosts = (
   let response = await profileAPI.getPosts(userId, count, cursor, order, commentsCount, commentsOrder)
 
   if(response.status === 200) {
-    dispatch(actions.setPosts(response.data.items, response.data.cursor, response.data.allPostsCount, false));
+    dispatch(actions.setProfilePosts(response.data.items, response.data.cursor, response.data.allPostsCount));
   }
   return response
+}
+
+export let getPost = (
+  postId: string,
+  commentsCount: number | undefined,
+  commentsOrder: string | undefined
+): ThunkType => async (dispatch) => {
+  let response = await profileAPI.getPost(postId, commentsCount, commentsOrder)
+  if(response.status === 200) {
+    dispatch(actions.setProfilePost(response.data.post));
+  }
 }
 
 export let addPostPhoto = (file: any, addCreator: string, albumID: string): ThunkType => {
@@ -712,41 +709,41 @@ export let getCommentPhoto = (photoId: string): ThunkType => {
   }
 }
 
-export let clearPostComments = (postId: string): ThunkType => async(dispatch) => {
-  dispatch(actions.clearPostComments(postId))
+export let clearPostComments = (postId: string, place: Place = PROFILE_POSTS): ThunkType => async(dispatch) => {
+  dispatch(actions.clearPostComments(postId, place))
 }
   
-export let deletePost = (postID: string): ThunkType => async (dispatch) => {
+export let deletePost = (postID: string, place: Place = PROFILE_POSTS): ThunkType => async (dispatch) => {
   let response = await profileAPI.deletePost(postID)
   if(response.status === 200) {
-    dispatch(actions.setPostIsDeleted(postID, true))
+    dispatch(actions.setPostIsDeleted(postID, true, place))
   }
   return response
 }
 
-export let restorePost = (postID: string): ThunkType => async (dispatch) => {
+export let restorePost = (postID: string, place: Place = PROFILE_POSTS): ThunkType => async (dispatch) => {
   let response = await profileAPI.restorePost(postID)
   if(response.status === 200) {
-    dispatch(actions.setPostIsDeleted(postID, false))
+    dispatch(actions.setPostIsDeleted(postID, false, place))
   }
   return response
 }
 
-export let deleteComment = (commentID: string, postId: string, rootId: string | null): ThunkType => {
+export let deleteComment = (commentID: string, postId: string, rootId: string | null, place: Place = PROFILE_POSTS): ThunkType => {
   return async (dispatch) => {
     let response = await profileAPI.deleteComment(commentID)
     if(response.status === 200) {
-      dispatch(actions.setCommentIsDeleted(commentID, true, postId, rootId))
+      dispatch(actions.setCommentIsDeleted(commentID, true, postId, rootId, place))
     }
     return response
   }
 }
 
-export let restoreComment = (commentID: string, postId: string, rootId: string | null): ThunkType => {
+export let restoreComment = (commentID: string, postId: string, rootId: string | null, place: Place = PROFILE_POSTS): ThunkType => {
   return async (dispatch) => {
     let response = await profileAPI.restoreComment(commentID)
     if(response.status === 200) {
-      dispatch(actions.setCommentIsDeleted(commentID, false, postId, rootId))
+      dispatch(actions.setCommentIsDeleted(commentID, false, postId, rootId, place))
     }
     return response
   }
@@ -757,11 +754,12 @@ export let getComments = (
   postId: string,
   offsetId: string | null,
   count: number | null,
-  order: string | null
+  order: string | null,
+  place: Place = PROFILE_POSTS
 ): ThunkType => async (dispatch) => {
   let response = await profileAPI.getComments(userId, postId, offsetId, count, order)
   if(response.status === 200) {
-    dispatch(actions.setComments(response.data.items, response.data.allCommentsCount, postId));
+    dispatch(actions.setComments(response.data.items, response.data.allCommentsCount, postId, place));
   }
   return response
 }
@@ -771,12 +769,13 @@ export let getReplies = (
   postId: string,
   commentId: string,
   offsetId: string | null,
-  count: number | null
+  count: number | null,
+  place: Place = PROFILE_POSTS
 ): ThunkType => async (dispatch) => {
   try {
-    let response = await profileAPI.getReplies(userId, commentId, offsetId, count)
+    let response = await profileAPI.getReplies(userId, commentId, offsetId, `${count}`)
     if(response.status === 200) {
-      dispatch(actions.setReplies(response.data.items, response.data.allRepliesCount, postId, commentId));
+      dispatch(actions.setReplies(response.data.items, response.data.allRepliesCount, postId, commentId, place));
     }
   } catch(e) {
     const error = e as AxiosError
@@ -787,12 +786,13 @@ export let getReplies = (
 export let getReactions = (
   postId: string,
   offsetId: string | null,
-  count: number | null
+  count: number | null,
+  place: Place = PROFILE_POSTS
 ): ThunkType => async (dispatch) => {
   let response = await profileAPI.getPostReactions(postId, offsetId, count)
   if(response.status === 200) {
     let data = response.data
-    dispatch(actions.setPostReactions(postId, data.reactions, data.reactionsCount, offsetId));
+    dispatch(actions.setPostReactions(postId, data.reactions, data.reactionsCount, offsetId, place));
   }
   return response
 }
@@ -833,7 +833,8 @@ export let editPost = (
   text: string,
   attachments: [],
   disableComments: boolean,
-  isPublic: boolean
+  isPublic: boolean,
+  place: Place = PROFILE_POSTS
 ): ThunkType => {
   return async (dispatch: any) => {
     let response = await profileAPI.editPost(postId, text, attachments, disableComments, isPublic)
@@ -841,25 +842,25 @@ export let editPost = (
     if(response.status === 200) {
       let getPostResponse = await profileAPI.getPost(postId)
       if(getPostResponse.status === 200) {
-        dispatch(actions.editPost(postId, getPostResponse.data.post));
+        dispatch(actions.editPost(postId, getPostResponse.data.post, place));
       }
       
     }
   }
 }
 
-export let patchPost = (postId : string, property: string, value: any): ThunkType => {
+export let patchPost = (postId : string, property: string, value: any, place: Place = PROFILE_POSTS): ThunkType => {
   return async (dispatch: any) => {
     let response = await profileAPI.patchPost(postId, property, value)
     if(response.status === 200) {
-      dispatch(actions.patchPost(postId, property, value));
+      dispatch(actions.patchPost(postId, property, value, place));
     }
   }
 }
 
 export let editPostComment = (
   postId: string, commentId : string, text: string,
-  attachmentId: string | null, rootId: string | null
+  attachmentId: string | null, rootId: string | null, place: Place = PROFILE_POSTS
 ): ThunkType => {
   return async (dispatch: any) => {
     let response = await profileAPI.editComment(commentId, text, attachmentId)
@@ -867,7 +868,7 @@ export let editPostComment = (
     if(response.status === 200) {
       response = await profileAPI.getComment(commentId, 0)
       if(response.status === 200) {
-        dispatch(actions.editPostComment(postId, commentId, response.data.comment, rootId));
+        dispatch(actions.editPostComment(postId, commentId, response.data.comment, rootId, place));
       }
     }
   }
@@ -878,7 +879,8 @@ export let createComment = (
   text: string,
   attachmentId: string | null,
   rootId: string | null,
-  repliedId: string | null
+  repliedId: string | null,
+  place: Place = PROFILE_POSTS
 ): ThunkType => {
   return async (dispatch: any) => {
     let response = await profileAPI.createComment(postId, text, attachmentId, repliedId)
@@ -886,7 +888,7 @@ export let createComment = (
       let createdId = response.data.id
       response = await profileAPI.getComment(createdId, 0)
       if(response.status === 200) {
-        dispatch(actions.addComment(postId, rootId, repliedId, response.data.comment));
+        dispatch(actions.addComment(postId, rootId, repliedId, response.data.comment, place));
       }
     }
     return response
@@ -895,7 +897,8 @@ export let createComment = (
 
 export let createPostReaction = (
   postId: string,
-  type: number
+  type: number,
+  place: Place = PROFILE_POSTS
 ): ThunkType => {
   return async (dispatch: any) => {
     try {
@@ -906,7 +909,7 @@ export let createPostReaction = (
         let getCreatedReactionResponse = await profileAPI.getPostReaction(postId, createdReactionId)
         if(getCreatedReactionResponse.status === 200) {
           let reaction = getCreatedReactionResponse.data.reaction
-          dispatch(actions.addCurrentUserPostReaction(postId, reaction));
+          dispatch(actions.addCurrentUserPostReaction(postId, reaction, place));
         }
       } 
     }
@@ -921,7 +924,7 @@ export let createPostReaction = (
             let getResponse = await profileAPI.getPostReaction(postId, createdReactionId)
             if(getResponse.status === 200) {
               let reaction = getResponse.data.reaction
-              dispatch(actions.addCurrentUserPostReaction(postId, reaction));
+              dispatch(actions.addCurrentUserPostReaction(postId, reaction, place))
             }
           }
           
@@ -937,7 +940,7 @@ export let createPostReaction = (
       }
     }
     finally {
-      dispatch(getReactions(postId, null, null))
+      dispatch(getReactions(postId, null, null, place))
     }
   }
 }
@@ -945,7 +948,8 @@ export let createPostReaction = (
 export let editPostReaction = (
   postId: string,
   reactionId: string,
-  type: number
+  type: number,
+  place: Place = PROFILE_POSTS
 ): ThunkType => {
   return async (dispatch: any) => {
     try {
@@ -954,14 +958,14 @@ export let editPostReaction = (
         try {
           let getResponse = await profileAPI.getPostReaction(postId, reactionId)
           if(getResponse.status === 200) {
-            dispatch(actions.editCurrentUserPostReaction(postId, getResponse.data.reaction, type));
+            dispatch(actions.editCurrentUserPostReaction(postId, getResponse.data.reaction, type, place));
           }
         } catch (e) {}
         
         let response = await profileAPI.getPostReactions(postId, null, null)
         if(response.status === 200) {
           let data = response.data
-          await dispatch(actions.setPostReactions(postId, data.reactions, data.reactionsCount, null))
+          await dispatch(actions.setPostReactions(postId, data.reactions, data.reactionsCount, null, place))
         }
       }
     }
@@ -976,7 +980,7 @@ export let editPostReaction = (
       
               let getCreatedReactionResponse = await profileAPI.getPostReaction(postId, createdReactionId)
               if(getCreatedReactionResponse.status === 200) {
-                dispatch(actions.replaceCurrentUserPostReaction(postId, getCreatedReactionResponse.data.reaction));
+                dispatch(actions.replaceCurrentUserPostReaction(postId, getCreatedReactionResponse.data.reaction, place));
               }
             } 
           }
@@ -991,7 +995,7 @@ export let editPostReaction = (
                   let getResponse = await profileAPI.getPostReaction(postId, createdReactionId)
                   if(getResponse.status === 200) {
                     let reaction = getResponse.data.reaction
-                    dispatch(actions.addCurrentUserPostReaction(postId, reaction));
+                    dispatch(actions.addCurrentUserPostReaction(postId, reaction, place));
                   }
                 }
                 
@@ -1015,21 +1019,22 @@ export let editPostReaction = (
 
 export let deletePostReaction = (
   postId: string,
-  reactionId: string
+  reactionId: string,
+  place: Place = PROFILE_POSTS
 ): ThunkType => {
   return async (dispatch: any) => {
     try {
       let response = await profileAPI.deletePostReaction(postId, reactionId)
 
       if(response.status === 200) {
-        dispatch(actions.deleteCurrentUserPostReaction(postId, reactionId))
+        dispatch(actions.deleteCurrentUserPostReaction(postId, reactionId, place))
       }
       dispatch(getReactions(postId, null, null))
     } catch (e) {
       const error = e as AxiosError
       if(error.response) {
         if(error.response.status === 404) {
-          dispatch(actions.deleteCurrentUserPostReaction(postId, reactionId))
+          dispatch(actions.deleteCurrentUserPostReaction(postId, reactionId, place))
           dispatch(getReactions(postId, null, null))
         }
       }
@@ -1041,7 +1046,8 @@ export let createCommentReaction = (
   postId: string,
   commentId: string,
   rootId: string | null,
-  type: number
+  type: number,
+  place: Place = PROFILE_POSTS
 ): ThunkType => {
   return async (dispatch: any) => {
     try {
@@ -1052,7 +1058,7 @@ export let createCommentReaction = (
 
         if(getCreatedReactionResponse.status === 200) {
           let reaction = getCreatedReactionResponse.data.reaction
-          await dispatch(actions.addCurrentUserCommentReaction(postId, commentId, rootId, reaction));
+          await dispatch(actions.addCurrentUserCommentReaction(postId, commentId, rootId, reaction, place));
         }
       }
     }
@@ -1066,14 +1072,14 @@ export let createCommentReaction = (
           if(getCreatedReactionResponse.status === 200) {
             let reaction = getCreatedReactionResponse.data.reaction
             if(reaction.type === type) {
-              await dispatch(actions.addCurrentUserCommentReaction(postId, commentId, rootId, reaction))
+              await dispatch(actions.addCurrentUserCommentReaction(postId, commentId, rootId, reaction, place))
             }
             else {
               let response = await profileAPI.editCommentReaction(commentId, reaction.id, type)
               if(response.status === 200) {
                 let getReactionResponse = await profileAPI.getCommentReaction(commentId, reaction.id)
                 if(getReactionResponse.status === 200) {
-                  dispatch(actions.addCurrentUserCommentReaction(postId, commentId, rootId, getReactionResponse.data.reaction));
+                  dispatch(actions.addCurrentUserCommentReaction(postId, commentId, rootId, getReactionResponse.data.reaction, place));
                 }
               }
             }
@@ -1082,7 +1088,7 @@ export let createCommentReaction = (
       }
     }
     finally {
-      dispatch(getCommentReactions(postId, commentId, rootId, null, null))
+      dispatch(getCommentReactions(postId, commentId, rootId, null, null, place))
     }
   }
 }
@@ -1092,7 +1098,8 @@ export let editCommentReaction = (
   commentId: string,
   rootId: string | null,
   reactionId: string,
-  type: number
+  type: number,
+  place: Place = PROFILE_POSTS
 ): ThunkType => {
   return async (dispatch: any) => {
     try {
@@ -1102,7 +1109,7 @@ export let editCommentReaction = (
         try {
           let getResponse = await profileAPI.getCommentReaction(commentId, reactionId)
           if(getResponse.status === 200) {
-            dispatch(actions.editCurrentUserCommentReaction(postId, commentId, rootId, getResponse.data.reaction));
+            dispatch(actions.editCurrentUserCommentReaction(postId, commentId, rootId, getResponse.data.reaction, place));
           }
         } catch (e) {
           const error = e as AxiosError
@@ -1123,7 +1130,7 @@ export let editCommentReaction = (
     
             if(getCreatedReactionResponse.status === 200) {
               let reaction = getCreatedReactionResponse.data.reaction
-              await dispatch(actions.replaceCurrentUserCommentReaction(postId, commentId, rootId, reaction))
+              await dispatch(actions.replaceCurrentUserCommentReaction(postId, commentId, rootId, reaction, place))
             }
           }
           
@@ -1137,24 +1144,25 @@ export let deleteCommentReaction = (
   postId: string,
   commentId: string,
   rootId: string | null,
-  reactionId: string
+  reactionId: string,
+  place: Place = PROFILE_POSTS
 ): ThunkType => {
   return async (dispatch: any) => {
     try {
       let response = await profileAPI.deleteCommentReaction(commentId, reactionId)
 
       if(response.status === 200) {
-        dispatch(actions.deleteCurrentUserCommentReaction(postId, commentId, rootId, reactionId));
+        dispatch(actions.deleteCurrentUserCommentReaction(postId, commentId, rootId, reactionId, place));
       }
     } catch (e) {
       const error = e as AxiosError
       if(error.response) {
         if(error.response.status === 404) {
-          dispatch(actions.deleteCurrentUserCommentReaction(postId, commentId, rootId, reactionId));
+          dispatch(actions.deleteCurrentUserCommentReaction(postId, commentId, rootId, reactionId, place))
         }
       }
     } finally {
-      dispatch(getCommentReactions(postId, commentId, rootId, null, null)) // обновление количества реакций
+      dispatch(getCommentReactions(postId, commentId, rootId, null, null, place)) // обновление количества реакций, это делается для получения актуального количества реакций
     }
   }
 }
@@ -1164,13 +1172,14 @@ export let getCommentReactions = (
   commentId: string,
   rootId: string | null,
   offsetId: string | null,
-  count: number | null
+  count: number | null,
+  place: Place = PROFILE_POSTS
 ): ThunkType => {
   return async (dispatch) => {
     let response = await profileAPI.getCommentReactions(commentId, null, null)
     if(response.status === 200) {
       let data = response.data
-      dispatch(actions.setCommentReactions(postId, commentId, rootId, data.reactions, data.reactionsCount, null))
+      dispatch(actions.setCommentReactions(postId, commentId, rootId, data.reactions, data.reactionsCount, null, place))
     }
   }
 }
@@ -1208,6 +1217,10 @@ export const copyComment = (comment: PostCommentType): PostCommentType => {
   return copy
 }
 
+function findComment(comments: PostCommentType[], commentId: string): PostCommentType | undefined {
+  return comments.find(c => c.id === commentId)
+}
+
 const editReactionsCount = (reactionsCount: ReactionsCountItem[], newType: number | null, prevType: number | null) => {
   if(prevType) {
     let prevReactionCountInfo = reactionsCount.find(item => item.type === prevType)
@@ -1222,6 +1235,54 @@ const editReactionsCount = (reactionsCount: ReactionsCountItem[], newType: numbe
     } else {
       reactionsCount.push({type: newType, count: 1})
     }
+  }
+}
+
+// function setPostIsDeleted (post: ProfilePostType, isDeleted: boolean) {
+//   let postCopy = copyPost(post)
+//   postCopy.isDeleted = isDeleted
+//   return postCopy
+// }
+
+function replacePost (posts: Array<ProfilePostType>, newPost: PostType) {
+  const postsCopy = [...posts]
+  const original = posts.find(p => p.id === newPost.id)
+  if(original) {
+    postsCopy[postsCopy.indexOf(original)] = newPost
+  }
+  return postsCopy
+}
+
+function replaceComment(comments: PostCommentType[], commentCopy: PostCommentType) {
+  const original = comments.find(c => c.id === commentCopy.id)
+  if(original) {
+    comments[comments.indexOf(original)] = commentCopy
+  }
+}
+
+// function findPost(posts: ProfilePostType[], postId: string): ProfilePostType | undefined {
+//   return posts.find(post => post.id === postId)
+// }
+
+const returnStateWithReplacedPost = (state: InitialStateType, post: ProfilePostType, place: Place): InitialStateType => {
+  if(place === PROFILE_POSTS) {
+    return {...state, profilePosts: replacePost(state.profilePosts, post)}
+  } else if(place === FEED) {
+    return {...state, feed: replacePost(state.feed, post)}
+  } else if(place === PROFILE_POST) {
+    return {...state, profilePost: post}
+  } else {
+    return {...state}
+  }
+}
+
+function findPost(state: InitialStateType, postId: string, place: Place): ProfilePostType | undefined {
+  if(place === PROFILE_POSTS) {
+    return state.profilePosts.find(p => p.id === postId)
+  } else if(place === FEED) {
+    return state.feed.find(p => p.id === postId)
+  } else if(place === PROFILE_POST) {
+    return !!state.profilePost && postId === state.profilePost.id ? state.profilePost : undefined
   }
 }
 

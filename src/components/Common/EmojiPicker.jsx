@@ -68,7 +68,7 @@ const EmojiPicker = ({onSelect, onClose, style}) => {
               },
             }
           }
-          style={style}
+          // style={style}
         />
       </ClickAwayListener>
     </div>

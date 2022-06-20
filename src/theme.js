@@ -1,19 +1,21 @@
 const darkBackgroundPaper = '#424242'
 const darkBackground = '#303030'//'#222'
-const lightBackground = '#ededed'
+const lightBackground = '#e3e1e1'
 
 let themeObject = {
   props: {
     MuiCard: {
-      elevation: 1
+      elevation: 0
     },
     MuiPaper: {
-      elevation: 1
+      elevation: 0,
     },
     MuiSkeleton: {
       animation: "wave"
     },
-
+    MuiAppBar: {
+      elevation: 0,
+    }
   },
   overrides: {
     MuiButton: {
@@ -22,6 +24,7 @@ let themeObject = {
       },
     },
     MuiButtonBase: {
+      elevation: 0,
     },
     MuiTab: {
       textColorInherit: {
@@ -55,6 +58,12 @@ let themeObject = {
       textLightLargeShadow: '-1px -1px 6px #424242, 0px -1px 6px #424242, 1px -1px 6px '
         + '#424242, -1px 1px 6px #424242, 0px 1px 6px #424242, 1px 1px 6px #424242'
     },
+    secondary: {
+      contrastText: "#fff",
+      dark: "#ad4a23",
+      light: "#ff743d",
+      main: "#de6231",
+    }
   },
   styles: {
     twoDimensionsCentering: {

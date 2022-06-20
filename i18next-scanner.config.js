@@ -14,7 +14,7 @@ module.exports = {
             list: ['i18n.t', 't'],
         },
 		sort: true,
-        lngs: ['fr', 'ru', 'uk', 'de'],
+        lngs: ['en', 'fr', 'ru', 'uk', 'de'],
         ns: [
             'translation',
         ],

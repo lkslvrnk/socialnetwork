@@ -5,11 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { useStyles } from './SubscriptionsStyles.js'
 import { Avatar, Paper } from '@material-ui/core'
 import { ProfileType } from '../../types/types.js';
-import { imagesStorage } from '../../api/api';
 import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress.jsx';
 import { useDispatch, useSelector } from 'react-redux';
 import { createSubscription, deleteSubscription } from '../../redux/users_reducer';
 import { AppStateType } from '../../redux/redux_store.js';
+import SimpleAvatar from '../Common/SimpleAvatar.js';
+import NavLinkAvatar from '../Common/NavLinkAvatar'
 
 type SubscriptionPropsType = {
   subscribed: ProfileType
@@ -22,7 +23,7 @@ const Subscription: React.FC<SubscriptionPropsType> = React.memo((props: Subscri
   const { t } = useTranslation()
   const dispatch = useDispatch()
 
-  const userPicture = subscribed.picture ? `${imagesStorage}/${subscribed.picture.versions.cropped_small}` : ''
+  const userPicture = subscribed.picture ? `${subscribed.picture.versions.cropped_small}` : ''
   const userFullName = `${subscribed.firstName} ${subscribed.lastName}`
   const userLink = `/i/${subscribed.username}`
 
@@ -45,23 +46,31 @@ const Subscription: React.FC<SubscriptionPropsType> = React.memo((props: Subscri
 
   return (
     <Paper className={ classes.subscription } >
-      <Avatar
+      {/* <Avatar
         component={ NavLink }
         to={ userLink }
-        className={ classes.avatar }
+        
         src={ userPicture }
-      />
+      /> */}
+      <div className={classes.avatar}>
+        <NavLinkAvatar
+          width={60}
+          picture={userPicture}
+          name={userFullName}
+          to={userLink}
+        />
+      </div>
 
       <div style={{ flexGrow: 1 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <Typography
             component={NavLink}
             to={userLink}
-            variant='body2'
+            variant='subtitle2'
             style={{ marginBottom: 8 }}
             color={ "textPrimary" }
           >
-            <b>{ userFullName }</b>
+            { userFullName }
           </Typography>
         </div>
 

@@ -34,8 +34,10 @@ const Search: React.FC = React.memo((props) => {
 
   const componentName = 'search'
 
+  
   useEffect(() => {
     (async function() {
+      setFieldText(searchText)
       setIsSearching(true)
       try {
         let response = await appAPI.searchUsers(searchText, 10, null)

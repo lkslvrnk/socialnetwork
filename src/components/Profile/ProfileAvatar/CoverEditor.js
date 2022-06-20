@@ -4,22 +4,18 @@ import {connect, useDispatch} from 'react-redux'
 import {compose} from 'redux'
 import {updateCover} from '../../../redux/profile_reducer'
 import Button from "@material-ui/core/Button";
-import Input from '@material-ui/core/Input';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
-import IconButton from '@material-ui/core/IconButton';
-import AddIcon from '@material-ui/icons/Add';
-import RemoveIcon from '@material-ui/icons/Remove';
-import YesCancelDialog from '../../Common/YesCancelDialog.js';
 import { useTranslation } from 'react-i18next';
-import AvatarEditor from 'react-avatar-editor'
 import { useMediaQuery } from '@material-ui/core';
 import { useTheme } from '@material-ui/core/styles';
 import ButtonWithCircularProgress from '../../Common/ButtonWithCircularProgress';
 import Cropper from "react-cropper";
 import "cropperjs/dist/cropper.css";
+import AcceptDialog from '../../Common/AcceptDialog';
+import { useSnackbar } from 'notistack';
 
 const CoverEditor = props => {
   let [selectedFile, setSelectedFile] = useState(null)
@@ -75,6 +71,8 @@ const CoverEditor = props => {
     }
   }
 
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar()
+
   const onCrop = async () => {
     if (typeof cropper !== "undefined") {
       setIsUpdating(true)
@@ -86,7 +84,10 @@ const CoverEditor = props => {
       dispatch(updateCover(selectedFile, x, y, width, props.currentUserId))
         .then(
           () => setIsUpdating(false),
-          () => setIsUpdating(false),
+          (err) => {
+            setIsUpdating(false)
+            enqueueSnackbar('Cover was not created', {variant: 'error'})
+          }
         )
     }
   }
@@ -100,39 +101,39 @@ const CoverEditor = props => {
 
   return (
     <Dialog
-      onClose={openCancelDialog}
+      onClose={isUpdating ? () => {} : openCancelDialog}
       open={props.show}
       fullScreen={selectedImage && matches}
     >
-      <DialogTitle >
-        {selectedImage
-          ? t('Select region')
-          : t('Select image')
-        }
-      </DialogTitle>
-        {selectedImage && 
-          <div style={{ maxWidth: 800 }}>
-            <Cropper
-              style={{overflow: 'hidden'}}
-              zoomTo={scaleValue}
-              initialAspectRatio={3.03}
-              aspectRatio={3.03}
-              src={selectedImage}
-              viewMode={1}
-              minCropBoxHeight={10}
-              background={false}
-              responsive={true}
-              autoCropArea={1}
-              checkOrientation={false}
-              onInitialized={(instance) => {
-                setCropper(instance);
-              }}
-              guides={true}
-              dragMode='move'
-            />
-          </div>
-        }
-      <DialogContent>
+      { selectedImage &&
+        <DialogTitle >
+          {t('Select region')}
+        </DialogTitle>
+      }
+      {selectedImage && 
+        <div style={{ maxWidth: 800, position: 'relative' }}>
+          <Cropper
+            style={{overflow: 'hidden'}}
+            zoomTo={scaleValue}
+            initialAspectRatio={3.03}
+            aspectRatio={3.03}
+            src={selectedImage}
+            viewMode={1}
+            minCropBoxHeight={10}
+            background={false}
+            responsive={true}
+            autoCropArea={1}
+            checkOrientation={false}
+            onInitialized={(instance) => {
+              setCropper(instance);
+            }}
+            guides={true}
+            dragMode='move'
+          />
+          {isUpdating && <div style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0}}/>}
+        </div>
+      }
+      <DialogContent style={{flexGrow: 0, overflow: 'visible'}}>
         {!selectedImage &&
           <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
             <div style={{marginBottom: 16}}>
@@ -158,7 +159,8 @@ const CoverEditor = props => {
       <DialogActions>
         {selectedImage && 
         <>
-          <Button 
+          <Button
+            disabled={isUpdating}
             onClick={() => setSelectedImage(null)}
           >
             {t('Back')}
@@ -174,7 +176,7 @@ const CoverEditor = props => {
         </>
        }
       </DialogActions>
-      <YesCancelDialog
+      <AcceptDialog
         show={showCancelDialog}
         setShow={setShowCancelDialog}
         onYes={close}

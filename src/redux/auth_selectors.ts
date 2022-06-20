@@ -1,3 +1,4 @@
+import { UserDataType, UserType } from '../types/types'
 import { AppStateType } from './redux_store'
 
 export const getCurrentUserId = (state: AppStateType) => {
@@ -10,4 +11,19 @@ export const getCurrentUserUsername = (state: AppStateType) => {
 
 export const getCurrentUserPicture = (state: AppStateType) => {
     return state.auth.avatar
+}
+
+export const getCurrentUserData = (state: AppStateType) => {
+    let authState = state.auth
+    return {
+        id: authState.id,
+        username: authState.username,
+        avatar: authState.avatar,
+        firstName: authState.firstName,
+        lastName: authState.lastName
+    }
+}
+
+export const getCurrentUserData2 = (state: AppStateType): UserDataType | null => {
+    return state.auth.userData
 }

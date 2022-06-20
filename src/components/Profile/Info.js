@@ -17,6 +17,9 @@ import 'react-photo-view/dist/index.css';
 import RssFeedIcon from '@material-ui/icons/RssFeed';
 import TypographyLink from '../Common/TypographyLink.jsx';
 import SubscriptionsIcon from '@material-ui/icons/Subscriptions';
+import { getFirstLetter } from '../../helper/helperFunctionsTs';
+import CustomAvatarGroup from '../Common/CustomAvatarGroup';
+import ReactAvatarGroup from 'react-avatar-group';
 
 const Info = React.memo(props => {
 
@@ -32,7 +35,28 @@ const Info = React.memo(props => {
     year: profile.birthday.year
   }).format("DD MMMM YYYY")
 
-  console.log(birthday)
+  const subscriptionsAvatars = []
+  const length = profile ? (profile.subscriptions.length > 5 ? 5 : profile.subscriptions.length) : 0
+  for (let index = 0; index < length; index++) {
+    const sub = profile.subscriptions[index]
+    if(sub.picture) {
+      subscriptionsAvatars.push({
+        avatar: sub.picture.src,
+        tooltip: null,
+        backgroundColor: null,
+        fontColor: null,
+        style: null,
+        fontSize: null
+      })
+    } else {
+      subscriptionsAvatars.push(sub.firstName + ' ' + sub.lastName)
+    }
+  }
+
+  const subscribersCount = !!profile ? Number(profile.subscribersCount) : null
+  const subscriptionsCount = !!profile ? Number(profile.subscriptionsCount) : null
+
+  // console.log(birthday)
   return (
     <Paper
       component='section'
@@ -88,24 +112,15 @@ const Info = React.memo(props => {
                     color='textPrimary'
                     to={`/i/${profile.username}/subscribers`}
                   >
-                    {`${t('Subscribers')}: ${profile.subscribersCount}`}
+                    {`${t('Subscribers')}: ${subscribersCount}`}
                   </TypographyLink>
 
-                  { mobile && profile.subscribersCount > 0 &&
-                    <AvatarGroup max={6}>
-                      { profile.subscribers.map(sub => {
-
-                        let link = `/i/${sub.username}`
-                        let picture = `${imagesStorage}${sub.picture}`
-
-                        return <Avatar
-                          component={NavLink}
-                          to={link}
-                          style={{width: 28, height: 28}}
-                          src={picture}
-                        />
-                      })}
-                    </AvatarGroup>
+                  { subscribersCount > 0 &&
+                    <CustomAvatarGroup
+                      usersData={profile.subscribers.slice(0, 5)}
+                      width={28}
+                      total={subscribersCount}
+                    />
                   }
                 </div>
               : <Skeleton height={20} width={100} /> 
@@ -125,24 +140,14 @@ const Info = React.memo(props => {
                     color='textPrimary'
                     to={`/i/${profile.username}/subscriptions`}
                   >
-                    {`${t('Subscriptions')}: ${profile.subscriptionsCount}`}
+                    {`${t('Subscriptions')}: ${subscriptionsCount}`}
                   </TypographyLink>
-
-                  {mobile && profile.subscriptionsCount > 0 &&
-                    <AvatarGroup max={6}>
-                      { profile.subscriptions.map(sub => {
-
-                        let link = `/i/${sub.username}`
-                        let picture = `${imagesStorage}${sub.picture}`
-
-                        return <Avatar
-                          component={NavLink}
-                          to={link}
-                          style={{width: 28, height: 28}}
-                          src={picture}
-                        />
-                      })}
-                    </AvatarGroup>
+                  { subscriptionsCount > 0 &&
+                    <CustomAvatarGroup
+                      usersData={profile.subscriptions.slice(0, 5)}
+                      width={28}
+                      total={subscriptionsCount}
+                    />
                   }
                 </div>
               : <Skeleton height={20} width={100} /> 

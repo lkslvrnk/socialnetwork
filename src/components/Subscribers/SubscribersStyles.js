@@ -1,7 +1,6 @@
 import { makeStyles } from "@material-ui/core/styles";
 
 export const useStyles = makeStyles(theme => {
-
   return {
     panel: {
       '@media (max-width: 860px)': {
@@ -15,7 +14,7 @@ export const useStyles = makeStyles(theme => {
       flexGrow: 1,
       marginRight: theme.spacing(2),
       '& > div': {
-        marginBottom: theme.spacing(2),
+        marginBottom: theme.spacing(1),
       },
       '@media (max-width: 860px)': {
         marginRight: 0,
@@ -39,8 +38,6 @@ export const useStyles = makeStyles(theme => {
       },
     },
     avatar: {
-      width: 80,
-      height: 80,
       marginRight: 16
     },
     loadMore: {

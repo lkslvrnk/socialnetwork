@@ -2,14 +2,14 @@ import React, {Fragment, useEffect, useState} from 'react';
 import Drawer from './Drawer/Drawer.js'
 import RightMenu from './RightMenu/RightMenu.js'
 import { useTranslation } from 'react-i18next';
-import {NavLink, useHistory} from 'react-router-dom'
+import {NavLink, useHistory, useLocation} from 'react-router-dom'
 import { useStyles } from './HeaderStyles.js'
-import {connect, useDispatch} from 'react-redux'
+import {connect, useDispatch, useSelector} from 'react-redux'
 import {compose} from 'redux'
 import {withRouter} from 'react-router-dom'
 import CustomToggleButton from '../Common/CustomToggleButton.js'
 import {changeLanguage, changeAppearance, changeGuestLanguage} from '../../redux/app_reducer'
-import {logOut} from './../../redux/auth_reducer'
+import {getNewRequestsCount, logOut} from './../../redux/auth_reducer'
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import IconButton from "@material-ui/core/IconButton";
@@ -27,10 +27,17 @@ import ExitToAppOutlinedIcon from '@material-ui/icons/ExitToAppOutlined';
 import ListItemText from '@material-ui/core/ListItemText';
 import Link from '@material-ui/core/Link';
 import HorizontalGrow from '../Common/HorizontalGrow.jsx';
-import { FormControl, Select, useMediaQuery } from '@material-ui/core';
+import { Badge, Button, FormControl, Select, useMediaQuery } from '@material-ui/core';
 import Search from './Search.js';
 import TypographyLink from '../Common/TypographyLink.jsx';
-import AcceptDialog from '../Common/AcceptDialog.js';
+import AcceptDialog from '../Common/AcceptDialog';
+import { pusher } from '../../api/api';
+import { SnackbarProvider, useSnackbar } from 'notistack';
+import { actions } from '../../redux/chats_reducer';
+import Close from '@material-ui/icons/Close';
+import Headroom from 'react-headroom'
+import useScrollTrigger from "@material-ui/core/useScrollTrigger";
+import Slide from "@material-ui/core/Slide";
 
 const Header = React.memo(({
   isAuth, width, language, changeLanguage, logOut,
@@ -40,7 +47,15 @@ const Header = React.memo(({
   const classes = useStyles()
   const history = useHistory()
   const dispatch = useDispatch()
-  const showRightMenu = useMediaQuery('(min-width:860px)')
+  const showRightMenu = useMediaQuery('(min-width:599px)')
+  const newRequestsCount = useSelector(state => state.auth.newRequestsCount)
+  const unreadChatsIds = useSelector(state => state.chats.unreadChatsIds)
+
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar();
+  const location = useLocation()
+
+  const splittedPathname = location.pathname.split('/')
+  const chatIsOpen = splittedPathname[1] === 'chats' && splittedPathname[2] === 'c'
 
   const languages = [
     {name: 'English', short: 'en'},
@@ -55,6 +70,15 @@ const Header = React.memo(({
       closeRightMenu()
     }
   }, [showRightMenu])
+
+  useEffect(() => {
+    if(currentUserId) {  
+      let channel = pusher.subscribe(currentUserId)
+      channel.bind('create-connection', function(data) {
+        dispatch(getNewRequestsCount(currentUserId))
+      })
+    }
+  }, [currentUserId])
 
   const handleAppearanceSwitch = () => {
     changeAppearance(currentUserId, !Boolean(appearance))
@@ -122,6 +146,7 @@ const Header = React.memo(({
   )
 
   let isMobile = width === 'xs' || width === 'sm'
+  let isXS = width === 'xs'
 
   const logo = 'url(https://upload.wikimedia.org/wikipedia/commons/d/d1/ShareX_Logo.png)'
 
@@ -133,7 +158,17 @@ const Header = React.memo(({
           className={classes.openDrawerButton}
           onClick={() => setShowDrawer(true)}
         >
-          <MenuIcon />
+          <Badge
+            variant="dot"
+            color="secondary"
+            invisible={newRequestsCount === 0 && unreadChatsIds.length === 0}
+            anchorOrigin={{
+              vertical: 'top',
+              horizontal: 'right'
+            }}
+          >
+            <MenuIcon />
+          </Badge>
         </IconButton>
 
         <Drawer
@@ -153,9 +188,7 @@ const Header = React.memo(({
         className={ classes.logo}
         to='/'
       >
-        <span role='img' aria-label='logo' style={{ fontSize: '30px' }}>
-          🐮
-        </span>
+        <img src='/images/logo5.png' width='46px' />
       </NavLink>
 
       {dialogueInfo.isOpen && isMobile ?
@@ -223,13 +256,29 @@ const Header = React.memo(({
     </Fragment>
   )
 
+  const trigger = useScrollTrigger();
+
+  if(chatIsOpen && isXS) {
+    return null
+  }
+
+  const appBar = (
+    <AppBar position="fixed" color="inherit" className={classes.appBar} >
+      <Toolbar style={{minHeight: 48, maxHeight: 48, }} >
+        {isAuth ? renderUserNavigation : guestNavigation}
+      </Toolbar>
+    </AppBar>
+  )
+
   return (
     <>
-      <AppBar position="fixed" color="inherit" >
-        <Toolbar style={{minHeight: 48, maxHeight: 48, }} >
-          {isAuth ? renderUserNavigation : guestNavigation}
-        </Toolbar>
-      </AppBar>
+      { isXS ?
+        <Slide appear={false} direction="down" in={!trigger}>
+          {appBar}
+        </Slide>
+        :
+        appBar
+      }
       
       {showRightMenu &&
         <RightMenu

@@ -18,7 +18,8 @@ type GetContactsResponseType = {
 }
 
 type CreateConnectionResponseType = {
-  id: string
+  id: string,
+  subscriptionId: string | null
 }
 
 export const connectionAPI = {
@@ -31,13 +32,14 @@ export const connectionAPI = {
   getConnection: (connectionId: string) => {
     return instance.get<GetConnectionResponseType>(`connections/${connectionId}`)
   },
-  getConnectionsOfUser: (userId: string, count: number | null, cursor: string | null, type: string | null, hideAccepted: boolean | null, hidePending: boolean | null) => {
+  getConnectionsOfUser: (userId: string, count: number | null, cursor: string | null, type: string | null, hideAccepted: boolean | null, hidePending: boolean | null, start: number | null) => {
     const cursorParam = cursor ? `&cursor-id=${cursor}` : ''
     const hideAcceptedParam = hideAccepted ? `&hide-accepted=1` : ''
     const hidePendingParam = hidePending ? `&hide-pending=1` : ''
     const countParam = count !== null ? `&count=${count}` : ''
     const typeParam = type ? `&type=${type}` : ''
-    return instance.get<GetConnectionsResponseType>(`/users/${userId}/connections?${hideAcceptedParam}${hidePendingParam}${countParam}${cursorParam}${typeParam}`)
+    const startParam = start ? `&start=${start}` : ''
+    return instance.get<GetConnectionsResponseType>(`/users/${userId}/connections?${hideAcceptedParam}${hidePendingParam}${countParam}${cursorParam}${typeParam}${startParam}`)
   },
   deleteConnection: (connectionId: string) => {
     return instance.delete(`connections/${connectionId}`)

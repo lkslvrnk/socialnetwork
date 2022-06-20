@@ -2,8 +2,12 @@ import { instance as axiosInstance } from './api'
 
 type MeResponseType = {
   id: string
+  firstName: string
+  lastName: string
+  picture: string | null
   email: string
-  username: string
+  username: string,
+  lastRequestsCheck: number
 }
 
 type LoginResponseType = {
@@ -59,21 +63,16 @@ export const authAPI = {
     return axiosInstance.delete<LogOutResponseType>(`auth/login`)
   },
   me: () => {
-    try {
-      return axiosInstance.get<MeResponseType>(`auth/me`)
-    } catch(err) {
-      console.log(err)
-      return null
-    }
+    return axiosInstance.get<MeResponseType>(`auth/me`)
   },
   setJWT() {
     if(localStorage.getItem("JWT")) {
-      console.log('setJWT')
+      // console.log('setJWT')
       axiosInstance.defaults.headers.common.Authorization = `bearer ${localStorage.getItem("JWT")}`;
     }
   },
   removeJWT() {
-    console.log('removeJwt')
+    // console.log('removeJwt')
     localStorage.removeItem("JWT")
   }
 }

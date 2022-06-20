@@ -25,6 +25,13 @@ export const useStyles = makeStyles(theme => {
       padding: spacing2x,
       display: 'flex'
     },
+    newRequestsCount: {
+      background: theme.palette.secondary.main,
+      borderRadius: 100,
+      padding: 2,
+      minWidth: 24,
+      textAlign: 'center'
+    },
     emptyList: {
       padding: spacing2x,
       flexDirection: 'column',
@@ -65,6 +72,7 @@ export const useStyles = makeStyles(theme => {
     },
     navPopper: {
       border: `1px solid ${theme.palette.divider}`,
-    }
+    },
+
   }
 })

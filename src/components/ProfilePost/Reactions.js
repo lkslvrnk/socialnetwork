@@ -127,7 +127,11 @@ const Reactions = React.memo(props => {
           }}
           transition
         >
-          <ReactionsList onReactionClick={ onReactionClick } onDelete={deleteReaction} showDelete={!!currentUserReaction} />
+          <ReactionsList
+            onReactionClick={ onReactionClick }
+            onDelete={deleteReaction}
+            showDelete={!!currentUserReaction}
+          />
         </Popper>
       </div>
     </ClickAwayListener>

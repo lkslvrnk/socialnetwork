@@ -86,6 +86,7 @@ export const useStyles = makeStyles(theme => {
       flexShrink: 0
     },
     avatarContainer: {
+      userSelect: 'none',
       position: 'absolute',
       top: 0,
       '@media (min-width: 861px)': {
@@ -133,6 +134,7 @@ export const useStyles = makeStyles(theme => {
     cover: {
       position: 'relative',
       flexGrow: 1,
+      background: theme.palette.divider,
       backgroundSize: "cover",
       backgroundRepeat: 'no-repeat',
       paddingBottom: '33%',
@@ -205,6 +207,9 @@ export const useStyles = makeStyles(theme => {
       background: theme.palette.background.paper,
       border: `2px solid ${theme.palette.divider}`,
     },
-    resize: theme.typography.body2
+    resize: theme.typography.body2,
+    paper: {
+      minWidth: 300
+    }
   }
 })

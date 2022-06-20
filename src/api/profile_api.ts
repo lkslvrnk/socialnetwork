@@ -1,4 +1,4 @@
-import { PostType, PostCommentType, ProfileType, ReactionType, ReactionsCountItem } from '../types/types'
+import { PostType, PostCommentType, ProfileType, ReactionType, ReactionsCountItem, ProfileCoverType } from '../types/types'
 import { instance } from './api'
 
 type GetPostsResponseType = {
@@ -30,12 +30,21 @@ type GetPostResponseType = {
   post: PostType
 }
 
+type CreateCoverResponseType = {
+  id: string
+}
+
+type GetCoverResponseType = {
+  cover: ProfileCoverType 
+}
+
 export const profileAPI = {
   getUser: (userId: string) => instance.get<ProfileType>(`users/${userId}`),
   getUserIdByUsername: (username: string) => instance.get<string>(`users/${username}/id`),
   getUserByUsername: (username: string) => instance.get<ProfileType>(`users?username=${username}`),
   getUserAvatar: (userId: string) => instance.get<ProfileType>(`users/${userId}/avatar`),
   getUsersByIds: (ids: string) => instance.get<GetPostsResponseType>(`users?ids=${ids}`),
+  patch: (userId: string, payload: object) => instance.patch(`users/${userId}`, payload),
   getPosts: (userId: string, count: number | null, cursor: string | null, order: 'ASC' | 'DESC', commentsCount: number | null, commentsOrder: string | null) => {
     const countParam = count ? `&count=${count}` : ''
     const cursorParam = cursor ? `&cursor=${cursor}` : ''
@@ -58,14 +67,18 @@ export const profileAPI = {
       `user-post-comments/${commentId}?${repliesCountParam}`
     )
   },
-  getReplies: (userId: string | null, commentId: string, offsetId: string | null, count: number | null) => {
+  getReplies: (userId: string | null, commentId: string, offsetId: string | null, count: string | null) => {
     const offsetIdParam = offsetId ? `&offset-id=${offsetId}` : ''
     const countParam = count ? `&count=${count}` : ''
     return instance.get<GetPostCommentReplyResponseType>(
       `user-post-comments/${commentId}/replies?${offsetIdParam}${countParam}`
     )
   },
-  getPost: (postId: string) => instance.get<GetPostResponseType>(`user-posts/${postId}`),
+  getPost: (postId: string, commentsCount: number | undefined = undefined, commentsOrder: string | undefined = undefined) => {
+    const commentsCountParam = commentsCount ? `&comments-count=${commentsCount}` : ''
+    const commentsOrderParam = commentsOrder ? `&comments-order=${commentsOrder}` : ''
+    return instance.get<GetPostResponseType>(`user-posts/${postId}?${commentsCountParam}${commentsOrderParam}`)
+  },
   getUserFullName: (interlocutorId: string) => instance.get<string>(`users/${interlocutorId}/fullname`),
   getStatus: (userId: string) => instance.get(`users/${userId}/status`),
   getProperty: (userId: string, propertyName: string) => instance.get(`users/${userId}/${propertyName}`),
@@ -83,14 +96,17 @@ export const profileAPI = {
     formData.append('width', width)
     return instance.post(`profile-pictures`, formData, { headers: { 'Content-Type': 'multipart/form-data' }})
   },
-  updateCover: (photo: any, x: string, y: string, width: string) => {
+  createCover: (photo: any, x: string, y: string, width: string) => {
     let formData = new FormData()
     formData.append('photo', photo)
     //formData.append('medium', medium)
     formData.append('x', x)
     formData.append('y', y)
     formData.append('width', width)
-    return instance.post(`profile-covers`, formData, { headers: { 'Content-Type': 'multipart/form-data' }})
+    return instance.post<CreateCoverResponseType>(`profile-covers`, formData, { headers: { 'Content-Type': 'multipart/form-data' }})
+  },
+  getProfileCover: (coverId: string) => {
+    return instance.get<GetCoverResponseType>(`profile-covers/${coverId}`)
   },
   createPhoto: (image: any, addCreator: string, albumId: string) => {
     let formData = new FormData()

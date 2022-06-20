@@ -93,8 +93,8 @@ const PostForm = props => {
             let returnedPhoto = response.data.photo
             let photo = {
               id: returnedPhoto.id,
-              originalSrc: `${imagesStorage}/${returnedPhoto.versions[0]}`,
-              mediumSrc: `${imagesStorage}/${returnedPhoto.versions[2]}`
+              originalSrc: `${returnedPhoto.versions[0]}`,
+              mediumSrc: `${returnedPhoto.versions[2]}`
             }
             setAttachments(prev => [...prev, photo])
           }

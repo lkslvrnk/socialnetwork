@@ -3,6 +3,9 @@ import { profileAPI } from "../api/profile_api"
 import HttpStatusCode from "../api/HttpStatusCode"
 import { me } from "./auth_reducer"
 import { AppStateType, InferActionsTypes } from "./redux_store"
+import { loadUnreadChats } from "./chats_reducer"
+import { createUlidId } from "../components/Chats/helperChatFunctions"
+
 
 const INITIALIZED_SUCCESS = 'app/INITIALIZED_SUCCESS'
 const SET_PRELOADER = 'app/SET-PRELOADER'
@@ -12,6 +15,7 @@ const SET_COMMON_ERROR = 'app/SET-COMMON-ERROR'
 const SET_APPEARANCE = 'app/SET-APPEARANCE'
 const SET_PAGE_ID = 'app/SET-PAGE-ID'
 const CLEAN_SETTINGS = 'app/CLEAN-SETTINGS'
+const SET_IS_ONLINE = 'app/SET-IS-ONLINE'
 
 let navigatorLanguage = navigator.language.split('-')[0]
 let language: string = localStorage.language || navigatorLanguage
@@ -30,12 +34,17 @@ let initialState = {
   language: language,
   commonError: null as string | null,
   appearance: 1,
+  isOnline: true as boolean,
+  windowId: createUlidId()
 }
 
-const appReducer = (state: InitialStateType = initialState, action: any): InitialStateType => {
+const appReducer = (state: InitialStateType = initialState, action: ActionsType): InitialStateType => {
   switch (action.type) {
     case INITIALIZED_SUCCESS: {
       return {...state, initialized: true}
+    }
+    case SET_IS_ONLINE: {
+      return { ...state, isOnline: action.isOnline }
     }
     case SET_PRELOADER: {
       return { ...state, preloader: action.flag }
@@ -56,7 +65,7 @@ const appReducer = (state: InitialStateType = initialState, action: any): Initia
   }
 }
 
-const actions = {
+export const actions = {
   initializedSuccess: () => ({ type: INITIALIZED_SUCCESS } as const),
   togglePreloader: (flag: boolean)  => ({ type: SET_PRELOADER, flag: flag } as const),
   setPageId: (pageId: string) => ({ type: SET_PAGE_ID, pageId: pageId } as const),
@@ -64,7 +73,8 @@ const actions = {
   setLanguage: (language: string) => ({ type: SET_LANGUAGE, language: language } as const),
   setAppearance: (appearance: number) => ({ type: SET_APPEARANCE, appearance: appearance } as const),
   setSettings: (language: string, appearance: number) => ({ type: SET_PROFILE_SETTINGS, settings: { language, appearance }} as const),
-  cleanSettings: () => ({type: CLEAN_SETTINGS} as const)
+  cleanSettings: () => ({type: CLEAN_SETTINGS} as const),
+  setIsOnline: (isOnline: boolean) => ({type: SET_IS_ONLINE, isOnline} as const)
 }
 
 export const setCommonError = (error: string): ThunkType => {
@@ -121,21 +131,19 @@ export const cleanSettings = (): ThunkType => {
 }
 
 export const initializeApp = (): ThunkType => {
-  return async (dispatch) => {
-    dispatch(actions.togglePreloader(true))
-                                           
+  return async (dispatch, getState) => {                                  
     try {
-      let response = await dispatch(me())
-      if(response.status === 200) {
-        await dispatch(getUserSettings(response.data.id))
+      await dispatch(me())
+      const userId = getState().auth.id
+      if(userId) {
+        await dispatch(getUserSettings(userId))
+        await dispatch(loadUnreadChats())
       }
+      dispatch(actions.initializedSuccess());
     }
     catch(err) {
-      console.log("catch")
+      console.log(err)
     }
-    
-    dispatch(actions.initializedSuccess());
-    dispatch(actions.togglePreloader(false))
    }
 }
 

@@ -1,7 +1,7 @@
 
 import { profileAPI } from '../api/profile_api'
 import { stopSubmit } from 'redux-form'
-import { ProfileType, PostType, PhotoType, ConnectionType, SubscriptionType } from '../types/types'
+import { ProfileType, PostType, PhotoType, ConnectionType, SubscriptionType, ProfileCoverType } from '../types/types'
 import { ThunkAction } from 'redux-thunk'
 import { AppStateType, InferActionsTypes } from './redux_store'
 import { connectionAPI } from '../api/connection_api'
@@ -16,6 +16,7 @@ const CLEAN_PROFILE = 'profile/CLEAN-PROFILE';
 const SET_CONNECTION = 'profile/SET-CONNECTION'
 const ACCEPT_CONNECTION = 'profile/ACCEPT-CONNECTION'
 const SET_SUBSCRIPTION = 'profile/SET-SUBSCRIPTION'
+const SET_COVER = 'profile/SET-COVER'
 
 let initialState = {
   profile: null as ProfileType | null,
@@ -66,6 +67,12 @@ const profileReducer = (state: InitialStateType = initialState, action: ActionsT
     case CLEAN_PROFILE: {
       return { ...state, profileLoaded: false, postsLoaded: false, posts: [], profile: null }
     }
+    case SET_COVER: {
+      if(state.profile && state.profile.id === action.cover.creator.id) {
+        return {...state, profile: {...state.profile, cover: action.cover}}
+      }
+      return {...state}
+    }
     default:
       return state
   }
@@ -77,7 +84,8 @@ export const actions = {
   cleanProfile: () => ({ type: CLEAN_PROFILE } as const),
   setConnection: (connection: ConnectionType | null) => ({type: SET_CONNECTION, connection} as const),
   acceptConnection: () => ({type: ACCEPT_CONNECTION} as const),
-  setSubscription: (subscription: SubscriptionType | null) => ({type: SET_SUBSCRIPTION, subscription} as const)
+  setSubscription: (subscription: SubscriptionType | null) => ({type: SET_SUBSCRIPTION, subscription} as const),
+  setCover: (cover: ProfileCoverType) => ({type: SET_COVER, cover} as const)
 }
 export let cleanProfile = (): ThunkType => {
   return async (dispatch) => {
@@ -149,10 +157,10 @@ export let updateAvatar = (photo: any, x: string, y: string, width: string, user
 
 export let updateCover = (photo: any, x: string, y: string, width: string, userId: string): ThunkType => {
   return async (dispatch) => {
-    let response = await profileAPI.updateCover(photo, x, y, width)
+    let response = await profileAPI.createCover(photo, x, y, width)
     if(response.status === 201) {
-      dispatch(cleanProfile())
-      dispatch(getUserById(userId))
+      let coverResp = await profileAPI.getProfileCover(response.data.id)
+      dispatch(actions.setCover(coverResp.data.cover))
     }
   }
 }
@@ -240,8 +248,10 @@ export let deleteSubscription = (
     }
     catch (e) {
       const error = e as AxiosError
-      if(error.response && error.response.status === 404) {
-        dispatch(actions.setSubscription(null))
+      if(error.response) {
+        if(error.response.status === 404) {
+          dispatch(actions.setSubscription(null))
+        } 
       } 
     }
   }
@@ -259,9 +269,15 @@ export let acceptConnection = (
     }
     catch (e) {
       const error = e as AxiosError
-      if(error.response && error.response.status === 404) {
-        dispatch(actions.setConnection(null))
+      if(error.response) {
+        if(error.response.status === 404) {
+          dispatch(actions.setConnection(null))
+        }
+        else if(error.response.status === 422 && error.response.data.code === 222) {
+          dispatch(actions.acceptConnection())
+        }
       } 
+      
     }
   }
 }

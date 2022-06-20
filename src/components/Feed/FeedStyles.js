@@ -5,6 +5,7 @@ export const useStyles = makeStyles(theme => {
   return {
     root: {
       display: 'flex',
+      alignItems: 'flex-start'
     },
     posts: {
       flexGrow: 1,

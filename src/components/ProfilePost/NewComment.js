@@ -21,12 +21,14 @@ import {
 import { PhotoSlider } from 'react-photo-view'
 import SimplePhotoGallery from '../Common/SimplePhotoGallery'
 import { createSimpleGalleryPhoto } from '../../helper/helperFunctions'
+import SimpleAvatar from '../Common/SimpleAvatar'
+import { getFirstLetter } from '../../helper/helperFunctionsTs'
 
 const NewComment = React.memo(props => {
 
   const {
     postId, rootId, repliedId, autoFocus, focusTrigger, setShowReplyField,
-    editMode, editingComment, onEditingFinish, creatorPicture
+    editMode, editingComment, onEditingFinish, creatorPicture, creatorFirstName, creatorLastName, place
   } = props;
 
   const classes = useStyles();
@@ -45,9 +47,9 @@ const NewComment = React.memo(props => {
   const [photoUploadError, setPhotoUploadError] = useState(false)
   const [loadingFileName, setLoadingFileName] = useState('')
   const [viewerIsOpen, setViewerIsOpen] = useState(false);
-  console.log(attachments)
+  // console.log(attachments)
   const viewerPhotos = !!attachments && attachments.length > 0
-    ? [{src: `${imagesStorage}${attachments[0].versions[0].src}`}] : []
+    ? [{src: `${attachments[0].versions[0].src}`}] : []
 
   const changeText = (e) => setText(e.target.value)
   const ref1 = useRef(null)
@@ -102,37 +104,42 @@ const NewComment = React.memo(props => {
   }
 
   const handleSave = async () => {
+    console.log(text, attachments)
+    if(text.length > 200) {
+      setError(t('Exceeded number of characters'))
+      return
+    } else if (commentIsCreating || (!text && attachments.length === 0)) {
+      return
+    }
     try {
       setCommentIsEditing(true)
       let attachmentId = attachments && attachments.length ? attachments[0].id : null
-      await dispatch(editPostComment(postId, editingComment.id, text, attachmentId, editingComment.rootId))
+      console.log(place)
+      await dispatch(editPostComment(postId, editingComment.id, text, attachmentId, editingComment.rootId, place))
       setError(null)
       setCommentIsEditing(false)
       onEditingFinish()
     } catch (e) {
-      setError('Saving error')
+      setError(t('Saving error'))
       setCommentIsEditing(false)
     }
   }
 
   const handleCreate = () => {
     if(text.length > 200) {
-      setError('Превышено количество символов')
+      setError(t('Exceeded number of characters'))
       return
-    } else if (commentIsCreating || (!text && !attachments)) {
+    } else if (commentIsCreating || (!text && attachments.length === 0)) {
       return
     }
     let attachmentId = attachments && attachments.length ? attachments[0].id : null
 
     setCommentIsCreating(true)
-    dispatch(createComment(postId, text, attachmentId, rootId, repliedId))
+    dispatch(createComment(postId, text, attachmentId, rootId, repliedId, place))
       .then((response) => {
         setCommentIsCreating(false)
         setText('')
         setError(false)
-        if(setShowReplyField) {
-          setShowReplyField(false)
-        }
         setAttachments(null)
       })
       .catch((error) => {
@@ -232,7 +239,7 @@ const NewComment = React.memo(props => {
 
   let commentAttachment = null
   if(attachments && attachments.length > 0) {
-    console.log(attachments[0])
+    // console.log(attachments[0])
     const attachment = attachments[0]
     const medium = attachment.versions[2]
     let maxSize = 150
@@ -261,17 +268,22 @@ const NewComment = React.memo(props => {
       </div>
     )
   }
+  // console.log(creatorFirstName, creatorLastName)
 
   return (
     <div>
       <div className={classes.field} >
-        { !editMode &&
-          <Avatar
-            className={classes.avatar}
-            src={creatorPicture}
-          />
-        }
+        {/* { !editMode &&
+          <div className={classes.avatarBorder}>
+            <SimpleAvatar
+              picture={creatorPicture}
+              width={36}
+              name={`${creatorFirstName} ${creatorLastName}`}
+            />
+          </div>
+        } */}
         <TextField
+          disabled={commentIsCreating}
           onBlur={() => setError("")}
           onKeyPress={onEnterPress}
           autoFocus={autoFocus}
@@ -304,7 +316,7 @@ const NewComment = React.memo(props => {
             <IconButtonWithCircularProgress
               size='small'
               children={<SendIcon />}
-              disabled={commentIsCreating || (!text.length && !Boolean(attachments))}
+              disabled={commentIsCreating || (!text.length && !Boolean(attachments?.length))}
               onClick={handleCreate}
               enableProgress={commentIsCreating}
             />
@@ -313,8 +325,8 @@ const NewComment = React.memo(props => {
       </div>
 
       { loadingFileName && <div style={{padding: 8, display: 'flex', alignItems: 'center'}}>
-        <div style={{ marginRight: 16}} >{loadingFileName}</div>
-        <LinearProgress style={{width: 150, height: 10}} />
+        <span style={{ marginRight: 16, wordBreak: 'break-all'}} >{loadingFileName}</span>
+        <LinearProgress style={{width: 100, height: 10}} />
       </div>  
       }
       <div className={classes.underField}>
@@ -322,7 +334,6 @@ const NewComment = React.memo(props => {
         
         { editMode &&
           <>
-            {}
             <Button
               onClick={onEditingFinish}
               children={t('Cancel')}
@@ -330,7 +341,7 @@ const NewComment = React.memo(props => {
             />
             <ButtonWithCircularProgress
               enableProgress={commentIsEditing}
-              disabled={commentIsEditing}
+              disabled={commentIsEditing || (!text && attachments.length === 0)}
               variant='contained'
               children={t('Save')}
               onClick={handleSave}
@@ -340,21 +351,6 @@ const NewComment = React.memo(props => {
       </div>
 
       { commentAttachment }
-
-      {/* { attachment &&
-        <div style={{position: 'relative', marginLeft: editMode ? 0 : 56, marginTop: 8, maxWidth: 150}}>
-          <img
-            alt='comment-attachment'
-            style={{width: '100%'}}
-            src={`${imagesStorage}/${attachment.versions
-              ? attachment.versions[2] : attachment.mediumSrc}`}
-          />
-          <div style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, cursor: 'pointer'}} onClick={() => setViewerIsOpen(true)}/>
-          <div style={{position: 'absolute', top: 4, right: 4, cursor: 'pointer'}}>
-            <HighlightOffIcon onClick={() => setAttachment(null)}/>
-          </div>
-        </div>
-      } */}
 
       <PhotoSlider
         images={viewerPhotos}
