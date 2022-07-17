@@ -4,7 +4,12 @@ export const useStyles = makeStyles(theme => {
   const background = theme.palette.type === 'dark' ? theme.palette.grey[700] : theme.palette.grey[300]
 
   return {
-    buttonWrapper: {
+    newMessageForm: {
+      width: '100%',
+      display: 'flex',
+      alignItems: 'end'
+    },
+    sendButtonWrapper: {
       position: 'relative',
       width: 44,
       height: 44,
@@ -72,7 +77,6 @@ export const useStyles = makeStyles(theme => {
     },
     root: {
       minHeight: 46,
-      // padding: '0',
       display: 'flex',
       alignItems: 'center',
     },

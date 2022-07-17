@@ -1,15 +1,13 @@
 import React, { useState } from 'react'
-import { NavLink, Redirect} from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import Typography from '@material-ui/core/Typography'
 import { useTranslation } from 'react-i18next';
 import { useStyles } from './SubscriptionsStyles.js'
-import { Avatar, Paper } from '@material-ui/core'
+import { Paper } from '@material-ui/core'
 import { ProfileType } from '../../types/types.js';
 import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress.jsx';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { createSubscription, deleteSubscription } from '../../redux/users_reducer';
-import { AppStateType } from '../../redux/redux_store.js';
-import SimpleAvatar from '../Common/SimpleAvatar.js';
 import NavLinkAvatar from '../Common/NavLinkAvatar'
 
 type SubscriptionPropsType = {
@@ -35,7 +33,7 @@ const Subscription: React.FC<SubscriptionPropsType> = React.memo((props: Subscri
 
   const handleClick = async () => {
     setIsProcessing(true)
-    if(!subscription) {
+    if (!subscription) {
       await dispatch(createSubscription(subscribed.id))
       setIsProcessing(false)
     } else {
@@ -45,13 +43,7 @@ const Subscription: React.FC<SubscriptionPropsType> = React.memo((props: Subscri
   }
 
   return (
-    <Paper className={ classes.subscription } >
-      {/* <Avatar
-        component={ NavLink }
-        to={ userLink }
-        
-        src={ userPicture }
-      /> */}
+    <Paper className={classes.subscription} >
       <div className={classes.avatar}>
         <NavLinkAvatar
           width={60}
@@ -61,16 +53,15 @@ const Subscription: React.FC<SubscriptionPropsType> = React.memo((props: Subscri
         />
       </div>
 
-      <div style={{ flexGrow: 1 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div className={'grow'}>
+        <div className={classes.userFullname}>
           <Typography
             component={NavLink}
             to={userLink}
             variant='subtitle2'
-            style={{ marginBottom: 8 }}
-            color={ "textPrimary" }
+            color={"textPrimary"}
           >
-            { userFullName }
+            {userFullName}
           </Typography>
         </div>
 

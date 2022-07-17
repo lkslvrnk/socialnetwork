@@ -3,10 +3,8 @@ import {makeStyles} from "@material-ui/core/styles";
 export const useStyles = makeStyles(theme => {
   
   const isDark = theme.palette.type === 'dark'
-
-  let smallRadiusValue = '0.2em'
-  const leftColor = isDark ? theme.palette.grey[700] : theme.palette.grey[300]
-  const rightColor = isDark ? theme.palette.secondary.main : theme.palette.secondary.light
+  const leftMessageColor = isDark ? theme.palette.grey[700] : theme.palette.grey[300]
+  const rightMessageColor = isDark ? theme.palette.secondary.main : theme.palette.secondary.light
 
   return {
     deleting: {
@@ -37,11 +35,10 @@ export const useStyles = makeStyles(theme => {
       minWidth: 0
     },
     repliedBorder: {
-      borderLeft: `2px solid white`,
+      borderLeft: theme.palette.type === 'light' ? `2px solid black` : `2px solid white`,
       marginRight: 8,
     },
     repliedHeader: {
-      // color: theme.palette.secondary.main,
       lineHeight: 1.1
     },
     repliedMessageText: {
@@ -50,14 +47,15 @@ export const useStyles = makeStyles(theme => {
       whiteSpace: 'nowrap',
       overflow: 'hidden'
     },
+    replied: {maxWidth: '97%'},
     moreActionsButtonActive: {
       background: theme.palette.divider
     },
     deletingLeft: {
-      background: leftColor
+      background: leftMessageColor
     },
     deletingRight: {
-      background: rightColor
+      background: rightMessageColor
     },
     container: {
       padding: `1px 10px`,
@@ -104,8 +102,13 @@ export const useStyles = makeStyles(theme => {
       alignItems: 'center',
       minHeight: 30,
       minWidth: 20,
-      flexDirection: props => props.side === 'left' ? 'row' : 'row-reverse',
       margin: '0 8px'
+    },
+    leftMessageActions: {
+      flexDirection: 'row'
+    },
+    rightMessageActions: {
+      flexDirection: 'row-reverse'
     },
     actionsButtonCont: {
       position: 'relative',
@@ -123,16 +126,20 @@ export const useStyles = makeStyles(theme => {
       width: 30,
     },
     message: {
-    },
-    rightMessage: {
       position: 'relative',
       maxWidth: '70%',
-      background: rightColor,
-      padding: theme.spacing(0.7),
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'flex-end',
-      borderTopRightRadius: p => p.isFirst || p.isSingle ? '0.4em' : 0,
+      padding: theme.spacing(1),
+    },
+    messageContent: {
+      display: 'flex',
+      flexDirection: 'column',
+      width: '100%'
+    },
+    rightMessage: {
+      background: rightMessageColor,
       borderTopLeftRadius: '0.4em',
       borderBottomLeftRadius: '0.4em',
       '&:after': {
@@ -140,36 +147,42 @@ export const useStyles = makeStyles(theme => {
         position: 'absolute',
         bottom: 0,
         borderTop: '7px solid transparent',
-        borderLeft: props => props.isLast ? `7px solid ${rightColor}` : 0,
         left: '100%',
       }
     },
-    appendix: {
-      background: rightColor,
-      '& > div': {
-        background: '#424242',
+    leftMessage: {
+      background: leftMessageColor,
+      borderTopRightRadius: '0.4em',
+      borderBottomRightRadius: '0.4em',
+      '&:before': {
+        content: '""',
+        position: 'absolute',
+        bottom: 0,
+        borderTop: '7px solid transparent',
+        right: '100%',
       }
     },
-    leftMessage: {
-        position: 'relative',
-        maxWidth: '70%',
-        padding: theme.spacing(1),
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'flex-end',
-        background: leftColor,
-        borderTopLeftRadius: p => p.isFirst || p.isSingle ? '0.4em' : 0,
-        borderTopRightRadius: '0.4em',
-        borderBottomRightRadius: '0.4em',
-        '&:before': {
-          content: '""',
-          position: 'absolute',
-          bottom: 0,
-          borderTop: '7px solid transparent',
-          borderRight: props => props.isLast ? `7px solid ${leftColor}` : 0,
-          // borderRight: props => props.isLast ? (`9px solid ${props.side === 'left' ? leftColor : rightColor}`) : 0,
-          right: '100%',
-        }
+    firstRightMessage: {
+      borderTopRightRadius: '0.4em'
+    },
+    singleRightMessage: {
+      borderTopRightRadius: '0.4em'
+    },
+    firstLeftMessage: {
+      borderTopLeftRadius: '0.4em'
+    },
+    singleLeftMessage: {
+      borderTopLeftRadius: '0.4em'
+    },
+    lastLeftMessage: {
+      '&:before': {
+        borderRight: `7px solid ${leftMessageColor}`
+      }
+    },
+    lastRightMessage: {
+      '&:after': {
+        borderLeft: `7px solid ${rightMessageColor}`
+      }
     },
     textAndInfo: {
       '& a':{
@@ -190,6 +203,11 @@ export const useStyles = makeStyles(theme => {
     statusIcon: {
       display: 'block',
       marginLeft: 4
+    },
+    errorStatusIcon: {
+      background: 'white',
+      borderRadius: 10,
+      height: 16
     }
   }
 });

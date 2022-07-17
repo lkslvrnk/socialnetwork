@@ -2,22 +2,22 @@ import React, {useEffect, useRef} from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStyles } from './StickyPanelStyles'
 
-const StickyPanel = ({top, children}) => {
+const StickyPanel = ({top, children, showLinks = true}) => {
 
   const classes = useStyles({top});
-  const panel = useRef(null)
   const { t } = useTranslation()
-
   const currentTime = new Date()
   const year = currentTime.getFullYear()
 
+  const panel = useRef(null)
   useEffect(() => {
     let onScroll = () => {
       let panelHeight = panel.current.getBoundingClientRect().height
       let panelTop = Number(panel.current.style.top.split('p')[0])
 
       let fromStickyTopToViewportBottom = panelTop < 0
-        ? Math.abs(panelTop) + window.innerHeight : window.innerHeight - panelTop
+        ? Math.abs(panelTop) + window.innerHeight
+        : window.innerHeight - panelTop
 
       if(panelHeight > fromStickyTopToViewportBottom) {
         let newPanelStickyTop = window.innerHeight - panelHeight
@@ -46,19 +46,18 @@ const StickyPanel = ({top, children}) => {
       ref={panel}
     >
       {children}
-      <footer
-        className={classes.footer}
-        style={{
-
-        }}
-      >
-        <span>{t('Privacy')}</span> ·
-        <span>{t('Terms')}</span> ·
-        <span>{t('Advertising')}</span> ·
-        <span>{t('Ad Choices')}</span> ·
-        <span>{t('Cookies')}</span> · 
-        <span>Social Network © {year}</span>
-      </footer>
+      {showLinks &&
+        <footer
+          className={classes.footer}
+        >
+          <span>{t('Privacy')}</span> ·
+          <span>{t('Terms')}</span> ·
+          <span>{t('Advertising')}</span> ·
+          <span>{t('Ad Choices')}</span> ·
+          <span>{t('Cookies')}</span> · 
+          <span>SN © {year}</span>
+        </footer>
+      }
     </div>
   )
 }

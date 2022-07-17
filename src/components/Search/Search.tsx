@@ -1,18 +1,23 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { useHistory, useLocation} from 'react-router-dom'
-import {useDispatch, useSelector} from 'react-redux'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useHistory, useLocation } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next';
 import { useStyles } from './SearchStyles.js'
-import { Button, InputBase, List, ListItem, ListItemText, Paper } from '@material-ui/core'
+import {
+  InputBase, List, ListItem, ListItemText, Paper
+} from '@material-ui/core'
 import Preloader from '../Common/Preloader/Preloader.jsx';
 import StickyPanel from '../Common/StickyPanel.js';
 import { AppStateType } from '../../redux/redux_store.js';
 import { appAPI } from '../../api/api';
 import { actions } from '../../redux/users_reducer';
 import SearchIcon from "@material-ui/icons/Search"
-import SearchResultItem from './SearchResultItem';
+import SearchResult from './SearchResult';
 import { compose } from 'redux';
 import { withRedirectToLogin } from '../../hoc/withRedirectToLogin.js';
+import classNames from 'classnames';
+import { useIntersection } from '../../hooks/hooks.js';
+import LoadMore from '../Common/LoadMore.jsx';
 
 const Search: React.FC = React.memo((props) => {
   const classes = useStyles()
@@ -20,8 +25,9 @@ const Search: React.FC = React.memo((props) => {
   const dispatch = useDispatch()
   const users = useSelector((state: AppStateType) => state.users.users)
   const cursor = useSelector((state: AppStateType) => state.users.cursor)
-  const loadMoreButton = useRef(null)
+  const loadMore = useRef(null)
   const [moreResultsLoading, setMoreResultsLoading] = useState(false)
+  const [loadMoreError, setLoadMoreError] = useState(false)
   const location = useLocation()
   const history = useHistory()
 
@@ -34,17 +40,18 @@ const Search: React.FC = React.memo((props) => {
 
   const componentName = 'search'
 
-  
   useEffect(() => {
-    (async function() {
+    (async function () {
       setFieldText(searchText)
       setIsSearching(true)
       try {
         let response = await appAPI.searchUsers(searchText, 10, null)
         let data = response.data
-        dispatch(actions.setUsers(data.items, data.count, data.cursor, componentName))
-      } catch(error) {
-        console.log(error)
+        dispatch(actions.setUsers(
+          data.items, data.count, data.cursor, componentName
+        ))
+      } catch (error) {
+
       } finally {
         setIsSearching(false)
       }
@@ -61,32 +68,39 @@ const Search: React.FC = React.memo((props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const handleLoadMore = async () => {
-    try {
-      setMoreResultsLoading(true)
-      let response = await appAPI.searchUsers(searchText, 10, cursor)
-      let data = response.data
-      dispatch(actions.addUsers(data.items, data.count, data.cursor, componentName))
-    } catch(error) {
-      console.log(error)
-    } finally {
-      setMoreResultsLoading(false)
+  const handleLoadMore = useCallback(async () => {
+    if (!moreResultsLoading && cursor) {
+      try {
+        setMoreResultsLoading(true)
+        setLoadMoreError(false)
+        let response = await appAPI.searchUsers(searchText, 10, cursor)
+        setMoreResultsLoading(false)
+        let data = response.data
+        dispatch(actions.addUsers(
+          data.items, data.count, data.cursor, componentName
+        ))
+      } catch (error) {
+        setLoadMoreError(true)
+        setMoreResultsLoading(false)
+      }
     }
-  }
+  }, [cursor, searchText, moreResultsLoading, dispatch])
+
+  useIntersection(!!users, handleLoadMore, loadMore)
 
   const onSearchChange = (e: any) => {
     setFieldText(e.target.value)
   }
 
   const handleSearch = async (e: any) => {
-    if(e.keyCode === 13) {
+    if (e.keyCode === 13) {
       history.push(`/search?query=${fieldText}`)
     }
   }
 
-  const renderPanel = <div className={classes.panel}>
+  const renderPanel = <div className={'aside-content'}>
     <StickyPanel top={55}>
-      <Paper style={{width: 300}}>
+      <Paper style={{ width: 300 }}>
         <List dense component="nav" >
           <ListItem
             button
@@ -99,22 +113,21 @@ const Search: React.FC = React.memo((props) => {
     </StickyPanel>
   </div>
 
-  let subscriptionsList = users && users.map(user => {
-    return <SearchResultItem key={user.id} found={user} />
+  let resultsList = users && users.map(user => {
+    return <SearchResult key={user.id} found={user} />
   })
 
-  return <section className={classes.root}>
-    <main className={classes.search}>
-
+  return <>
+    <main className={classNames(classes.search, 'main-content')}>
       <div className={classes.searchInput}>
         <div className={classes.searchIcon}>
           <SearchIcon />
         </div>
         <InputBase
-          onKeyDown={ handleSearch }
-          placeholder={ t("Search…") }
-          onChange={ onSearchChange }
-          value={ fieldText }
+          onKeyDown={handleSearch}
+          placeholder={t("Search…")}
+          onChange={onSearchChange}
+          value={fieldText}
           classes={{
             root: classes.inputRoot,
             input: classes.inputInput,
@@ -122,30 +135,21 @@ const Search: React.FC = React.memo((props) => {
           inputProps={{ 'aria-label': 'search' }}
         />
       </div>
-      
-      { isSearching
-        ? <Preloader />
-        : subscriptionsList
-      }
-      <div style={{display: 'flex', justifyContent: 'center'}} ref={loadMoreButton} >
-        { !!users && !!cursor &&
-          <div className={classes.moreButtonContainer}>
-            <Button onClick={ handleLoadMore } >
-              {t('Load more')}
-            </Button>   
-            { moreResultsLoading &&
-              <div className={classes.moreButtonLoading}>
-                <Preloader />
-              </div>
-            }
-          </div>
-        }
+
+      <div className={classes.searchResults}>
+        {isSearching ? <Preloader /> : resultsList}
       </div>
+
+      <LoadMore
+        ref={loadMore}
+        // @ts-ignore
+        show={!!cursor}
+        showProgress={moreResultsLoading || loadMoreError}
+      />
     </main>
 
-    { renderPanel }
-    
-  </section>
+    {renderPanel}
+  </>
 })
 
 export default compose(

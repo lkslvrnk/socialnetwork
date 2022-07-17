@@ -92,7 +92,7 @@
     "People & Body": "Люди и тело",
     "Photo upload error": "Ошибка загрузки изображения",
     "Photos": "Фотографии",
-    "Please upload a photo, we support JPG and PNG files": "__NOT_TRANSLATED__",
+    "Please upload a photo, we support JPG and PNG files": "Выберите фото",
     "Post was removed": "Пост был удалён",
     "Privacy": "Конфиденциальность",
     "Profile not found": "Профиль не найден",
@@ -166,11 +166,10 @@
     "empty own subscriptions": "У вас нет подписок, используйте поиск чтобы найти пользователей и подписаться на них",
     "interlocutor is online": "в сети",
     "is typing": "печатает",
-    "last seen recently": "был недавно",
+    "last seen recently": "был(а) недавно",
     "replied to": "ответил(а)",
     "replies": "ответы",
     "sent you private message": "отправил вам приватно сообщение",
     "upload an avatar": "Загрузите фото, мы поддерживаем JPG и PNG файлы",
-    "Интернет есть!": "__NOT_TRANSLATED__",
-    "Интернета нет": "__NOT_TRANSLATED__"
+    "offers you connection": "хочет установить контакт с вами"
 }

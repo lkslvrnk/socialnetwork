@@ -2,9 +2,9 @@ import React from 'react';
 import './RightProfilePanel.css'
 import Paper from "@material-ui/core/Paper";
 import List from '@material-ui/core/List';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
+// import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListSubheader from '@material-ui/core/ListSubheader';
-import { withStyles } from "@material-ui/core/styles";
+// import { withStyles } from "@material-ui/core/styles";
 import {useTranslation} from 'react-i18next';
 import './Styles.css';
 import { useStyles } from './RightProfilePanelStyles.js';
@@ -47,19 +47,11 @@ const RightProfilePanel = ({onPhotoClick, pictures, infoSection}) => {
     </Paper>
 
   return (
-    <div
-      className={classes.panel}
-    >
+    <div className={classes.panel}>
       { infoSection }
       { photosSection }
     </div>
   )
 }
-
-const SmallListItemIcon = withStyles(theme => ({
-  root: {
-    minWidth: theme.spacing(5)
-  }
-}))(ListItemIcon)
 
 export default RightProfilePanel

@@ -14,10 +14,13 @@ export const photosAPI = {
     return instance.get(`users/${userID}/albums`)
   },
   getPhotos: (userID: string, limit: number | null = null, lastPhotoTimestamp: number | null = null) => {
-    const lastPhotoTimestampParam = lastPhotoTimestamp ? `&last-photo-timestamp=${lastPhotoTimestamp}` : ''
+    const lastPhotoTimestampParam = lastPhotoTimestamp
+      ? `&last-photo-timestamp=${lastPhotoTimestamp}` : ''
     const limitParam = limit ? `&limit=${limit}` : ''
     const paramsAreExist = lastPhotoTimestampParam || limitParam
-    return instance.get<GetPhotosResponseType>(`users/${userID}/photos${paramsAreExist && '?'}${limitParam}${lastPhotoTimestampParam}`)
+    return instance.get<GetPhotosResponseType>(
+      `users/${userID}/photos${paramsAreExist && '?'}${limitParam}${lastPhotoTimestampParam}`
+      )
   },
   getPhoto: (photoID: string) => instance.get<PhotoType>(`photos/${photoID}`),
   getAlbumPhotos: (albumID: string) => {

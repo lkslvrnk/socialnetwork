@@ -4,7 +4,7 @@ import HttpStatusCode from "../api/HttpStatusCode"
 import { me } from "./auth_reducer"
 import { AppStateType, InferActionsTypes } from "./redux_store"
 import { loadUnreadChats } from "./chats_reducer"
-import { createUlidId } from "../components/Chats/helperChatFunctions"
+import { createUlidId } from "../helper/helperChatFunctions"
 
 
 const INITIALIZED_SUCCESS = 'app/INITIALIZED_SUCCESS'
@@ -52,7 +52,6 @@ const appReducer = (state: InitialStateType = initialState, action: ActionsType)
     case SET_PROFILE_SETTINGS:
       return { ...state, ...action.settings }
     case SET_LANGUAGE:
-      console.log(action)
       return { ...state, language: action.language }
     case SET_APPEARANCE:  
       return { ...state, appearance: action.appearance }
@@ -67,14 +66,31 @@ const appReducer = (state: InitialStateType = initialState, action: ActionsType)
 
 export const actions = {
   initializedSuccess: () => ({ type: INITIALIZED_SUCCESS } as const),
-  togglePreloader: (flag: boolean)  => ({ type: SET_PRELOADER, flag: flag } as const),
-  setPageId: (pageId: string) => ({ type: SET_PAGE_ID, pageId: pageId } as const),
-  setCommonError: (error: string) => ({ type: SET_COMMON_ERROR, error: error} as const),
-  setLanguage: (language: string) => ({ type: SET_LANGUAGE, language: language } as const),
-  setAppearance: (appearance: number) => ({ type: SET_APPEARANCE, appearance: appearance } as const),
-  setSettings: (language: string, appearance: number) => ({ type: SET_PROFILE_SETTINGS, settings: { language, appearance }} as const),
+  togglePreloader: (flag: boolean)  => ({
+    type: SET_PRELOADER,
+    flag: flag
+  } as const),
+  setPageId: (pageId: string) => ({
+    type: SET_PAGE_ID, pageId: pageId
+  } as const),
+  setCommonError: (error: string) => ({
+    type: SET_COMMON_ERROR, error: error
+  } as const),
+  setLanguage: (language: string) => ({
+    type: SET_LANGUAGE, language: language
+  } as const),
+  setAppearance: (appearance: number) => ({
+    type: SET_APPEARANCE, appearance: appearance
+  } as const),
+  setSettings: (language: string, appearance: number) => {
+    return {
+      type: SET_PROFILE_SETTINGS, settings: { language, appearance }
+    } as const
+  },
   cleanSettings: () => ({type: CLEAN_SETTINGS} as const),
-  setIsOnline: (isOnline: boolean) => ({type: SET_IS_ONLINE, isOnline} as const)
+  setIsOnline: (isOnline: boolean) => ({
+    type: SET_IS_ONLINE, isOnline
+  } as const)
 }
 
 export const setCommonError = (error: string): ThunkType => {
@@ -142,7 +158,6 @@ export const initializeApp = (): ThunkType => {
       dispatch(actions.initializedSuccess());
     }
     catch(err) {
-      console.log(err)
     }
    }
 }

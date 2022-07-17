@@ -1,32 +1,28 @@
 import React from 'react'
-import { makeStyles, Typography } from '@material-ui/core';
-import { NavLink } from 'react-router-dom';
-import ButtonWithCircularProgress from './ButtonWithCircularProgress';
+import { makeStyles } from '@material-ui/core';
+import { CircularProgress } from '@mui/material';
 
 const useStyles = makeStyles(theme => {
   return {
     loadMore: {
+      height: 40,
       ...theme.styles.flexCenterHoriz,
-      padding: theme.spacing(2),
-      marginBottom: theme.spacing(2),
+      marginTop: theme.spacing(2),
     },
   }
 })
 
-const LoadMore = props => {
-  const {enableProgress, onClick, variant, title, ...restProps} = props
+const LoadMore = React.forwardRef((props, ref) => {
+  const {show, showProgress} = props
   const classes = useStyles();
 
+  if(!show) return null
+
   return (
-    <div className={classes.loadMore} >
-      <ButtonWithCircularProgress
-        onClick={onClick}
-        enableProgress={enableProgress}
-        variant={variant}
-        children={title}
-      />
+    <div className={classes.loadMore} ref={ref} >
+      { showProgress && <CircularProgress size={40} /> }
     </div>
   )
-}
+})
 
 export default LoadMore

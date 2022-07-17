@@ -9,9 +9,14 @@ export const useStyles = makeStyles(theme => {
       },
     },
     subscriptions: {
+    },
+    userFullname: {
       display: 'flex',
+      justifyContent: 'space-between',
+      marginBottom: 8
     },
     subscriptionsList: {
+      alignSelf: 'flex-start',
       flexGrow: 1,
       marginRight: theme.spacing(2),
       '& > div': {
@@ -26,6 +31,7 @@ export const useStyles = makeStyles(theme => {
       display: 'flex'
     },
     noSubscriptions: {
+      alignSelf: 'flex-start',
       flexGrow: 1,
       display: 'flex',
       flexDirection: 'column',

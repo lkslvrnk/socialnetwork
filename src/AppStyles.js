@@ -2,8 +2,7 @@ import { makeStyles } from "@material-ui/core/styles";
 
 export const useStyles = makeStyles(theme => {
   return {
-    content: {
-      // marginTop: 64,
+    appBody: {
       position: 'relative',
       minWidth: 300,
       maxWidth: 860,
@@ -12,8 +11,8 @@ export const useStyles = makeStyles(theme => {
       paddingLeft: theme.spacing(2),
       flexGrow: 1,
       flexShrink: 1,
+      display: 'flex',
       [theme.breakpoints.down("xs")]: {
-        // marginTop: 0,
         marginLeft: 'auto',
         marginRight: 'auto',
         paddingRight: theme.spacing(1),
@@ -24,34 +23,23 @@ export const useStyles = makeStyles(theme => {
         maxWidth: 600
       },
     },
-    photoViewer: {
-      display: 'flex'
+    '@global': {
+      '.main-content': {
+        flexGrow: 1,
+        alignSelf: 'flex-start',
+        marginRight: theme.spacing(2),
+        '@media (max-width: 860px)': {
+          marginRight: 0,
+        },
+      },
     },
-    photoViewerContainer: {
-      position: "absolute",
-      border: "2px solid #444",
-      padding: 16,
-    },
-    snack: {
-      // '& .SnackbarItem-contentRoot': {
-      //   backgroundColor: `${theme.palette.background.paper} !important`,
-      //   color: `${theme.palette.text.primary} !important`,
-      // },
-    },
-    success: { backgroundColor: 'purple' },
-    error: { backgroundColor: 'blue' },
-    warning: { backgroundColor: 'green' },
-    info: { backgroundColor: 'yellow' },
     upButton: {
       display: 'none',
       borderRadius: 1000,
       background: theme.palette.grey[500],
       position: 'fixed',
-      right: 50,
-      bottom: 50
+      left: 30,
+      bottom: 30
     }
-    // snack: {
-    //   backgroundColor: 'green !important',
-    // }
   }
 });

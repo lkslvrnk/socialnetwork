@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useReducer, Reducer, ReducerState, ReducerAction } from "react";
+import { useEffect, useRef, useState} from "react";
 
 export function usePrevious<T>(value: T): T {
   const ref: any = useRef<T>();
@@ -35,12 +35,18 @@ export let useTemp = (timestamp: number, period: number): Array<any> => {
   useEffect(() => {
     const now = Date.now()
     const difference = now - timestamp
-    if(difference >= (period - 500)) { // Если передано новый timestamp и это условие срабатывате, то значит timestamp слишком "старый" и нужно обнулить всё.
+    if(difference >= (period - 500)) {
+      // Если передано новый timestamp и это условие срабатывате,
+      // то значит timestamp слишком "старый" и нужно обнулить всё.
       clearTimeout(timeout.current)
       setValue(false)
       return
     }
-    clearTimeout(timeout.current) /* Если собеседника снова пишет, то удаляем timeout, который где выполняется setInterlocutorIsTyping(false) */
+    /*
+      Если собеседника снова пишет, то удаляем timeout, который где
+      выполняется setInterlocutorIsTyping(false)
+    */
+    clearTimeout(timeout.current)
     setValue(true)
     timeout.current = setTimeout(() => {
       setValue(false)

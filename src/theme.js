@@ -23,9 +23,6 @@ let themeObject = {
         textTransform: 'none',
       },
     },
-    MuiButtonBase: {
-      elevation: 0,
-    },
     MuiTab: {
       textColorInherit: {
         textTransform: 'none'
@@ -50,11 +47,11 @@ let themeObject = {
       halfTransparentPaper: 'rgba(0,0,0, 0.4)',
       halfTransparentPaperHover: 'rgba(66,66,66, 0.4)',
       textSmallDarkShadow: `-1px -1px 2px ${darkBackgroundPaper}, ` +
-                                 ` 0px -1px 2px ${darkBackgroundPaper}, ` +
-                                 ` 1px -1px 2px ${darkBackgroundPaper}, ` +
-                                 `-1px  1px 2px ${darkBackgroundPaper}, ` +
-                                 ` 0px  1px 2px ${darkBackgroundPaper}, ` +
-                                 ` 1px  1px 2px ${darkBackgroundPaper}`,
+        ` 0px -1px 2px ${darkBackgroundPaper}, ` +
+        ` 1px -1px 2px ${darkBackgroundPaper}, ` +
+        `-1px  1px 2px ${darkBackgroundPaper}, ` +
+        ` 0px  1px 2px ${darkBackgroundPaper}, ` +
+        ` 1px  1px 2px ${darkBackgroundPaper}`,
       textLightLargeShadow: '-1px -1px 6px #424242, 0px -1px 6px #424242, 1px -1px 6px '
         + '#424242, -1px 1px 6px #424242, 0px 1px 6px #424242, 1px 1px 6px #424242'
     },
@@ -105,7 +102,8 @@ const getThemeObject = (themeIsDark) => {
   let themeType = themeIsDark ? 'dark' : 'light'
   themeObject.palette.type = themeType
   let themeIsLight = themeObject.palette.type === 'light'
-  themeObject.palette.background.default = themeIsLight ? lightBackground : darkBackground
+  themeObject.palette.background.default = themeIsLight
+    ? lightBackground : darkBackground
 
   return themeObject
 }

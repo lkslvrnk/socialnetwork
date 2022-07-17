@@ -7,7 +7,7 @@ const ChatSkeleton = () => {
   const classes = useStyles();
 
   return (
-    <Paper className={classes.container} >
+    <Paper className={classes.chat} >
       <header className={classes.header} >
         <div style={{marginLeft: 8}}>
           <Skeleton  variant='circle' height={30} width={30} />
@@ -16,7 +16,7 @@ const ChatSkeleton = () => {
         <Skeleton variant='text' height={25} width={150} />
       </header>
       <Divider />
-      <div style={{marginBottom: 5}} className={classes.dialogueBody} >
+      <div style={{marginBottom: 5}} className={classes.chatBody} >
         {[{n:3,w:200},{n:4,w:250},{n:5,w:100},{n:6,w:150},{n:7,w:150}].map((m, index) => {
           return (
             <div

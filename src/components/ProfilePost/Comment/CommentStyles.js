@@ -21,15 +21,35 @@ export const useStyles = makeStyles((theme) => {
       paddingLeft: 16,
       paddingRight: 8,
     },
+    deletedComment: {
+      padding: `${theme.spacing(2)}px ${theme.spacing(8)}px`
+    },
+    deletedReply: {
+      padding: `${theme.spacing(2)}px 0`
+    },
     reply: {
-      // paddingLeft: 0,
-      // paddingRight: 0
+    },
+    repliesLoadingProgress: {
+      position: 'absolute',
+      top: 1,
+      left: -2
+    },
+    moreRepliesLoadingProgress: {
+      position: 'absolute',
+      top: 0,
+      right: -20
+    },
+    restoringError: {
+      color: 'red'
     },
     menuButton: {
       visibility: 'hidden',
     },
     dropDownIconWrapper: {
-      height: 22, width: 16, display: 'flex', alignItems: 'center', justifyContent: 'center'
+      height: 22, width: 16,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
     },
     avatarBorder: {
       border: `2px solid ${theme.palette.divider}`,

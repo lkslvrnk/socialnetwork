@@ -2,16 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import { ConnectionType } from '../../types/types';
-import { Divider, Paper, Tab, Tabs, Typography } from '@material-ui/core';
-import SimpleText from '../Common/SimpleText';
+import { Divider, Paper, Tab, Tabs } from '@material-ui/core';
 import { useStyles } from './ConnectionsStyles';
 import ConnectionSkeleton from './ConnectionSkeleton';
 import IncomingConnection from './IncomingConnection';
 import OutgoingConnection from './OutgoingConnection';
 import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress';
 import EmptyListStub from '../Common/EmptyListStub';
-import { useDispatch, useSelector } from 'react-redux';
-import { checkRequests } from '../../redux/auth_reducer';
+import { useSelector } from 'react-redux';
 import { AppStateType } from '../../redux/redux_store';
 
 type PropsType = {
@@ -41,30 +39,23 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
     getMoreOutgoing,
     getMoreIncoming,
     incomingCursor,
-    outgoingCursor,
-    currentUserId
+    outgoingCursor
   } = props
 
   const classes = useStyles();
   const { t } = useTranslation()
   const location = useLocation()
   const params: any = useParams()
-  const dispatch = useDispatch()
 
   let queryParams = new URLSearchParams(location.search);
   let section: string | null = queryParams.get('section')
   const tabNumber = section === 'incoming' ? 0 : 1
 
   const lastRequestsCheck = useSelector((state: AppStateType) => state.auth.lastRequestsCheck)
-  const [lastRequestsCheck1, setLastRequestsCheck1] = useState(lastRequestsCheck)
 
   useEffect(() => {
     document.title = t(tabNumber === 0 ? 'Incoming' : 'Outgoing')
-    if(tabNumber === 0 && currentUserId) {
-      dispatch(checkRequests(currentUserId))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tabNumber])
+  }, [t, tabNumber])
 
   const [incomingLoading, setIncomingLoading] = useState(false)
   const [outgoingLoading, setOutgoingLoading] = useState(false)
@@ -104,64 +95,59 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
   if((!incoming && tabNumber === 0) || (!outgoing && tabNumber === 1)) {
     body = (
       <Paper>
-        {[1, 2, 3].map((item, index) => {
-          return <div key={index}>
+        {[1, 2, 3].map((item, index) => (
+          <div key={index}>
             <ConnectionSkeleton />
             { index !== (2) && <Divider />}
           </div>
-        })}
+        ))}
       </Paper>
     )
   }
   else if(!!incoming && tabNumber === 0) {
     body = ( incoming.length > 0
-      ? incoming.map((conn, index) => <div key={conn.id}>
+      ?
+      incoming.map((conn, index) => (
+        <div key={conn.id}>
           <IncomingConnection
             connection={conn}
             handleAccept={handleAccept}
             handleDelete={handleDeleteIncoming}
-            lastRequestsCheck={lastRequestsCheck1}
+            lastRequestsCheck={lastRequestsCheck}
           />
           { index !== (incoming.length - 1) && <Divider />}
-        </div>)
+        </div>
+      ))
       :
       <Paper className={classes.emptyList} >
-
-          <EmptyListStub
-            imageSrc='/images/animals/donkey.png'
-            containerWidth={150}
-            containerHeight={150}
-          />
-        <Typography variant='h6' >
-          {t('There are no incoming requests')}
-        </Typography>
+        <EmptyListStub
+          imageSrc='/images/animals/donkey.png'
+          containerWidth={150}
+          containerHeight={150}
+          text={t('There are no incoming requests')}
+        />
       </Paper>
     )
   }
   else if(!!outgoing && tabNumber === 1) {
-    body = (
-      outgoing.length > 0
-        ? outgoing.map((conn, index) => <div key={conn.id}>
-            <OutgoingConnection
-              
-              connection={conn}
-              handleDelete={handleDeleteOutgoing}
-            />
-            { index !== (outgoing.length - 1) && <Divider />}
-          </div>)
-        :
-        <Paper className={classes.emptyList} >
-
-          <EmptyListStub
-            imageSrc='/images/animals/donkey.png'
-            containerWidth={150}
-            containerHeight={150}
-          />
-          <Typography variant='h6' >
-            {t('There are no outgoing requests')}
-          </Typography>
-        </Paper>
-    )
+    body = outgoing.length > 0
+      ?
+      outgoing.map((conn, index) => <div key={conn.id}>
+        <OutgoingConnection  
+          connection={conn}
+          handleDelete={handleDeleteOutgoing}
+        />
+        { index !== (outgoing.length - 1) && <Divider />}
+      </div>)
+      :
+      <Paper className={classes.emptyList} >
+        <EmptyListStub
+          imageSrc='/images/animals/donkey.png'
+          containerWidth={150}
+          containerHeight={150}
+          text={t('There are no outgoing requests')}
+        />
+      </Paper>
   }
 
   return (
@@ -172,8 +158,8 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
         { body }
       </Paper>
 
-      <div className={classes.loadMore} >{
-        tabNumber === 0
+      <div className={classes.loadMore} >
+        { tabNumber === 0
           ?
           (incomingCursor &&
             <ButtonWithCircularProgress
@@ -193,8 +179,7 @@ const PendingConnections: React.FC<PropsType> = React.memo((props: PropsType) =>
             />
           )
         }
-        </div>
-
+      </div>
     </main>
   )
 })

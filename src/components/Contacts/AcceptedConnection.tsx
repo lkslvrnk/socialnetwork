@@ -3,12 +3,14 @@ import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom'
 import { ConnectionType } from '../../types/types';
-import { Avatar, ClickAwayListener, IconButton, Typography } from '@material-ui/core';
-import { imagesStorage } from '../../api/api';
+import {
+  ClickAwayListener, IconButton, Typography
+} from '@material-ui/core';
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
-import MenuListItemWithProgress from '../Common/MenuListItemWithProgress';
+import MenuItemWithProgress from '../Common/MenuItemWithProgress';
 import PopperMenu from '../Common/PopperMenu';
 import { useStyles } from './ConnectionsStyles';
+import NavLinkAvatar from '../Common/NavLinkAvatar';
 
 type AcceptedConnectionPropsType = {
   connection: ConnectionType
@@ -18,28 +20,20 @@ type AcceptedConnectionPropsType = {
 
 const AcceptedConnection: React.FC<AcceptedConnectionPropsType> = React.memo((props: AcceptedConnectionPropsType) => {
   const classes = useStyles()
-
   const params: any = useParams()
-
   const {connection, handleDelete, isOwnProfile} = props
-
   const initiator = connection.initiator
   const target = connection.target
   const { t } = useTranslation()
-
   const isInitiator = connection.initiator.username === params.username
-
   const userPicture = isInitiator
-    ? `${imagesStorage}/${target.picture}`
-    : `${imagesStorage}/${initiator.picture}`
-    
+    ? target.picture
+    : initiator.picture
   const userFullName = isInitiator
     ? `${target.firstName} ${target.lastName}`
     : `${initiator.firstName} ${initiator.lastName}`
-
   const username = isInitiator ? target.username : initiator.username
   const userLink = `/i/${username}`
-
   const menuButton = useRef(null)
   const [menuAnchor, setMenuAnchor] = useState(null)
 
@@ -67,22 +61,24 @@ const AcceptedConnection: React.FC<AcceptedConnectionPropsType> = React.memo((pr
 
   return (
     <div className={classes.connection} key={connection.id} >
-      <Avatar
-        component={NavLink} to={userLink}
-        className={classes.avatar}
-        src={userPicture}
-      />
-
-      <div className={classes.grow}>
+      <div className={classes.avatar}>
+        <NavLinkAvatar
+          width={80}
+          picture={userPicture}
+          name={userFullName}
+          to={userLink}
+        />
+      </div>
+      
+      <div className='grow'>
         <div className={classes.nameAndMenu} >
           <Typography
             component={NavLink}
             to={userLink}
-            variant='body2'
+            variant='subtitle2'
             color={contactDeleted ? "textSecondary" : "textPrimary"}
-          >
-            <b>{userFullName}</b>
-          </Typography>
+            children={userFullName}
+          />
           
           { isOwnProfile && !contactDeleted &&
             <ClickAwayListener onClickAway={onClickAway} >
@@ -92,7 +88,7 @@ const AcceptedConnection: React.FC<AcceptedConnectionPropsType> = React.memo((pr
               </IconButton>
 
               <PopperMenu dense open={!!menuAnchor} anchorEl={menuAnchor}>
-                <MenuListItemWithProgress
+                <MenuItemWithProgress
                   children={'Delete from contacts'}
                   enableProgress={isDeleting}
                   progressSize={32}

@@ -1,4 +1,4 @@
-import { UserDataType, UserType } from '../types/types'
+import { UserDataType } from '../types/types'
 import { AppStateType } from './redux_store'
 
 export const getCurrentUserId = (state: AppStateType) => {
@@ -26,4 +26,8 @@ export const getCurrentUserData = (state: AppStateType) => {
 
 export const getCurrentUserData2 = (state: AppStateType): UserDataType | null => {
     return state.auth.userData
+}
+
+export const selectNewRequestsCount = (state: AppStateType): number => {
+    return state.auth.newRequestsCount
 }

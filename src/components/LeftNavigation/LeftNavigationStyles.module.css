@@ -1,6 +1,0 @@
-.leftNav {
-  position: fixed;
-  /* paddingLeft: theme.spacing(1); */
-  display: grid;
-  gridGap: 8;
-}

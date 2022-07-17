@@ -1,14 +1,9 @@
 import React, { useState } from 'react'
-import { Button, Checkbox, ClickAwayListener, Dialog, DialogActions, DialogContent, FormControlLabel, MenuItem, Typography } from '@material-ui/core';
+import { Button, Checkbox, ClickAwayListener, Dialog, DialogActions, DialogContent, FormControlLabel, MenuItem } from '@material-ui/core';
 import ButtonWithCircularProgress from './ButtonWithCircularProgress';
 // import PersonAddIcon from '@material-ui/icons/PersonAdd';
 import { useTranslation } from 'react-i18next';
 import PopperMenu from './PopperMenu';
-
-const CREATE = 1
-const DELETE = 2
-const RESPOND = 3
-const CANCEL = 4
 
 const ConnectionAction = props => {
   const {
@@ -27,7 +22,6 @@ const ConnectionAction = props => {
   const [inProgress, setInProgress] = useState(false)
   const [openDialog, setOpenDialog] = useState(false)
   const [subscribingChecked, setSubscribingChecked] = useState(false)
-  console.log(inProgress)
   let buttonTitle = ''
   let onButtonClick = null
   let onDialogPositiveTitle = ''

@@ -5,21 +5,22 @@ export const useStyles = makeStyles(theme => {
   let spacing1x = theme.spacing(1)
 
   return {
-    grow: {
-      flexGrow: 1,
-    },
     rightPanel: {
       '@media (max-width: 860px)': {
         display: 'none'
       },
       marginLeft: spacing2x,
     },
+    buttons: {
+      display: 'flex'
+    },
     topNav: {
       position: 'sticky',
       top: 48,
       marginBottom: 8,
       border: `1px solid ${theme.palette.divider}`,
-      zIndex: 1
+      zIndex: 1,
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
     },
     connection: {
       padding: spacing2x,
@@ -49,8 +50,6 @@ export const useStyles = makeStyles(theme => {
       position: 'relative',
     },
     avatar: {
-      width: theme.spacing(10),
-      height: theme.spacing(10),
       marginRight: spacing2x,
     },
     loadMore: {
@@ -61,7 +60,7 @@ export const useStyles = makeStyles(theme => {
     nameAndMenu: {
       display: 'flex',
       justifyContent: 'space-between',
-      marginBottom: spacing1x
+      marginBottom: spacing1x,
     },
     ownerInfo: {
       padding: spacing1x,
@@ -69,10 +68,25 @@ export const useStyles = makeStyles(theme => {
         padding: theme.spacing(0.5, 1)
       },
       display: 'flex',
+      marginRight: 16
+    },
+    ownerAvatar: {
+      width: 48,
+      height: 48
     },
     navPopper: {
       border: `1px solid ${theme.palette.divider}`,
     },
-
+    selectItemText: {
+      padding: 8,
+      width: '100%'
+    },
+    toProfile: {
+      display: 'flex',
+      flexDirection: 'column'
+    },
+    navMenuItem: {
+      padding: 0
+    }
   }
 })

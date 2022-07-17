@@ -3,16 +3,16 @@ import cn from 'classnames'
 import { useStyles } from './MessageStyles';
 import moment from 'moment'
 import {
-  Button, Checkbox, CircularProgress, ClickAwayListener, Dialog, DialogActions, DialogContent,
+  Button, Checkbox, ClickAwayListener, Dialog, DialogActions, DialogContent,
   DialogTitle, Fade, FormControlLabel, IconButton, MenuItem, Typography, useTheme
 } from '@material-ui/core';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { MessageType } from '../../../../types/chats_types';
 import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
 import PopperMenu from '../../../Common/PopperMenu';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { chatsAPI } from '../../../../api/chats_api';
-import MenuListItemWithProgress from '../../../Common/MenuListItemWithProgress';
+import MenuItemWithProgress from '../../../Common/MenuItemWithProgress';
 import LoopIcon from '@material-ui/icons/Loop';
 import { AppStateType } from '../../../../redux/redux_store';
 import ErrorIcon from '@material-ui/icons/Error';
@@ -24,6 +24,9 @@ import Linkify from 'react-linkify'
 // @ts-ignore
 import removeEmptyLines from "remove-blank-lines"
 import { onRepliedOrEditedClick } from '../Chat';
+import { CircularProgress } from '@mui/material';
+import { useSnackbar } from 'notistack'
+import CloseIcon from '@material-ui/icons/Close';
 
 type MessagePropsType = {
   message: MessageType,
@@ -66,38 +69,18 @@ const Message: React.FC<MessagePropsType> = React.memo((props: MessagePropsType)
   const [checked, setChecked] = useState(false)
   const [menuAnchor, setMenuAnchor] = useState(null)
 
-  const classes = useStyles({side, isFirst, isLast, isSingle})
+  const classes = useStyles({ side, isFirst, isLast, isSingle })
   const windowId = useSelector((state: AppStateType) => state.app.windowId)
   const theme = useTheme()
   const { t } = useTranslation();
   let actionsAnchor = useRef(null)
+  const { enqueueSnackbar, closeSnackbar } = useSnackbar()
 
   const onRepliedClick = () => {
-    if(message.replied) {
+    if (message.replied) {
       onRepliedOrEditedClick(message.replied.id, theme.palette.divider)
     }
   }
-
-  const renderReplied = !!message.replied &&
-    <div
-      className={classes.repliedWrapper}
-      onClick={onRepliedClick}
-    >
-      <div className={classes.repliedBorder}/>
-      <div style={{maxWidth: '97%'}}>
-        <Typography
-          className={classes.repliedHeader}
-          variant='subtitle2'
-          children={
-            message.replied.creator.firstName +
-            ' ' + message.replied.creator.lastName
-          }
-        />
-        <div className={classes.repliedMessageText}>
-          {message.replied.text}
-        </div>
-      </div>
-    </div>
 
   const unreadDotClasses = cn(
     classes.messageLabel,
@@ -110,23 +93,45 @@ const Message: React.FC<MessagePropsType> = React.memo((props: MessagePropsType)
     <Fade
       timeout={unreadByCurrentUser ? 0 : 2199}
       in={unreadByCurrentUser}
-      // style={{
-      //   transitionDelay: unreadByCurrentUser ? '0ms' : '2199ms',
-      //   transitionDuration: unreadByCurrentUser ? '0ms' : '299ms',
-      // }}
     >
-      <div className={unreadDotClasses}/>
+      <div className={unreadDotClasses} />
     </Fade>
   )
 
   const messageClasses = cn(
-    isOwn
-      ? classes.rightMessage
-      : classes.leftMessage,
+    'message',
     classes.message,
-    'message'
+    isOwn ? classes.rightMessage : classes.leftMessage,
+    isOwn && isFirst ? classes.firstRightMessage : '',
+    isOwn && isLast ? classes.lastRightMessage : '',
+    isOwn && isSingle ? classes.singleRightMessage : '',
+    !isOwn && isFirst ? classes.firstLeftMessage : '',
+    !isOwn && isLast ? classes.lastLeftMessage : '',
+    !isOwn && isSingle ? classes.singleLeftMessage : '',
   )
-        
+
+  const replied = message.replied
+
+  const renderReplied = !!replied &&
+    <div
+      className={classes.repliedWrapper}
+      onClick={onRepliedClick}
+    >
+      <div className={classes.repliedBorder} />
+      <div className={classes.replied} >
+        <Typography
+          className={classes.repliedHeader}
+          variant='subtitle2'
+          children={
+            replied.creator.firstName + ' ' + replied.creator.lastName
+          }
+        />
+        <div className={classes.repliedMessageText}>
+          {replied.text}
+        </div>
+      </div>
+    </div>
+
   const renderMessage = (
     <div
       id={message.id}
@@ -136,8 +141,8 @@ const Message: React.FC<MessagePropsType> = React.memo((props: MessagePropsType)
       className={messageClasses}
     >
       {renderUnreadDot}
-      
-      <div style={{display: 'flex', flexDirection: 'column', width: '100%'}}>
+
+      <div className={classes.messageContent} >
         {renderReplied}
         <div className={classes.textAndInfo}>
           <Linkify
@@ -148,12 +153,12 @@ const Message: React.FC<MessagePropsType> = React.memo((props: MessagePropsType)
             children={trimmedText}
           />
           <span className={classes.messageInfo}>
-            <Typography 
+            <Typography
               variant='caption'
               color='textSecondary'
               children={creationTime}
             />
-            { message.isEdited &&
+            {message.isEdited &&
               <Typography
                 component='span'
                 variant='caption'
@@ -162,23 +167,24 @@ const Message: React.FC<MessagePropsType> = React.memo((props: MessagePropsType)
                 children={t('chat message edited')}
               />
             }
-            {message.sendingError && 
-              <div className={classes.statusIcon} style={{background: 'white', borderRadius: 10, height: 16}}>
-                <ErrorIcon fontSize='small' color='error' style={{display: 'block'}} />
+            {message.sendingError &&
+              <div className={cn(classes.statusIcon, classes.errorStatusIcon)} >
+                <ErrorIcon fontSize='small' color='error' />
               </div>
             }
             {isSendingMessage &&
-              <QueryBuilderIcon className={classes.statusIcon} fontSize={'small'}/>
+              <QueryBuilderIcon className={classes.statusIcon} fontSize={'small'} />
             }
             {!isUnsentMessage && !isSendingMessage && isOwn && !isReadByInterlocutor &&
-              <CheckIcon className={classes.statusIcon} fontSize={'small'}/>
+              <CheckIcon className={classes.statusIcon} fontSize={'small'} />
             }
             {isReadByInterlocutor && isOwn &&
-              <DoneAllIcon className={classes.statusIcon} fontSize={'small'}/>
+              <DoneAllIcon className={classes.statusIcon} fontSize={'small'} />
             }
           </span>
         </div>
       </div>
+
       {isDeleting &&
         <div
           className={cn(
@@ -200,10 +206,10 @@ const Message: React.FC<MessagePropsType> = React.memo((props: MessagePropsType)
   }
 
   const handleDelete = async () => {
-    if(!chatId || !currentUserId) return
+    if (!chatId || !currentUserId) return
     try {
       setIsDeleting(true)
-      if(checked) {
+      if (checked) {
         await chatsAPI.updateMessage(message.id, 'is_deleted', 1, windowId)
         onDelete()
       } else {
@@ -211,6 +217,17 @@ const Message: React.FC<MessagePropsType> = React.memo((props: MessagePropsType)
         onDelete()
       }
     } catch (e) {
+      const snackbarActions = (key: any) => (
+        <IconButton
+          size='small'
+          onClick={() => closeSnackbar(key)}
+          children={<CloseIcon />}
+        />
+      )
+      enqueueSnackbar(
+        t('Chat message deleting error'),
+        { action: snackbarActions, variant: 'error' }
+      )
       setIsDeleting(false)
     }
   }
@@ -223,9 +240,14 @@ const Message: React.FC<MessagePropsType> = React.memo((props: MessagePropsType)
     message.sendingError
       ? onUnsentDelete(message.clientId) : handleDelete()
     setShowAcceptDeleteDialog(false)
+    setMenuAnchor(null)
   }
 
-  const acceptDeleteDialog = (
+  const handleCheckDeleteForAll = (e: any) => {
+    setChecked(e.target.checked)
+  }
+
+  const renderAcceptDeleteDialog = (
     <Dialog
       onClose={handleAcceptDeleteDialogClose}
       aria-labelledby="simple-dialog-title"
@@ -234,25 +256,25 @@ const Message: React.FC<MessagePropsType> = React.memo((props: MessagePropsType)
       <DialogTitle
         children={t('Delete message?')}
       />
-      { !message.sendingError && currentUserId === message.creator.id &&
+
+      {!message.sendingError && currentUserId === message.creator.id &&
         <DialogContent >
           <FormControlLabel
             control={
               <Checkbox
                 checked={checked}
                 name="checkedC"
-                onChange={(e: any) => {
-                  setChecked(e.target.checked)
-                }}
+                onChange={handleCheckDeleteForAll}
               />
             }
             label={t('Delete for all')}
           />
         </DialogContent>
       }
+
       <DialogActions>
         <Button
-          onClick={() => setShowAcceptDeleteDialog(false)}
+          onClick={handleAcceptDeleteDialogClose}
           children={t('Cancel')}
         />
         <Button
@@ -260,7 +282,6 @@ const Message: React.FC<MessagePropsType> = React.memo((props: MessagePropsType)
           children={t('Yes')}
         />
       </DialogActions>
-      
     </Dialog>
   )
 
@@ -274,38 +295,42 @@ const Message: React.FC<MessagePropsType> = React.memo((props: MessagePropsType)
     onReplyClick(message)
   }
 
-  const menu = (
+  const handleOpenAcceptDeleteDialog = () => {
+    setShowAcceptDeleteDialog(true)
+  }
+
+  const renderMenu = (
     <ClickAwayListener onClickAway={handleClickAwayMenu} >
       <div>
         <PopperMenu
-          style={{zIndex: 1}}
+          style={{ zIndex: 1 }}
           placement={side === 'left' ? 'top-start' : 'top-end'}
           open={!!menuAnchor}
           anchorEl={menuAnchor}
           dense
         >
-          { !isUnsentMessage && isOwn &&
+          {!isUnsentMessage && isOwn &&
             <MenuItem
               onClick={handleEditClick}
               children={t('Edit')}
               disabled={isDeleting}
             />
           }
-          { !isUnsentMessage &&
+          {!isUnsentMessage &&
             <MenuItem
               onClick={handleReplyClick}
               children={t('Reply')}
               disabled={isDeleting}
             />
           }
-          <MenuListItemWithProgress
+          <MenuItemWithProgress
             children={t('Delete')}
-            onClick={() => setShowAcceptDeleteDialog(true)}
+            onClick={handleOpenAcceptDeleteDialog}
             disabled={isDeleting}
             enableProgress={isDeleting}
             progressSize={32}
           />
-          {acceptDeleteDialog}
+          {renderAcceptDeleteDialog}
         </PopperMenu>
       </div>
     </ClickAwayListener>
@@ -336,15 +361,14 @@ const Message: React.FC<MessagePropsType> = React.memo((props: MessagePropsType)
           onClick={openMenu}
           className={moreActionsButtonClasses}
           disableRipple
-          children={<MoreHorizIcon style={{display: 'block'}} />}
+          children={<MoreHorizIcon />}
         />
-        <div className={classes.underActionsButton}/> 
+        <div className={classes.underActionsButton} />
       </div>
-      { message.sendingError &&
+      {message.sendingError &&
         <IconButton
           onClick={handleMessageResend}
           size='small'
-          style={{display: 'block'}}
           children={<LoopIcon />}
         />
       }
@@ -359,11 +383,10 @@ const Message: React.FC<MessagePropsType> = React.memo((props: MessagePropsType)
   )
 
   return (
-    <div className={containerClasses}>      
-      <div style={{margin: 5}}/>
+    <div className={containerClasses}>
       {!isDeleting && renderActions}
       {renderMessage}
-      {!isDeleting && !!menuAnchor && menu}
+      {!isDeleting && !!menuAnchor && renderMenu}
     </div>
   );
 })

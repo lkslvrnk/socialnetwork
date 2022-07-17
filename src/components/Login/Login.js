@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import {Field, reduxForm} from "redux-form"
 import {maxLengthCreator, required} from "../../utils/validators/validators"
 import {OutlinedTextInput} from "../FormControls/FormControls.js"
-import Button from '@material-ui/core/Button'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import { useDispatch, useSelector} from 'react-redux'
@@ -46,7 +45,7 @@ const Login = React.memo( props => {
         <Avatar className={classes.avatar}>
           <LockOutlinedIcon />
         </Avatar>
-        <Typography component="h1" variant="h5">
+        <Typography variant="h5">
           {t('Sign in')}
         </Typography>
         <LoginForm
@@ -66,10 +65,8 @@ const LoginForm = reduxForm({form: 'login'})(
     let classes = useStyles()
     const { t } = useTranslation();
 
-
     return (
       <form onSubmit={handleSubmit} className={classes.form}>
-
         <Field
           label={t('Email')}
           type='email'
@@ -93,8 +90,10 @@ const LoginForm = reduxForm({form: 'login'})(
           autoComplete="current-password"
         />
 
-        <div  style={{padding: 8, display: 'flex', justifyContent: 'center'}}>
-          { error && <span style={{color: 'red'}} className={classes.error}>{t(error)}</span> }
+        <div className={classes.error}>
+          { error &&
+            <span>{t(error)}</span>
+          }
         </div>
 
         <ButtonWithCircularProgress

@@ -1,16 +1,7 @@
 import React from 'react'
-import { makeStyles, MenuList, Paper, Popper } from '@material-ui/core';
-
-const useStyles = makeStyles(theme => {
-  return {
-    border: {
-      border: `1px solid ${theme.palette.divider}`
-    }
-  }
-})
+import { MenuList, Paper, Popper } from '@material-ui/core';
 
 const PopperMenu = ({children, dense, ...popperProps}) => {
-  const classes = useStyles();
 
   return (
     <Popper

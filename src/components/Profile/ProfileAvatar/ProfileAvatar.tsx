@@ -1,40 +1,12 @@
 import React, { FC, memo, useEffect, useState } from 'react';
-import {makeStyles} from "@material-ui/core/styles";
-import MyAvatarEditor from './MyAvatarEditor.js'
-import MaterialAvatar from '@material-ui/core/Avatar';
-import { Link, NavLink, useLocation } from 'react-router-dom'
-import { Badge, IconButton, Paper, useMediaQuery } from '@material-ui/core';
-import { withStyles } from '@material-ui/styles';
-import PhotoCameraRoundedIcon from '@material-ui/icons/PhotoCameraRounded';
+import MyAvatarEditor from '../AvatarEditor/MyAvatarEditor'
+import { Badge, IconButton } from '@material-ui/core';
 import { useSelector } from 'react-redux';
 import { getProfilePicture } from '../../../redux/profile_selectors';
 import EditIcon from '@material-ui/icons/Edit';
-import { getFirstLetter } from '../../../helper/helperFunctionsTs';
 // @ts-ignore
 import ReactAvatar from 'react-avatar';
-
-export const useStyles = makeStyles(theme => ({
-  container: {
-    padding: '5px',
-    display: "flex",
-    justifyContent: "center",
-    [theme.breakpoints.up("md")]: {},
-  },
-  avatar: {
-    height: 200,
-    width: 200,
-    '@media (max-width: 860px)': {
-      height: 150,
-      width: 150,
-    },
-    border: `6px solid ${theme.palette.background.default}`
-  },
-  editButtonRoot: {
-    borderRadius: 100,
-    background: theme.palette.background.paper,
-    border: `2px solid ${theme.palette.divider}`
-  }
-}))
+import { useStyles } from './ProfileAvatarStyles';
 
 type PropsType = {
   avatar: any
@@ -44,19 +16,19 @@ type PropsType = {
   onClick: Function
   userFirstName: string
   userLastName: string
+  size: number
+  showEditButton: boolean
 }
 
 const ProfileAvatar: FC<PropsType> = memo((props: PropsType) => {
-  const { isOwnProfile, currentUserId, userFirstName, userLastName, profilePhotosAlbumId, onClick } = props
+  const { isOwnProfile, currentUserId, userFirstName, userLastName, onClick, size, showEditButton } = props
   
-  const matches = useMediaQuery('(max-width: 860px)');
   const picture = useSelector(getProfilePicture)
   // @ts-ignore
   const pictureSrc: any = picture && picture.versions['cropped_original']
 
-  const classes = useStyles({ avatar: picture });
+  const classes = useStyles()
   const [showAvatarEditor, setShowAvatarEditor] = useState(false)
-  let location = useLocation()
 
   useEffect(() => {
     if(showAvatarEditor) setShowAvatarEditor(false)
@@ -68,22 +40,19 @@ const ProfileAvatar: FC<PropsType> = memo((props: PropsType) => {
   }
 
   let handleClick = () => {
-    if(!!picture) {
-      onClick()
-    }
+    if(!!picture) onClick()
   }
 
   const name = userFirstName + ' ' + userLastName
   const stc = require('string-to-color');
   const color = stc(name);
 
-  // console.log(classes)
-
   return (
     <>
       <Badge 
         badgeContent={
-          isOwnProfile ?
+          showEditButton
+            ?
             <div className={classes.editButtonRoot}>
               <IconButton
                 size='small'
@@ -108,7 +77,7 @@ const ProfileAvatar: FC<PropsType> = memo((props: PropsType) => {
           <ReactAvatar
             color={color}
             src={ pictureSrc }
-            size={matches ? '150' :'200'}
+            size={`${size}`}
             name={name}
             textSizeRatio={2}
             round="1000px"

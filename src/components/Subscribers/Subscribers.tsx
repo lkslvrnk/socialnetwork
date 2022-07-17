@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
-import { NavLink, useParams} from 'react-router-dom'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import Typography from '@material-ui/core/Typography'
-import {useDispatch, useSelector} from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useTranslation } from 'react-i18next';
 import { useStyles } from './SubscribersStyles.js'
 import { Paper } from '@material-ui/core'
@@ -20,6 +20,7 @@ import { ProfileType } from '../../types/types.js';
 import ProfileNotFound from '../Common/ProfileNotFound.js';
 import { usePrevious } from '../../hooks/hooks.js';
 import EmptyListStub from '../Common/EmptyListStub';
+import Adv from '../Adv/Adv.jsx';
 
 const Subscriptions: React.FC = React.memo((props) => {
   const classes = useStyles()
@@ -29,7 +30,7 @@ const Subscriptions: React.FC = React.memo((props) => {
   const cursor = useSelector((state: AppStateType) => state.users.cursor)
   const totalCount = useSelector((state: AppStateType) => state.users.totalCount)
 
-  const [profile, setProfile] = useState<ProfileType|null>(null)
+  const [profile, setProfile] = useState<ProfileType | null>(null)
   const [profileLoaded, setProfileLoaded] = useState(false)
 
   const [moreSubscribersLoading, setMoreSubscribesLoading] = useState(false)
@@ -42,24 +43,21 @@ const Subscriptions: React.FC = React.memo((props) => {
 
   const componentName = 'subscriptions'
 
-  function getUser() {
-    profileAPI.getUser(usernameFromParams)
-      .then(
-        (response) => {
-          if(response.status === 200) {
-            setProfile(response.data)
-            setProfileLoaded(true)
-          }
-        },
-        error => {
-          if(error.response) {
-            if(error.response.status === 404) {
-              setProfileLoaded(true)
-            }
-          }
+  const getUser = useCallback(async function () {
+    try {
+      const response = await profileAPI.getUser(usernameFromParams)
+      if (response.status === 200) {
+        setProfile(response.data)
+        setProfileLoaded(true)
+      }
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 404) {
+          setProfileLoaded(true)
         }
-      )
-  }
+      }
+    }
+  }, [usernameFromParams])
 
   useEffect(() => {
     getUser()
@@ -68,28 +66,33 @@ const Subscriptions: React.FC = React.memo((props) => {
   }, [])
 
   useEffect(() => {
-    if(profileLoaded && !!profile) {
-      (async function() {
+    if (profileLoaded && !!profile) {
+      (async function () {
         dispatch(actions.setComponentName(componentName))
         try {
-          let response = await subscriptionAPI.getSubscribersOfUser(params.username, 10, null)
+          let response = await subscriptionAPI.getSubscribersOfUser(
+            params.username, 10, null
+          )
           let data = response.data
-          dispatch(actions.setUsers(data.subscribers, data.allCount, data.cursor, componentName))
-        } catch(error) {
-          console.log(error)
+          dispatch(actions.setUsers(
+            data.subscribers, data.allCount, data.cursor, componentName
+          ))
+        } catch (error) {
+          // console.log(error)
         }
       })()
       return () => {
-        (function() { dispatch(actions.clean()) })()
+        (function () { dispatch(actions.clean()) })()
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileLoaded])
 
   useEffect(() => {
-    (async function() {
-      if(previousUsernameFromParams !== undefined && usernameFromParams !== previousUsernameFromParams) {
-        console.log('username changed')
+    (async function () {
+      if (previousUsernameFromParams !== undefined
+        && usernameFromParams !== previousUsernameFromParams
+      ) {
         setProfile(null)
         setProfileLoaded(false)
         dispatch(actions.clean())
@@ -99,19 +102,23 @@ const Subscriptions: React.FC = React.memo((props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [usernameFromParams])
 
-  if(profileLoaded && !profile) {
+  if (profileLoaded && !profile) {
     return <ProfileNotFound />
   }
 
   const handleLoadMoreSubscribers = async () => {
-    if(!moreSubscribersLoading && cursor) {
+    if (!moreSubscribersLoading && cursor) {
       setMoreSubscribesLoading(true)
       try {
-        let response = await subscriptionAPI.getSubscribersOfUser(params.username, 10, cursor)
+        let response = await subscriptionAPI.getSubscribersOfUser(
+          params.username, 10, cursor
+        )
         let data = response.data
-        dispatch(actions.addUsers(data.subscribers, data.allCount, data.cursor, componentName))
-      } catch(error) {
-        console.log(error)
+        dispatch(actions.addUsers(
+          data.subscribers, data.allCount, data.cursor, componentName
+        ))
+      } catch (error) {
+        // console.log(error)
       } finally {
         setMoreSubscribesLoading(false)
       }
@@ -120,30 +127,24 @@ const Subscriptions: React.FC = React.memo((props) => {
 
   const panel = <div className={classes.panel}>
     <StickyPanel top={55}>
-      <Paper style={{padding: 16}}>
-        <Typography variant='body2' color='textSecondary' style={{marginBottom: 8}}>Реклама</Typography>
-        <NavLink to='/kek' ><img style={{width: '100%'}} src='/images/rekl/333.jpg' /></NavLink>
-      </Paper>
+      <Adv imageSrc={'/images/rekl/333.jpg'} />
     </StickyPanel>
   </div>
 
-  if(!!subscribers && !subscribers.length) {
+  if (!!subscribers && !subscribers.length) {
     return <section className={classes.subscriptions}>
       <Paper className={classes.noSubscriptions} >
         <EmptyListStub
           imageSrc='/images/animals/hippopotamus.png'
           containerWidth={150}
           containerHeight={150}
-        />
-
-        <Typography variant='h6' >
-          { isOwnSubscriptions
+          text={isOwnSubscriptions
             ? t("You have no subscribers")
             : t("User has no subscribers")
           }
-        </Typography>
+        />
       </Paper>
-      { panel }
+      {panel}
     </section>
   }
 
@@ -154,39 +155,40 @@ const Subscriptions: React.FC = React.memo((props) => {
     />
   })
 
-  let skeletons = [1,2,3].map(skeleton => {
+  let skeletons = [1, 2, 3].map(skeleton => {
     return <Paper key={skeleton} ><ConnectionSkeleton /></Paper>
   })
 
-  return <section className={classes.subscriptions}>
+  return <section className={'content'}>
     <main className={classes.subscriptionsList}>
-      { !!profile && !!subscribers && subscribers.length > 0 &&
-      <Paper style={{padding: 16}}>
-        <Typography variant='subtitle2' >
-          {isOwnSubscriptions
-            ? `${t('My subscribers')} ${totalCount ? `(${totalCount})` : ''}`
-            : `${t('Subscribers of')} ${profile.firstName} ${profile.lastName} ${totalCount ? `(${totalCount})` : ''}`
-          }
-        </Typography>
-      </Paper>
+      {!!profile && !!subscribers && subscribers.length > 0 &&
+        <Paper style={{ padding: 16 }}>
+          <Typography variant='subtitle2' >
+            {isOwnSubscriptions
+              ? `${t('My subscribers')} ${totalCount ? `(${totalCount})` : ''}`
+              : `${t('Subscribers of')} ${profile.firstName}
+                 ${profile.lastName} ${totalCount ? `(${totalCount})` : ''}`
+            }
+          </Typography>
+        </Paper>
       }
-      { !!subscribers
+      {!!subscribers
         ? subscribersList
         : <>{skeletons}</>
       }
-      { !!subscribers && !!cursor &&
+      {!!subscribers && !!cursor &&
         <div className={classes.loadMore} >
           <ButtonWithCircularProgress
             enableProgress={moreSubscribersLoading}
             disabled={moreSubscribersLoading}
             variant='contained'
-            onClick={ handleLoadMoreSubscribers }
-            children={ t('Load more')}
+            onClick={handleLoadMoreSubscribers}
+            children={t('Load more')}
           />
         </div>
       }
     </main>
-    { panel }
+    {panel}
   </section>
 
 })

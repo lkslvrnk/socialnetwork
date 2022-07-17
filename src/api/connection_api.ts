@@ -32,14 +32,20 @@ export const connectionAPI = {
   getConnection: (connectionId: string) => {
     return instance.get<GetConnectionResponseType>(`connections/${connectionId}`)
   },
-  getConnectionsOfUser: (userId: string, count: number | null, cursor: string | null, type: string | null, hideAccepted: boolean | null, hidePending: boolean | null, start: number | null) => {
+  getConnectionsOfUser: (
+    userId: string, count: number | null, cursor: string | null,
+    type: string | null, hideAccepted: boolean | null,
+    hidePending: boolean | null, start: number | null
+  ) => {
     const cursorParam = cursor ? `&cursor-id=${cursor}` : ''
     const hideAcceptedParam = hideAccepted ? `&hide-accepted=1` : ''
     const hidePendingParam = hidePending ? `&hide-pending=1` : ''
     const countParam = count !== null ? `&count=${count}` : ''
     const typeParam = type ? `&type=${type}` : ''
     const startParam = start ? `&start=${start}` : ''
-    return instance.get<GetConnectionsResponseType>(`/users/${userId}/connections?${hideAcceptedParam}${hidePendingParam}${countParam}${cursorParam}${typeParam}${startParam}`)
+    return instance.get<GetConnectionsResponseType>(
+      `/users/${userId}/connections?${hideAcceptedParam}${hidePendingParam}${countParam}${cursorParam}${typeParam}${startParam}`
+      )
   },
   deleteConnection: (connectionId: string) => {
     return instance.delete(`connections/${connectionId}`)
@@ -47,7 +53,10 @@ export const connectionAPI = {
   acceptConnection: (connectionId: string) => {
     return instance.patch(`accept-connection`, {connection_id: connectionId})
   },
-  getUserContacts: (userId: string, commonWith: string | null, cursor: string | null, count: number | null) => {
+  getUserContacts: (
+    userId: string, commonWith: string | null,
+    cursor: string | null, count: number | null
+  ) => {
     const commonWithParam = commonWith ? `&common-with=${commonWith}` : ''
     const cursorParam = cursor ? `&cursor=${cursor}` : ''
     const countParam = count ? `&count=${count}` : ''

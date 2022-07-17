@@ -1,9 +1,7 @@
-import { Avatar } from '@material-ui/core';
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 // @ts-ignore
 import ReactAvatar from 'react-avatar';
-import { getRandomColorForAvatar } from '../../helper/helperFunctions';
 
 type NavLinkAvatarType = {
   width: number

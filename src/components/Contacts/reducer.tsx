@@ -280,7 +280,6 @@ export function reducer(state: State, action: ActionsType): State {
       }
     }
     case SET_OUTGOING_CONNS: {
-      // console.log(action)
       return {
         ...state,
         outgoingConns: action.connections,
@@ -289,7 +288,6 @@ export function reducer(state: State, action: ActionsType): State {
       }
     }
     case ADD_OUTGOING_CONNS: {
-      // console.log(state.outgoingConns, action)
       if(state.outgoingConns) {
         return {
           ...state,

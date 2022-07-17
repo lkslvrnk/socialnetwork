@@ -7,7 +7,6 @@ export const withRedirectToLogin = (Component) => {
     class RedirectComponent extends React.Component {
         render() {
             let {id, ...restProps} = this.props
-            // console.log(id)
             if (!id) {
                 return <Redirect to="/login"/>
             }            

@@ -6,80 +6,89 @@ import { useTranslation } from 'react-i18next';
 import { useStyles } from './ProfileStyles';
 // import 'emoji-mart/css/emoji-mart.css'
 import { change } from 'redux-form'
-import { cleanProfile, getUserById} from '../../redux/profile_reducer'
+import { cleanProfile, getUserById } from '../../redux/profile_reducer'
 import {
   getPosts, createPost, addPostPhoto,
-  removeNewPostPhoto, cleanNewPostPhotos, getMorePosts, restorePost, deletePost, PROFILE_POSTS
+  removeNewPostPhoto, cleanNewPostPhotos, getMorePosts,
+  restorePost, deletePost, PROFILE_POSTS
 } from '../../redux/profile_posts_reducer'
 import { addPhoto } from '../../redux/photos_reducer'
+import { Button, IconButton, Paper } from '@material-ui/core';
 import {
-  Avatar, Button, IconButton, Paper
-} from '@material-ui/core';
-import { useImageViewer, usePrevious } from '../../hooks/hooks.js';
-import PostForm from './PostForm.js';
+  useImageViewer, useIntersection, usePrevious
+} from '../../hooks/hooks.js';
+import PostForm from './PostForm/PostForm.js';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import ProfileAvatar from './ProfileAvatar/ProfileAvatar';
 import Typography from "@material-ui/core/Typography";
 import StickyPanel from '../Common/StickyPanel.js';
 import { Divider } from '@material-ui/core';
-import { NavLink, useLocation, useParams } from 'react-router-dom';
-import { AvatarGroup } from '@material-ui/lab';
+import { useLocation, useParams } from 'react-router-dom';
 import EditIcon from '@material-ui/icons/Edit';
 import Skeleton from '@material-ui/lab/Skeleton';
 import { getCurrentUserUsername } from '../../redux/auth_selectors';
 import ProfilePost from '../ProfilePost/ProfilePost.js';
 import PostSkeleton from '../Common/PostSkeleton.js';
-import Communication from './Communication.js';
-import PhotosSectionMobile from './PhotosSectionMobile.js';
-import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress.jsx';
-import { PhotoSlider } from 'react-photo-view';
+import Communication from './Communication/Communication.js';
+import MobilePhotosSection from './MobilePhotosSection/MobilePhotosSection.js';
 import 'react-photo-view/dist/index.css';
 import TypographyLink from '../Common/TypographyLink.jsx';
-import Info from './Info.js';
-import CoverEditor from './ProfileAvatar/CoverEditor.js';
+import Info from './Info/Info.js';
+import CoverEditor from './CoverEditor/CoverEditor.js';
 import EmptyListStub from '../Common/EmptyListStub';
-import ImageViewer from "react-simple-image-viewer";
 import CustomImageViewer from '../Common/CustomImageViewer.jsx';
+import LoadMore from '../Common/LoadMore.jsx';
+import cn from 'classnames';
+import CustomAvatarGroup from '../Common/CustomAvatarGroup.jsx';
 
 const Profile = React.memo(props => {
-  const { postsLoaded, deletePost, restorePost, posts, currentUserId, profile, profileLoaded, postsCursor, postsCount } = props
+  const {
+    postsLoaded, posts, currentUserId, profile,
+    profileLoaded, postsCursor, postsCount
+  } = props
   const mobile = useMediaQuery('(max-width: 860px)')
 
   const isAuthenticated = !!currentUserId
-  
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [viewerIsOpen, setViewerIsOpen] = useState(false);
   const [showAvatarEditor, setShowAvatarEditor] = useState(false)
   let location = useLocation();
-
-  // console.log(location.state)
-
   const params = useParams()
   const dispatch = useDispatch()
   const classes = useStyles()
   const { t } = useTranslation()
   let wall = React.useRef(null)
   const [morePostsLoading, setMorePostsLoading] = useState(false)
+  const [morePostsLoadingError, setMorePostsLoadingError] = useState(false)
+  const loadMore = useRef(null)
 
+  const handleLoadMorePosts = useCallback(async () => {
+    if (!morePostsLoading && postsLoaded && !!profile && postsCursor) {
+      try {
+        setMorePostsLoadingError(false)
+        setMorePostsLoading(true)
+        await dispatch(getMorePosts(profile.id, 5, postsCursor, 'DESC', 2, 'DESC'))
+      } catch (e) {
+        setMorePostsLoadingError(true)
+      } finally {
+        setMorePostsLoading(false)
+      }
+    }
+  }, [postsLoaded, postsCursor, morePostsLoading, profile, dispatch])
+
+  useIntersection(postsLoaded, handleLoadMorePosts, loadMore)
   const usernameFromUrl = params.username
 
-  const openLightbox = (index) => {
-    setCurrentImageIndex(index)
-    setViewerIsOpen(true);
-  }
-
-  const closeLightbox = () => {
-    setCurrentImageIndex(0)
-    setViewerIsOpen(false)
-  };
+  // useEffect(() => {
+  //   return () => {
+  //     console.log('unmount profile')
+  //   }
+  // }, [])
 
   useEffect(() => {
-    if(!profile) {
+    if (!profile) {
       document.title = (location.state && location.state.firstName && location.state.lastName)
         ? `${location.state.firstName} ${location.state.lastName}`
         : 'Профиль пользователя'
-    }
-    else {
+    } else {
       document.title = ownerFullName
     }
     document.documentElement.scrollTop = 0
@@ -88,7 +97,6 @@ const Profile = React.memo(props => {
 
   useEffect(() => {
     window.scrollTo(0, 0)
-
     return () => {
       dispatch(cleanProfile())
     }
@@ -96,9 +104,9 @@ const Profile = React.memo(props => {
   }, [])
 
   useEffect(() => {
-    (function() {
-      if(!profile || (profile && profile.username !== usernameFromUrl)) {
-        if(profile) {
+    (function () {
+      if (!profile || (profile && profile.username !== usernameFromUrl)) {
+        if (profile) {
           dispatch(cleanProfile())
         }
         dispatch(getUserById(usernameFromUrl))
@@ -108,7 +116,7 @@ const Profile = React.memo(props => {
   }, [usernameFromUrl])
 
   useEffect(() => {
-    if((!postsLoaded || (!!profile && profile.id !== prevProfileId))
+    if ((!postsLoaded || (!!profile && profile.id !== prevProfileId))
       && (!!profile)
     ) {
       dispatch(getPosts(profile.id, 5, null, 'DESC', 2, 'DESC'))
@@ -117,33 +125,68 @@ const Profile = React.memo(props => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile])
 
+  const headerRef = useRef(null)
+  const miniHeader = useRef(null)
+  const [showMiniHeader, setShowMiniHeader] = useState(false)
+
+  const prevHeaderState = useRef('visible')
+
+  useEffect(() => {
+    prevHeaderState.current = headerRef.current
+      && headerRef.current.getBoundingClientRect().bottom <= 105
+        ? 'visible' : 'invisible'
+  }, [mobile])
+
+  useEffect(() => {
+    const scrollHandler = () => {
+      if (headerRef.current) {
+        if (headerRef.current.getBoundingClientRect().bottom <= 105) {
+          if (prevHeaderState.current === 'visible') {
+            setShowMiniHeader(true)
+          }
+          prevHeaderState.current = 'invisible'
+        } else {
+          if (prevHeaderState.current === 'invisible') {
+            setShowMiniHeader(false)
+          }
+          prevHeaderState.current = 'visible'
+        }
+      }
+    }
+    scrollHandler()
+    document.addEventListener('scroll', scrollHandler)
+    return () => {
+      document.removeEventListener('scroll', scrollHandler)
+    }
+  }, [])
+
   const prevProfileId = usePrevious(profile ? profile.id : undefined)
   const currentUserUsername = useSelector(getCurrentUserUsername)
 
-  if(profileLoaded && !profile) {
-    return <div style={{display: 'flex', flexDirection: 'column', padding: 16, justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-        <span role='img' aria-label='no-subscribers' style={{ fontSize: '130px' }}>
+  const [index, showImageViewer, openImageViewer, closeImageViewer] = useImageViewer()
+
+  if (profileLoaded && !profile) {
+    return (
+      <div className={classes.profileNotFound}>
+        <span role='img' aria-label='no-subscribers' className={'stub-image'}>
           🐷
         </span>
-      <Typography variant='h4' >{t('Profile not found')}</Typography>
-    </div>
+        <Typography variant='h4' >{t('Profile not found')}</Typography>
+      </div>
+    )
   }
 
   const reversedPictures = profile ? [...profile.pictures].reverse() : []
-
   const preparedSmallPictures = []
   const preparedLargePictures = []
-  
+
   reversedPictures.forEach((picture) => {
     const id = picture.id
     const smallSrc = picture.versions.small.src
     const originalSrc = picture.versions.original.src
-    preparedSmallPictures.push({id, src: smallSrc})
-    preparedLargePictures.push({ id, src: originalSrc})
+    preparedSmallPictures.push({ id, src: smallSrc })
+    preparedLargePictures.push({ id, src: originalSrc })
   })
-
-
-  const [index, showImageViewer, openImageViewer, closeImageViewer] = useImageViewer()
 
   const forImageViewer = []
   preparedLargePictures.forEach(p => forImageViewer.push(p.src))
@@ -153,17 +196,9 @@ const Profile = React.memo(props => {
   }
 
   const ownerFullName = !!profile && `${profile.firstName} ${profile.lastName}`
-  const coverSrc = 'https://s1.1zoom.ru/big0/596/Evening_Forests_Mountains_Firewatch_Campo_Santo_549147_1280x720.jpg' 
+  const coverStubSrc = 'https://s1.1zoom.ru/big0/596/Evening_Forests_Mountains_Firewatch_Campo_Santo_549147_1280x720.jpg'
   const isOwnProfile = profile?.username === currentUserUsername
   const onOwnWall = currentUserId === (profile ? profile.id : '-1')
-
-  const handleLoadMorePosts = async () => {
-    if(!morePostsLoading && postsLoaded && !!profile && postsCursor) {
-      setMorePostsLoading(true)
-      await dispatch(getMorePosts(profile.id, 5, postsCursor, 'DESC', 2, 'DESC'))
-      setMorePostsLoading(false)
-    }
-  }
 
   let postsList = posts.map(post => {
     return (
@@ -179,6 +214,7 @@ const Profile = React.memo(props => {
       />
     )
   })
+
   let postsSkeletonsList = [0, 1, 2].map((e) => <PostSkeleton key={e} />)
 
   const onPost = async (text, attachments, isPublic, disableComments) => {
@@ -186,27 +222,24 @@ const Profile = React.memo(props => {
   }
 
   let editProfileButton = false &&
-    (profileLoaded
-      ? 
-      <div className={classes.buttonsSection}>
+    <div className={classes.buttonsSection}>
+      {profileLoaded
+        ?
         <Button
           disabled
           variant='contained'
           startIcon={<EditIcon />}
-        >
-          {t('Edit profile')}
-        </Button>
-      </div>
-      :
-      <div className={classes.buttonsSection} >
+          children={t('Edit profile')}
+        />
+        :
         <Skeleton
           className={classes.buttonSkeleton}
           variant='rect'
           width={150}
           height={36}
         />
-      </div>
-    )
+      }
+    </div>
 
   let renderProfilePicture = (
     <ProfileAvatar
@@ -215,28 +248,28 @@ const Profile = React.memo(props => {
       currentUserId={currentUserId}
       userFirstName={profile?.firstName || 'Unknown'}
       userLastName={profile?.lastName || 'Unknown'}
+      size={150}
+      showEditButton={onOwnWall}
     />
   )
 
-  const avatar = (
-    mobile
-    ? renderProfilePicture
-    :  <div className={classes.avatarFrame} >
-      {renderProfilePicture}
-    </div>
+  let miniProfilePicture = (
+    <ProfileAvatar
+      onClick={onAvatarClick}
+      isOwnProfile={onOwnWall}
+      currentUserId={currentUserId}
+      userFirstName={profile?.firstName || 'Unknown'}
+      userLastName={profile?.lastName || 'Unknown'}
+      size={45}
+      showEditButton={false}
+    />
   )
 
+  const avatar = renderProfilePicture
+
   const avatarSkeleton = (
-    mobile
-    ?
     <div className={classes.sleletonBackground} >
       <Skeleton variant='circle' width={150} height={150} />
-    </div>
-    :
-    <div className={classes.avatarFrame} >
-      <div className={classes.sleletonBackground} >
-        <Skeleton variant='circle' width={200} height={200} />
-      </div>
     </div>
   )
 
@@ -245,32 +278,32 @@ const Profile = React.memo(props => {
       className={classes.cover}
       style={{
         backgroundImage: profileLoaded
-          ? `url(${profile.cover ? profile.cover.versions.cropped_original: coverSrc })` : 'none',
+          ? `url(${profile.cover ? profile.cover.versions.cropped_original : coverStubSrc})`
+          : 'none',
       }}
     >
-      { isOwnProfile && <Paper className={classes.editButtonRoot} style={{position: 'absolute', bottom: 5, right: 5}} >
+      {isOwnProfile && <Paper className={classes.editButtonRoot} >
         <IconButton
           size='small'
           onClick={() => setShowAvatarEditor(true)}
-        >
-          <EditIcon />
-        </IconButton>
+          children={<EditIcon />}
+        />
       </Paper>
       }
-      { !profileLoaded &&
-          <Skeleton variant='rect'
-            style={{
-              borderTopLeftRadius: 3,
-              borderTopRightRadius: 3,
-              position: 'absolute',
-              top: 0, left: 0, bottom: 0, right: 0,
-              paddingBottom: '33%'
-            }}
-          />
+      {!profileLoaded &&
+        <Skeleton variant='rect'
+          style={{
+            borderTopLeftRadius: 3,
+            borderTopRightRadius: 3,
+            position: 'absolute',
+            top: 0, left: 0, bottom: 0, right: 0,
+            paddingBottom: '33%'
+          }}
+        />
       }
       <CoverEditor
-        currentUserId={currentUserId} 
-        show={showAvatarEditor} 
+        currentUserId={currentUserId}
+        show={showAvatarEditor}
         setShow={setShowAvatarEditor}
       />
     </div>
@@ -283,136 +316,203 @@ const Profile = React.memo(props => {
       profileLoaded={profileLoaded}
     />
 
+  const renderMiniHeader = (
+    <div className={classes.miniHeaderWrapper} >
+      <div
+        ref={miniHeader}
+        className={cn(
+          classes.miniHeader,
+          showMiniHeader ? classes.miniHeaderVisible : classes.miniHeaderHidden
+        )}
+      >
+        <div className={classes.miniHeaderPicture}>
+          {miniProfilePicture}
+        </div>
+
+        {!!profile &&
+          <Typography variant='h6'>
+            {profile.firstName}&nbsp;{profile.lastName}
+          </Typography>
+        }
+        <div className={classes.miniHeaderBottomWrapper}>
+          <div
+            id='mini-header-bottom'
+            className={cn(
+              classes.miniHeaderBottom,
+              showMiniHeader
+                ? classes.miniHeaderBottomVisible
+                : classes.miniHeaderBottomHidden,
+            )}
+          />
+        </div>
+
+      </div>
+      {showMiniHeader &&
+        <div
+          className={classes.toProfileTop}
+          onClick={() => document.documentElement.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          })}
+        />
+      }
+    </div>
+  )
+
+  const contacts = []
+  if (profile) {
+    const length = profile.acceptedConnections.length >= 5
+      ? 5
+      : profile.acceptedConnections.length
+
+    for (let index = 0; index < length; index++) {
+      const conn = profile.acceptedConnections[index]
+      const contact = profile.id === conn.target.id
+        ? conn.initiator : conn.target
+
+      contacts.push({
+        id: contact.id,
+        firstName: contact.firstName,
+        lastName: contact.lastName,
+        picture: { src: contact.picture },
+        username: contact.username
+      })
+    }
+  }
+
+  const renderContactsAvatars = profileLoaded && profile.allAcceptedConnections > 0 && (
+    <div className={classes.contacts}>
+      <TypographyLink
+        to={`/i/${profile.username}/contacts`}
+        variant='subtitle1'
+      >
+        {t('Contacts')}:&nbsp;{profile.allAcceptedConnections}
+      </TypographyLink>
+
+      <div className={classes.contactsAvatars} >
+        <CustomAvatarGroup
+          usersData={contacts}
+          width={30}
+          total={profile.acceptedConnections.length}
+        />
+      </div>
+    </div>
+  )
+
+  const mainInfoAndCommunication = (
+    <Paper
+      ref={headerRef}
+      className={cn(classes.header, isOwnProfile ? classes.ownProfileHeader : '')}
+      style={{ zIndex: showMiniHeader ? 1 : 0 }}
+    >
+      <div
+        className={cn(
+          classes.avatarNameAndContacts,
+          showMiniHeader ? classes.headerBodyHidden : classes.headerBodyVisible
+        )}
+      >
+        <div className={classes.avatarSection}>
+          <div className={classes.avatarContainer} >
+            {profileLoaded ? avatar : avatarSkeleton}
+          </div>
+        </div>
+
+        <div className={classes.nameAndContacts}>
+          <div className={classes.name}>
+            {profileLoaded
+              ? <span>
+                {profile.firstName}&nbsp;{profile.lastName}
+              </span>
+              : <Skeleton variant='text' width={250} height={40} />
+            }
+          </div>
+
+          {profileLoaded
+            ?
+            renderContactsAvatars
+            :
+            <>
+              <Skeleton variant='text' width={150} height={20} />
+              <Skeleton variant='text' width={150} height={20} />
+            </>
+          }
+        </div>
+      </div>
+
+      <div
+        className={showMiniHeader
+          ? classes.headerBodyHidden : classes.headerBodyVisible
+        }
+      >
+        {editProfileButton}
+        {communication}
+      </div>
+
+      {renderMiniHeader}
+    </Paper>
+  )
+
   const profileHeader = (
     <Paper
       component='section'
       className={classes.headerRoot}
     >
-      { cover }
-
-      <div className={classes.header} >
-        <div className={classes.avatarSection}>
-          <div className={classes.avatarContainer} >
-            { profileLoaded ? avatar : avatarSkeleton }
-          </div>
-        </div>
-        
-        <div className={classes.nameAndContacts}>
-          <div className={ classes.name}>
-            { profileLoaded
-              ? <>
-                <Typography variant='h4' style={{ fontWeight: 500 }}>
-                  {profile.firstName}&nbsp;
-                </Typography>
-                <Typography variant='h4' style={{ fontWeight: 500 }}>
-                  {profile.lastName}
-                </Typography>
-              </>
-              : <Skeleton variant='text' width={250} height={40} />
-            }
-          </div>
-
-          { profileLoaded ?
-            <>
-              {profile.allAcceptedConnections > 0 &&
-                <TypographyLink
-                  to={`/i/${profile.username}/contacts`}
-                  variant='h6'
-                >
-                  {t('Contacts')}:&nbsp;{profile.allAcceptedConnections}
-                </TypographyLink>
-              }
-            </>
-            :
-            <><Skeleton variant='text' width={150} height={20} />
-            <Skeleton variant='text' width={150} height={20} /></>
-          }
-
-          { profileLoaded &&
-            <div style={{position: 'relative', zIndex: 0}} >
-            <AvatarGroup max={6}>
-              { profile.acceptedConnections.map(conn => {
-                const target = conn.target
-                let pictureSrc = conn.initiator.id === profile.id
-                  ? target.picture : conn.initiator.picture
-                let contactPicture = pictureSrc
-                let contactLink = `/i/${conn.initiator.id === profile.id
-                  ? target.username : conn.initiator.username}`
-
-                return <Avatar
-                  key={conn.id}
-                  component={NavLink}
-                  to={{
-                    state: {firstName: target.firstName, lastName: target.lastName},
-                    pathname: contactLink
-                  }} 
-                  sx={{ width: 56, height: 56 }}
-                  src={contactPicture}
-                />
-              })}
-            </AvatarGroup>
-            </div>
-          }
-        </div>
-
-        { !mobile &&
-          <>
-            {editProfileButton}
-            {communication}
-          </>
-        }
-      </div>
-
-      { mobile &&
-        <>
-          {editProfileButton}
-          {communication}
-        </>
-      }
+      {cover}
     </Paper>
   )
 
   const panelSkeleton = (
-    <div style={{ width: 300,  }}>
-      { [1,2,3,4].map(section => {
-        return <Paper key={section} style={{ padding:16, marginBottom: 16 }}>
-          <Skeleton variant='text' width={150} />
-          { [1,2,3,4].map(item => {
-            return <div key={item} style={{display: 'flex', marginTop: 8}}>
-              <Skeleton style={{marginRight: 16}} variant='circle' height={30} width={30} />
-              <Skeleton variant='text' height={20} width={150} />
-            </div>
-          })}
-        </Paper>
+    <div style={{ width: 300 }}>
+      {[1, 2, 3, 4].map(section => {
+        return (
+          <Paper key={section} style={{ padding: 16, marginBottom: 16 }}>
+            <Skeleton variant='text' width={150} />
+
+            {[1, 2, 3, 4].map(item => (
+              <div key={item} style={{ display: 'flex', marginTop: 8 }}>
+                <Skeleton
+                  style={{ marginRight: 16 }}
+                  variant='circle'
+                  height={30}
+                  width={30}
+                />
+                <Skeleton variant='text' height={20} width={150} />
+              </div>
+            ))}
+          </Paper>
+        )
       })}
     </div>
   )
-  // console.log(postsLoaded)
 
   const infoSection = <Info profile={profile} />
 
   const profileBody = (
-    <section className={ classes.profileBody } >
-      { mobile && 
-        <section style={{marginBottom: 16}}>
+    <section className={classes.profileBody} >
+      {mobile && mainInfoAndCommunication}
+
+      {mobile &&
+        <section style={{ marginBottom: 16 }}>
           {infoSection}
         </section>
       }
-      { mobile && preparedSmallPictures.length > 0 &&
-        <PhotosSectionMobile
+      {mobile && preparedSmallPictures.length > 0 &&
+        <MobilePhotosSection
           handlePhotoClick={openImageViewer}
           pictures={preparedSmallPictures}
           profileLoaded={profileLoaded}
         />
       }
-
-      <div ref={ wall } className={ classes.wall }  >
-        { isOwnProfile && profileLoaded &&
-          <Paper>
-            <PostForm onSubmit={ onPost } />
+      <div ref={wall} className={classes.wall}  >
+        {!mobile &&
+          mainInfoAndCommunication
+        }
+        {isOwnProfile && profileLoaded &&
+          <Paper className={classes.newPostWrapper}>
+            <PostForm onSubmit={onPost} />
           </Paper>
         }
-        { isOwnProfile && !profileLoaded &&
+        {!profileLoaded &&
           <Paper className={classes.postFormSkeleton} >
             <div className={classes.postFormSkeletonInput} >
               <Skeleton variant='text' width={200} />
@@ -421,42 +521,38 @@ const Profile = React.memo(props => {
             <Divider />
             <Skeleton
               variant='rect' width={150} height={40}
-              style={{ borderRadius: 3, marginLeft: 'auto', marginTop: 24}}
+              style={{ borderRadius: 3, marginLeft: 'auto', marginTop: 24 }}
             />
           </Paper>
         }
-        { !profile || !postsLoaded
-          ? postsSkeletonsList
-          : postsList
-        }
-        { !!profile && postsCount === 0 &&
+
+        <section className={classes.postsList}>
+          {!profile || !postsLoaded
+            ? postsSkeletonsList
+            : postsList
+          }
+        </section>
+
+        {!!profile && postsCount === 0 &&
           <Paper className={classes.noPosts} >
             <EmptyListStub
               imageSrc='/images/animals/elephant.png'
               containerWidth={150}
               containerHeight={150}
+              text={t('No posts yet')}
             />
-            <Typography variant='h6' >
-              {t('No posts yet')}
-            </Typography>
           </Paper>
         }
-        <div className={classes.loadMore} >
-          { postsLoaded && !!profile && !!postsCursor &&
-            <ButtonWithCircularProgress
-              onClick={handleLoadMorePosts}
-              enableProgress={morePostsLoading}
-              disabled={morePostsLoading}
-              variant='contained'
-              children={t('Load more')}
-            />
-          }
-        </div>
+        <LoadMore
+          ref={loadMore}
+          show={!!postsCursor}
+          showProgress={morePostsLoading || morePostsLoadingError}
+        />
       </div>
 
-      { !mobile &&
+      {!mobile &&
         <StickyPanel top={55} >
-          { profileLoaded ?
+          {profileLoaded ?
             <RightProfilePanel
               onPhotoClick={openImageViewer}
               pictures={preparedSmallPictures}
@@ -471,35 +567,6 @@ const Profile = React.memo(props => {
           }
         </StickyPanel>
       }
-
-      {/* <ModalGateway>
-        {viewerIsOpen ? (
-          <Modal onClose={closeLightbox}>
-            <Carousel
-              showArrows={true}
-              currentIndex={currentImageIndex}
-              views={preparedLargePictures}
-            />
-          </Modal>
-        ) : null}
-      </ModalGateway> */}
-      {/* <PhotoSlider 
-        images={preparedLargePictures}
-        visible={viewerIsOpen}
-        onClose={closeLightbox}
-        index={currentImageIndex}
-        onIndexChange={setCurrentImageIndex}
-      /> */}
-      {/* {isViewerOpen && <ImageViewer
-        src={forImageViewer}
-        currentIndex={currentImage}
-        onClose={closeImageViewer}
-        disableScroll={true}
-        backgroundStyle={{
-          backgroundColor: "rgba(26, 25, 25, 0.9)"
-        }}
-        closeOnClickOutside={true}
-      />} */}
       <CustomImageViewer
         show={showImageViewer}
         src={forImageViewer}
@@ -510,9 +577,9 @@ const Profile = React.memo(props => {
   )
 
   return (
-    <main className={classes.profile} >
-      { profileHeader }
-      { profileBody }
+    <main className={cn(classes.profile)} >
+      {profileHeader}
+      {profileBody}
     </main>
   )
 })
@@ -531,7 +598,8 @@ let mapStateToProps = state => {
 }
 
 let functions = {
-  change, deletePost, restorePost, addPhoto, addPostPhoto, removeNewPostPhoto, cleanNewPostPhotos
+  change, deletePost, restorePost, addPhoto, addPostPhoto,
+  removeNewPostPhoto, cleanNewPostPhotos
 }
 
 export default compose(

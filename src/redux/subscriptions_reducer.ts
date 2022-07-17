@@ -15,13 +15,20 @@ let initialState = {
   cursor: null as string | null
 }
 
-const subscriptionsReducer = (state: InitialStateType = initialState, action: any): InitialStateType => {
+const subscriptionsReducer = (
+  state: InitialStateType = initialState, action: any
+): InitialStateType => {
   switch (action.type) {
     case SET_SUBSCRIPTIONS:
-      return {...state, subscriptions: action.subscriptions, allCount: action.count, cursor: action.cursor}
+      return {
+        ...state, subscriptions: action.subscriptions,
+        allCount: action.count, cursor: action.cursor
+      }
     case SET_SUBSCRIPTION: {
       if(state.subscriptions) {
-        let subscription = state.subscriptions.find(sub => sub.id === action.subscriptionId)
+        let subscription = state.subscriptions.find(
+          sub => sub.id === action.subscriptionId
+        )
         if(subscription) {
           let index = state.subscriptions.indexOf(subscription)
           state.subscriptions[index] = action.subscription
@@ -43,7 +50,9 @@ const actions = {
   setSubscriptions: (subscriptions: Array<SubscriptionType>, count: number) => (
     { type: SET_SUBSCRIPTIONS, subscriptions, count} as const
   ),
-  setSubscription: (subscription: SubscriptionType | null) => ({type: SET_SUBSCRIPTION, subscription} as const)
+  setSubscription: (subscription: SubscriptionType | null) => ({
+    type: SET_SUBSCRIPTION, subscription
+  } as const)
 }
 
 export let createSubscription = (
@@ -107,10 +116,14 @@ export let getSubscription = (
   }
 }
 
-export let getSubscriptionsOfUser = (userId: string, count: number, cursor: string | null): ThunkType => {
+export let getSubscriptionsOfUser = (
+  userId: string, count: number, cursor: string | null
+): ThunkType => {
   return async (dispatch) => {
     
-    let response = await subscriptionAPI.getSubscriptionsfUser(userId, count, cursor)
+    let response = await subscriptionAPI.getSubscriptionsfUser(
+      userId, count, cursor
+    )
 
     if(response.status === HttpStatusCode.OK) {
       // const responseData = response.data

@@ -26,16 +26,15 @@ const CommonContact: React.FC<CommonContactPropsType> = React.memo((props: Commo
           className={classes.avatar}
           src={contactPicture}
         />
-        <div className={classes.grow}>
+        <div className='grow'>
           <div className={classes.nameAndMenu} >
             <Typography
               color='textPrimary'
               component={NavLink}
               to={contactLink}
               variant='body2'
-            >
-              <b>{ contactName }</b>
-            </Typography>
+              children={<b>{ contactName }</b>}
+            />
           </div>
         </div>
       </div>

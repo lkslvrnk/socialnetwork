@@ -18,10 +18,16 @@ let initialState = {
   incomingConnectionsCount: undefined as number | undefined,
 }
 
-const appReducer = (state: InitialStateType = initialState, action: any): InitialStateType => {
+const appReducer = (
+  state: InitialStateType = initialState, action: any
+): InitialStateType => {
   switch (action.type) {
     case SET_CONNECTIONS:
-      return {...state, connections: action.connections, allConnectionsCount: action.count}
+      return {
+        ...state,
+        connections: action.connections,
+        allConnectionsCount: action.count
+      }
     default:
       return state;
   }
@@ -31,10 +37,12 @@ const actions = {
   setConnections: (connections: Array<ConnectionType>, count: number) => (
     { type: SET_CONNECTIONS, connections, count} as const
   ),
-  addAcceptedConnections: (connections: Array<ConnectionType>, count: number) => (
+  addAcceptedConnections: (connections: Array<ConnectionType>) => (
     { type: ADD_ACCEPTED_CONNECTIONS, connections} as const
   ),
-  setAcceptedConnectionsCount: (count: number) => ({type: SET_ACCEPTED_CONNECTIONS_COUNT, count} as const)
+  setAcceptedConnectionsCount: (count: number) => ({
+    type: SET_ACCEPTED_CONNECTIONS_COUNT, count
+  } as const)
 }
 
 type InitialStateType = typeof initialState

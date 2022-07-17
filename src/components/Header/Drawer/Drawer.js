@@ -12,67 +12,38 @@ import MenuItem from '@material-ui/core/MenuItem'
 import FormControl from '@material-ui/core/FormControl'
 import Select from '@material-ui/core/Select'
 import LanguageIcon from '@material-ui/icons/Language'
-import { makeStyles } from '@material-ui/core/styles'
-import ViewStreamIcon from '@material-ui/icons/ViewStream'
-import SubscriptionsIcon from '@material-ui/icons/Subscriptions'
 import HomeIcon from '@material-ui/icons/Home'
-import PeopleIcon from '@material-ui/icons/People'
 import { useSelector } from 'react-redux'
 import { getCurrentUserUsername } from '../../../redux/auth_selectors';
-import RssFeedIcon from '@material-ui/icons/RssFeed';
-import DynamicFeedIcon from '@material-ui/icons/DynamicFeed';
 import { Badge } from '@material-ui/core'
 import ForumIcon from '@material-ui/icons/Forum';
-
-const useStyles = makeStyles((theme) => ({
-  formControl: {},
-  selectEmpty: {
-    marginTop: theme.spacing(2),
-  },
-  selectLanguage: {
-    // color: 'red',
-    '& .MuiSelect-select': {
-      // color: 'blue',
-      fontSize: theme.typography.body2.fontSize,
-      // border: '3px solid white'
-    }
-  }
-}));
+import PeopleIcon from '@material-ui/icons/People';
+import { useStyles } from './DrawerStyles'
 
 const Drawer = React.memo((
   {appearanceSwitcher, renderExitListItem, show, setShow, language, languages, onSetLanguage, currentUserId}
 ) => {
   const currentUserUsername = useSelector(getCurrentUserUsername)
-  const newRequestsCount = useSelector(state => state.auth.newRequestsCount)
   const { t } = useTranslation();
   const unreadChatsIds = useSelector(state => state.chats.unreadChatsIds)
-
+  const newRequestsCount = useSelector(state => state.auth.newRequestsCount)
   const classes = useStyles()
-  // console.log(classes)
-  const handleDrawerOpen = () => {
-    setShow(true);
-  };
 
-  const handleDrawerClose = () => {
-    setShow(false);
-  };
+  const handleDrawerOpen = () => setShow(true)
+  const handleDrawerClose = () => setShow(false);
 
   let navLinks = [
-    { key: 1, to: '', name: t('Feed'), icon: DynamicFeedIcon, count: 0  },
+    // { key: 1, to: '', name: t('Feed'), icon: DynamicFeedIcon, count: 0  },
     { key: 2, to: `i/${currentUserUsername}`, name: t('My profile'), icon: HomeIcon, count: 0  },
     { key: 3, to: `chats`, name: t('Chats'), icon: ForumIcon, count: unreadChatsIds.length },
     { key: 4, to: `i/${currentUserUsername}/contacts`, name: t('Contacts'), icon: PeopleIcon, count: newRequestsCount  },
-    { key: 5, to: `i/${currentUserUsername}/subscriptions`, name: t('Subscriptions'), icon: SubscriptionsIcon, count: 0  },
-    { key: 6, to: `i/${currentUserUsername}/subscribers`, name: t('Subscribers'), icon: RssFeedIcon, count: 0  },
+    // { key: 5, to: `i/${currentUserUsername}/subscriptions`, name: t('Subscriptions'), icon: SubscriptionsIcon, count: 0  },
+    // { key: 6, to: `i/${currentUserUsername}/subscribers`, name: t('Subscribers'), icon: RssFeedIcon, count: 0  },
   ]
 
   let linksList = navLinks.map(link => {
-    let path
-    if(link.to === 'profile') {
-      path = `/profile/${currentUserId}`
-    } else {
-      path = `/${link.to}`
-    }
+    let path = link.to === 'profile'
+      ? `/profile/${currentUserId}` : `/${link.to}`
 
     return (
       <React.Fragment key={link.key}>
@@ -132,10 +103,10 @@ const Drawer = React.memo((
       onClose={handleDrawerClose}
       onOpen={handleDrawerOpen}
     >          
-      <List dense style={{width: '200px'}}>
+      <List dense className={classes.items} >
         {linksList}
 
-        <div style={{height: '50px'}} />
+        <div style={{height: '20px'}} />
         <Divider />
         {appearanceSwitcher}
         <Divider />

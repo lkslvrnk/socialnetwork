@@ -2,23 +2,25 @@ import React, {useState, useEffect, useRef, useLayoutEffect } from 'react'
 import {  useDispatch, useSelector } from 'react-redux'
 import { useStyles } from './CommentsSectionStyles.js'
 import Comment from '../Comment/Comment.js'
-import NewComment from '../NewComment.js'
-import SimpleText from '../../Common/SimpleText.jsx'
-import { getCurrentUserData, getCurrentUserData2, getCurrentUserId, getCurrentUserPicture } from '../../../redux/auth_selectors'
+import NewComment from '../NewComment/NewComment.js'
+import {
+  getCurrentUserData, getCurrentUserId, getCurrentUserPicture
+} from '../../../redux/auth_selectors'
 import { getPostComments } from '../../../redux/profile_posts_selectors'
 import { useTranslation } from 'react-i18next'
-import { imagesStorage } from '../../../api/api'
-import { CircularProgress } from '@material-ui/core'
+import { CircularProgress, Typography } from '@material-ui/core'
 import {
   getComments,
   createComment
 } from '../../../redux/profile_posts_reducer'
-import { usePreviousProps } from '@mui/utils'
 import { usePrevious } from '../../../hooks/hooks';
 
 const CommentsSection = React.memo(props => {
 
-  const { postId, commentsCount, commentingIsDisabled, userIsAuthenticated, postCreatorId, place } = props
+  const {
+    postId, commentsCount, commentingIsDisabled,
+    userIsAuthenticated, postCreatorId, place
+  } = props
   const classes = useStyles()
   const { t } = useTranslation()
   const dispatch = useDispatch()
@@ -39,7 +41,8 @@ const CommentsSection = React.memo(props => {
     if(commentsCount && !comments.length) {
       dispatch(getComments(currentUserId, postId, null, 2, 'DESC', place))
     }
-  }, [commentsCount, comments.length, currentUserId, postId, dispatch])
+  }, [commentsCount, comments.length, currentUserId, postId, dispatch, place])
+
   const commentsLength = comments.length
 
   const commentsSectionRef = useRef(null)
@@ -53,9 +56,10 @@ const CommentsSection = React.memo(props => {
     if(newCommentAdded && prevHeight.current && currentHeight
        && currentHeight > prevHeight.current
     ) {
-      document.documentElement.scrollTop = document.documentElement.scrollTop + (currentHeight - prevHeight.current)
+      document.documentElement.scrollTop = document.documentElement.scrollTop
+        + (currentHeight - prevHeight.current)
     }
-  }, [commentsLength])
+  }, [commentsLength, comments, prevComments])
 
   useEffect(() => {
     prevHeight.current = commentsSectionRef.current?.getBoundingClientRect().height
@@ -94,7 +98,9 @@ const CommentsSection = React.memo(props => {
       className={classes.showMore}
       onClick={onShowMoreClick}
     >
-      <SimpleText>{t('Load previous')}</SimpleText>
+      <Typography variant='body2'>
+        {t('Load previous')}
+      </Typography>
       { showLoadMore &&
         <div style={{marginLeft: 8}} >
           <CircularProgress color='secondary' size={15} />
@@ -104,7 +110,7 @@ const CommentsSection = React.memo(props => {
   )
 
   const header = (
-    <div style={{display: 'flex', justifyContent: 'space-between', padding: '0 16px' }}>
+    <div className={classes.header}>
       { comments && commentsCount > comments.length && !commentsAreHidden &&
         renderShowMoreButton
       }
@@ -113,11 +119,12 @@ const CommentsSection = React.memo(props => {
 
   return (
     <div ref={commentsSectionRef} className={ classes.commentsSection } >
-      { commentsCount > 0 && header }
-
+      { commentsCount > 0 &&
+        header
+      }
       <div style={{ visibility: commentsAreHidden ? 'hidden' : 'visible' }}>
         { comments.length > 0 &&
-          reversed.map((comment, index) => {
+          reversed.map(comment => {
             return (
               <Comment
                 key={comment.id}
@@ -136,10 +143,12 @@ const CommentsSection = React.memo(props => {
           })
         }
 
-        { commentsCount > 0 && !comments.length
-          && <CircularProgress color='secondary' size={40} />
+        { commentsCount > 0 && !comments.length &&
+          <CircularProgress color='secondary' size={40} />
         }
-        { userIsAuthenticated && !commentingIsDisabled && renderNewCommentField } 
+        { userIsAuthenticated && !commentingIsDisabled &&
+          renderNewCommentField
+        } 
       </div>
 
   </div>

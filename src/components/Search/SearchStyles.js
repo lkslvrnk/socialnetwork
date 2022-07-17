@@ -3,31 +3,19 @@ import { alpha, makeStyles } from "@material-ui/core/styles";
 export const useStyles = makeStyles(theme => {
 
   return {
-    root: {
-      display: 'flex',
-    },
-    panel: {
-      '@media (max-width: 860px)': {
-        display: 'none',
-      },
-    },
-    search: {
-      flexGrow: 1,
-      marginRight: theme.spacing(2),
-      '@media (max-width: 860px)': {
-        marginRight: 0,
-      },
-      '& > div': {
-        marginBottom: theme.spacing(1),
-      },
+    search: {},
+    searchResults: {
+      marginTop: theme.spacing(1)
     },
     result: {
       padding: theme.spacing(1),
-      display: 'flex'
+      marginBottom: theme.spacing(1),
+      display: 'flex',
+      "&:last-child": {
+        marginBottom: "0",
+      }
     },
     avatar: {
-      // width: 80,
-      // height: 80,
       marginRight: 16
     },
     inputRoot: {
@@ -60,10 +48,21 @@ export const useStyles = makeStyles(theme => {
       justifyContent: 'center',
     },
     moreButtonContainer: {
-      position: 'relative'
+      marginTop: theme.spacing(1),
+      position: 'relative',
+      height: 40,
+      width: 40
     },
     moreButtonLoading: {
-      position: 'absolute', top: 0, right:0, left:0, bottom: 0, display: 'flex', justifyContent: 'center'
+      position: 'absolute',
+      inset: 0,
+      display: 'flex',
+      justifyContent: 'center',
+    },
+    loadMore: {
+      display: 'flex',
+      justifyContent: 'center'
     }
+
   }
 });

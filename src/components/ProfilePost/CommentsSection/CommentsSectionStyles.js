@@ -4,7 +4,11 @@ export const useStyles = makeStyles((theme) => ({
   commentsSection: {
     position: 'relative',
     paddingBottom: 8,
-    // border: '1px solid white'
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '0 16px'
   },
   stickyNewCommentFieldContainer: {
     padding: `0px 16px`,

@@ -7,8 +7,7 @@ import * as serviceWorker from './serviceWorker';
 import './i18n';
 import store from "./redux/redux_store"
 import App from './App';
-import { CircularProgress } from '@material-ui/core';
-import Initialization from './components/Common/Initialization';
+import Initialization from './components/Initialization/Initialization';
 
 
 ReactDOM.render(

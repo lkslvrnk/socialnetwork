@@ -11,10 +11,11 @@ let initialState = {
   cursor: null as string | null
 }
 
-const feedReducer = (state: InitialStateType = initialState, action: any): InitialStateType => {
+const feedReducer = (
+  state: InitialStateType = initialState, action: any
+): InitialStateType => {
   switch (action.type) {
     case SET_POSTS:
-      console.log(action)
       return {...state, posts: action.posts, cursor: action.cursor}
     default:
       return state;

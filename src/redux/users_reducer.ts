@@ -2,7 +2,9 @@ import { AxiosError } from 'axios'
 import { ThunkAction } from 'redux-thunk'
 import { connectionAPI } from '../api/connection_api'
 import { subscriptionAPI } from '../api/subscription_api'
-import { ConnectionType, ProfileType, SubscriptionType } from '../types/types'
+import {
+  ConnectionType, ProfileType, SubscriptionType
+} from '../types/types'
 import { AppStateType, InferActionsTypes } from './redux_store'
 
 const SET_USERS = 'users/SET-USERS'
@@ -19,7 +21,9 @@ let initialState = {
   totalCount: null as number | null
 }
 
-const usersReducer = (state: InitialStateType = initialState, action: ActionsType): InitialStateType => {
+const usersReducer = (
+  state: InitialStateType = initialState, action: ActionsType
+): InitialStateType => {
   switch (action.type) {
     case CLEAN: {
       return {
@@ -34,7 +38,10 @@ const usersReducer = (state: InitialStateType = initialState, action: ActionsTyp
     }
     case SET_USERS: {
       if(action.componentName === state.componentName) {
-        return {...state, users: action.users, totalCount: action.totalCount, cursor: action.cursor}
+        return {
+          ...state, users: action.users, totalCount: action.totalCount,
+          cursor: action.cursor
+        }
       }
       return {...state}
     }
@@ -50,7 +57,6 @@ const usersReducer = (state: InitialStateType = initialState, action: ActionsTyp
       return {...state}
     }
     case UPDATE_CONNECTION: {
-      console.log('UPDATE_CONNECTION')
       if(state.users) {
         let user = state.users.find(u => action.userId === u.id)
         if(user) {
@@ -86,10 +92,16 @@ export const actions = {
   clean: () => (
     { type: CLEAN } as const
   ),
-  setUsers: (users: Array<ProfileType>, totalCount: number | null, cursor: string | null, componentName: string) => (
+  setUsers: (
+    users: Array<ProfileType>, totalCount: number | null,
+    cursor: string | null, componentName: string
+  ) => (
     { type: SET_USERS, users, totalCount, cursor, componentName } as const
   ),
-  addUsers: (users: Array<ProfileType>, totalCount: number | null, cursor: string | null, componentName: string) => (
+  addUsers: (
+    users: Array<ProfileType>, totalCount: number | null,
+    cursor: string | null, componentName: string
+  ) => (
     { type: ADD_USERS, users, totalCount, cursor, componentName } as const
   ),
   updateConnection: (userId: string, connection: ConnectionType | null) => (
@@ -110,7 +122,9 @@ export let createConnection = (
       if(response.status === 201) {
         let getConnectionResponse = await connectionAPI.getConnection(response.data.id)
         if(getConnectionResponse.status === 200) {
-          dispatch(actions.updateConnection(userId, getConnectionResponse.data.connection))
+          dispatch(actions.updateConnection(
+            userId, getConnectionResponse.data.connection
+          ))
         }
       }
     }
@@ -119,9 +133,13 @@ export let createConnection = (
       if(error.response && error.response.status === 422) {
         let responseData = error.response.data
         if([22, 23, 24].includes(responseData.code)) {
-          let getConnectionResponse = await connectionAPI.getConnection(responseData.connection_id)
+          let getConnectionResponse = await connectionAPI.getConnection(
+            responseData.connection_id
+          )
           if(getConnectionResponse.status === 200) {
-            dispatch(actions.updateConnection(userId, getConnectionResponse.data.connection))
+            dispatch(actions.updateConnection(
+              userId, getConnectionResponse.data.connection
+            ))
           }
           else if(getConnectionResponse.status === 404) {
             dispatch(actions.updateConnection(userId, null))
@@ -129,8 +147,6 @@ export let createConnection = (
         }
       }
     }
-    console.log('before resolving')
-    return 'END AND RETURN!!!' // Эта функция СРАЗУ возвращает промис с состоянием pending, и после того как выполнение дойдёт до этой строки, этот промис будет resolved
   }
 }
 
@@ -144,9 +160,13 @@ export let createConnection2 = (
         try {
           let response = await connectionAPI.createConnection(userId, 0)
           if(response.status === 201) {
-            let getConnectionResponse = await connectionAPI.getConnection(response.data.id)
+            let getConnectionResponse = await connectionAPI.getConnection(
+              response.data.id
+            )
             if(getConnectionResponse.status === 200) {
-              dispatch(actions.updateConnection(userId, getConnectionResponse.data.connection))
+              dispatch(actions.updateConnection(
+                userId, getConnectionResponse.data.connection
+              ))
             }
           }
         }
@@ -155,9 +175,13 @@ export let createConnection2 = (
           if(error.response && error.response.status === 422) {
             let responseData = error.response.data
             if([22, 23, 24].includes(responseData.code)) {
-              let getConnectionResponse = await connectionAPI.getConnection(responseData.connection_id)
+              let getConnectionResponse = await connectionAPI.getConnection(
+                responseData.connection_id
+              )
               if(getConnectionResponse.status === 200) {
-                dispatch(actions.updateConnection(userId, getConnectionResponse.data.connection))
+                dispatch(actions.updateConnection(
+                  userId, getConnectionResponse.data.connection
+                ))
               }
               else if(getConnectionResponse.status === 404) {
                 dispatch(actions.updateConnection(userId, null))
@@ -222,7 +246,9 @@ export let createSubscription = (
       if(response.status === 201) {
         let getSubscriptionResponse = await subscriptionAPI.getSubscription(response.data.id)
         if(getSubscriptionResponse.status === 200) {
-          dispatch(actions.updateSubscription(userId, getSubscriptionResponse.data.subscription))
+          dispatch(actions.updateSubscription(
+            userId, getSubscriptionResponse.data.subscription
+          ))
         }
       }
     }
@@ -231,9 +257,13 @@ export let createSubscription = (
       if(error.response && error.response.status === 422) {
         let responseData = error.response.data
         if([33].includes(responseData.code)) {
-          let getSubscriptionResponse = await subscriptionAPI.getSubscription(responseData.subscription_id)
+          let getSubscriptionResponse = await subscriptionAPI.getSubscription(
+            responseData.subscription_id
+          )
           if(getSubscriptionResponse.status === 200) {
-            dispatch(actions.updateSubscription(userId, getSubscriptionResponse.data.subscription))
+            dispatch(actions.updateSubscription(
+              userId, getSubscriptionResponse.data.subscription
+            ))
           }
           else if(getSubscriptionResponse.status === 404) {
             dispatch(actions.updateSubscription(userId, null))
@@ -241,8 +271,6 @@ export let createSubscription = (
         }
       }
     }
-    console.log('before resolving')
-    return 'END AND RETURN!!!' // Эта функция СРАЗУ возвращает промис с состоянием pending, и после того как выполнение дойдёт до этой строки, этот промис будет resolved
   }
 }
 

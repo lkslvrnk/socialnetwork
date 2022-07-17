@@ -1,10 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom'
 import { ConnectionType, ContactType } from '../../types/types';
-import Preloader from '../Common/Preloader/Preloader';
-import { Button, Divider, Paper, Tab, Tabs, Typography } from '@material-ui/core';
+import { Divider, Paper, Tab, Tabs } from '@material-ui/core';
 import { useStyles } from './ConnectionsStyles';
 import ConnectionSkeleton from './ConnectionSkeleton';
 import AcceptedConnection from './AcceptedConnection';
@@ -116,10 +115,11 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
             imageSrc='/images/animals/dolphin.png'
             containerWidth={150}
             containerHeight={150}
+            text={isOwnProfile
+              ? t("You have no contacts")
+              : t("User has no contacts")
+            }
           />
-          <Typography variant='h6' >
-          { isOwnProfile ? t("You have no contacts") : t("User has no contacts")}
-          </Typography>
         </Paper>
       )
     )
@@ -127,8 +127,11 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
   else if(tabNumber === 1) {
     body = (
       !commonContacts
-      ? <div>{ skeleton }</div>
-      : ( commonContacts && commonContacts.length > 0 ?
+      ?
+      <div>{ skeleton }</div>
+      :
+        ( commonContacts && commonContacts.length > 0
+        ?
         commonContacts.map((contact, index) => {
           return <div key={contact.id}>
             <CommonContact contact={contact} />
@@ -141,10 +144,8 @@ const AcceptedConnections: React.FC<PropsType> = React.memo((props: PropsType) =
             imageSrc='/images/animals/dolphin.png'
             containerWidth={150}
             containerHeight={150}
+            text={t("There is no common contacts")}
           />
-          <Typography variant='h6' >
-            { t("There is no common contacts") }
-          </Typography>
         </Paper>
       )
     )

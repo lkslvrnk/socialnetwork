@@ -1,8 +1,6 @@
-import React, {useState, useEffect, useRef, useCallback} from 'react'
+import React, {useState, useEffect, useRef} from 'react'
 import CancelTwoToneIcon from '@material-ui/icons/CancelTwoTone'
-import { PhotoSlider } from 'react-photo-view'
 import { useStyles } from './SimplePhotoGalleryStyles'
-import ImageViewer from "react-simple-image-viewer";
 import { useImageViewer } from '../../hooks/hooks';
 import CustomImageViewer from './CustomImageViewer';
 
@@ -116,7 +114,7 @@ const SimplePhotoGallery = React.memo((props) => {
 
   let forOnePhoto = (photo) => {
     let galleryWidth = gallery.current.getBoundingClientRect().width
-    let galleryHeight = galleryWidth
+    // let galleryHeight = galleryWidth
     let photoHeight = photo.defaultHeight
     let photoWidth = photo.defaultWidth
 

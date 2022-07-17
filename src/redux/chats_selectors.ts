@@ -1,5 +1,4 @@
 import { ChatType } from '../types/chats_types'
-import { PostCommentType, ProfilePictureType, ProfileType, ReactionType } from '../types/types'
 import { AppStateType } from './redux_store'
 
 export const getPairChat = (user1Id: string, user2Id: string) => {

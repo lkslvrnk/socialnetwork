@@ -6,6 +6,7 @@ export const useStyles = makeStyles(theme => ({
     display: 'flex',
     justifyContent: 'center',
     marginTop: theme.spacing(8),
+    alignItems: 'flex-start'
   },
   form: {
     width: '100%'
@@ -22,8 +23,12 @@ export const useStyles = makeStyles(theme => ({
     },
   },
   error: {
+    padding: 8,
+    display: 'flex',
+    justifyContent: 'center',
     whiteSpace: 'wrap',
-    wordBreak: 'break-word'
+    wordBreak: 'break-word',
+    color: 'red'
   },
   submit: {
     margin: theme.spacing(3, 0, 2),

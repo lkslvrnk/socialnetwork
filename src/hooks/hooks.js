@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTheme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import { hideBodyYScrollbar, showBodyYScrollbar } from '../helper/helperFunctions';
 
-export let useWidth = function() {
+export let useWidth = function () {
   const theme = useTheme();
   const keys = [...theme.breakpoints.keys].reverse();
   return (
@@ -28,13 +28,17 @@ export let useTemp = (timestamp, period) => {
   const timeout = useRef(null)
 
   useEffect(() => {
-    if(timestamp) {
+    if (timestamp) {
       const now = Date.now()
       const difference = timestamp ? ((now - timestamp)) : 99999999
-      if(difference >= (period - 500)) {
+      if (difference >= (period - 500)) {
         return
       }
-      if(timeout.current) { /* Если собеседника снова пишет, то удаляем timeout, который где выполняется setInterlocutorIsTyping(false) */
+      if (timeout.current) {
+        /* 
+          Если собеседника снова пишет, то удаляем timeout,
+          который где выполняется setInterlocutorIsTyping(false)
+        */
         clearTimeout(timeout.current)
       }
       setValue(true)
@@ -64,4 +68,44 @@ export let useImageViewer = () => {
   }
 
   return [currentImage, isViewerOpen, openImageViewer, closeImageViewer]
+}
+
+/**
+ * Вызывает коллбек handleIntersection при пересечении элемента
+ * observableElementRef.current
+ *
+ * @param {boolean} initialized когда этот параметр === true, создаётся
+ * IntersectionObserver и начинается наблюдение за observableElementRef.current
+ * 
+ * @param {Function} handleIntersection коллбек, который нужно выполнить при
+ * пересечении observableElementRef.current
+ */
+export const useIntersection = (
+  initialized, handleIntersection, observableElementRef
+) => {
+
+  const handleIntersectionRef = useRef(handleIntersection)
+
+  useEffect(() => {
+    handleIntersectionRef.current = handleIntersection
+  }, [handleIntersection])
+
+  useEffect(() => {
+    if (initialized) {
+      var options = {
+        root: null, rootMargin: '0px', threshold: 0.1
+      }
+      var callback = function (entries) {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            handleIntersectionRef.current()
+          }
+        })
+      }
+      var observer = new IntersectionObserver(callback, options)
+      let observable = observableElementRef.current
+      if (observable) observer.observe(observable)
+      return () => observer.disconnect()
+    }
+  }, [initialized, observableElementRef]);
 }

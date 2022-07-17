@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom'
+import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ConnectionType, } from '../../types/types';
-import { Avatar, Badge, Button, CircularProgress, Typography } from '@material-ui/core';
+import { Badge, Typography } from '@material-ui/core';
 import { useStyles } from './ConnectionsStyles';
 import TypographyLink from '../Common/TypographyLink';
+import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress';
+import { checkRequests } from '../../redux/auth_reducer';
+import { AppStateType } from '../../redux/redux_store';
+import { useDispatch, useSelector } from 'react-redux';
+import { getCurrentUserId } from '../../redux/auth_selectors';
+import NavLinkAvatar from '../Common/NavLinkAvatar';
 
 type IncomingConnectionPropsType = {
   connection: ConnectionType
@@ -14,7 +19,7 @@ type IncomingConnectionPropsType = {
 }
 
 const IncomingConnection: React.FC<IncomingConnectionPropsType> = React.memo((props: IncomingConnectionPropsType) => {
-  const {connection, handleAccept, handleDelete, lastRequestsCheck} = props
+  const {connection, handleAccept, handleDelete} = props
   const { t } = useTranslation()
   const classes = useStyles()
 
@@ -25,13 +30,22 @@ const IncomingConnection: React.FC<IncomingConnectionPropsType> = React.memo((pr
 
   const [isAccepting, setIsAccepting] = useState<boolean>(false)
   const [isDeleting, setIsDeleting] = useState<boolean>(false)
+  const lastRequestsCheck2 = useSelector((state: AppStateType) => state.auth.lastRequestsCheck)
+  const lastRequestsCheckRef = useRef(lastRequestsCheck2)
+  const currentUserId: string | null = useSelector(getCurrentUserId)
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    if(currentUserId) {
+      dispatch(checkRequests(currentUserId))
+    }
+  }, [dispatch, currentUserId])
 
   const onAccept = async () => {
     setIsAccepting(true)
     try {
       await handleAccept(connection)
     } catch(err) {
-      // console.log('Connection не было подтверждено', err)
     } finally {
       setIsAccepting(false)
     }
@@ -42,21 +56,20 @@ const IncomingConnection: React.FC<IncomingConnectionPropsType> = React.memo((pr
     try {
       await handleDelete(connection, 'incoming')
     } catch(err) {
-      //console.log('Connection deleted', err)
     } finally {
       setIsDeleting(false)
     }
   }
 
-  let isNew = connection.createdAt > lastRequestsCheck
+  let isNew = connection.createdAt > lastRequestsCheckRef.current
 
   return (
     <div
-      className={ classes.connection }
+      className={classes.connection}
       key={connection.id}
     >
       <Badge
-        badgeContent={ isNew ? 'new' : 0 }
+        badgeContent={isNew ? 'new' : 0}
         color='primary'
         overlap="circular"
         anchorOrigin={{
@@ -64,39 +77,56 @@ const IncomingConnection: React.FC<IncomingConnectionPropsType> = React.memo((pr
           horizontal: 'left',
         }}
       >
-        <Avatar
-          component={NavLink}
-          to={userLink}
-          className={classes.avatar}
-          src={userPicture}
-        />
+        <div className={classes.avatar}>
+          <NavLinkAvatar
+            width={80}
+            picture={userPicture}
+            name={userFullName}
+            to={userLink}
+          />
+        </div>
       </Badge>
-      <div style={{flexGrow: 1}}>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <TypographyLink variant='body2' to={userLink} style={{marginBottom: 8}} children={<b>{ userFullName }</b>} />
+
+      <div className='grow'>
+        <div className={classes.nameAndMenu}>
+          <TypographyLink
+            variant='subtitle2'
+            to={userLink}
+            children={userFullName}
+          />
         </div>
 
         { connection.isAccepted &&
-          <Typography variant='body2' color='textSecondary'>{t('You are connected')}</Typography>
+          <Typography variant='body2' color='textSecondary'>
+            {t('You are connected')}
+          </Typography>
         }
         { connection.deleted &&
-          <Typography variant='body2' color='textSecondary'>{t('You rejected connection')}</Typography>
+          <Typography variant='body2' color='textSecondary'>
+            {t('You rejected connection')}
+          </Typography>
         }
-
         { !connection.isAccepted && !connection.deleted &&
-          <div style={{ display: 'flex' }}>
-            <div className={classes.buttonWrapper} style={{marginRight: 16}} >
-              <Button disabled={isAccepting} variant='contained' onClick={ onAccept } >
-                {t('Accept')}
-              </Button>
-              {isAccepting && <CircularProgress size={24} className={classes.buttonProgress} />}
+          <div className={classes.buttons}>
+            <div style={{marginRight: 16}} >
+              <ButtonWithCircularProgress
+                disableElevation
+                disabled={isAccepting}
+                variant='contained'
+                onClick={onAccept}
+                children={t('Accept')}
+                enableProgress={isAccepting}
+              />
             </div>
-
-            <div className={classes.buttonWrapper} >
-              <Button variant='contained' color='secondary' onClick={ onDelete } >
-                {t('Reject')}
-              </Button>
-              {isDeleting && <CircularProgress size={24} className={classes.buttonProgress} />}
+            <div>
+              <ButtonWithCircularProgress
+                disableElevation
+                variant='contained'
+                color='secondary'
+                onClick={onDelete}
+                children={t('Reject')}
+                enableProgress={isDeleting}
+              />
             </div>
           </div>
         }

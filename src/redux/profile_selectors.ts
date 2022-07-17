@@ -1,4 +1,6 @@
-import { PostCommentType, ProfilePictureType, ProfileType, ReactionType } from '../types/types'
+import {
+    PostCommentType, ProfilePictureType, ProfileType, ReactionType
+} from '../types/types'
 import { AppStateType } from './redux_store'
 
 export const getProfile = (state: AppStateType): ProfileType | null | undefined => {
@@ -22,12 +24,16 @@ export const getLoadedPhotosAlbumId = (state: AppStateType): string | null => {
     return 'kek'
 }
 
-export const getCurrentUserPostReaction = (state: AppStateType, postId: string): ReactionType | null => {
+export const getCurrentUserPostReaction = (
+    state: AppStateType, postId: string
+): ReactionType | null => {
     let post = state.profile.posts.filter(post => post.id === postId)[0]
     return post ? post.requesterReaction : null
 }
 
-export const getPostComments = (state: AppStateType, postId: string): PostCommentType[] => {
+export const getPostComments = (
+    state: AppStateType, postId: string
+): PostCommentType[] => {
     let post = state.profile.posts.find(post => post.id === postId)
     return post ? post.comments : []
 }

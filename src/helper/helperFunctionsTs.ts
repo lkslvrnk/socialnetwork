@@ -1,4 +1,6 @@
-export function elementsCollectionToSimpleArray<T>(elements: NodeListOf<Element>): Array<Element> {
+export function elementsCollectionToSimpleArray<T>(
+  elements: NodeListOf<Element>
+): Array<Element> {
   const simpleArray: Array<Element> = []
   elements.forEach(m => {
     simpleArray.push(m)

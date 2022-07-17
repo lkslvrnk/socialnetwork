@@ -2,8 +2,8 @@ import  axios from 'axios'
 import { ProfileType } from '../types/types';
 import Pusher from 'pusher-js'
 
-export const baseUrl = 'https://sn-back-api.herokuapp.com/v1'
-// export const baseUrl = 'http://localhost:8000/v1'
+// export const baseUrl = 'https://sn-back-api.herokuapp.com/v1'
+export const baseUrl = 'http://localhost:8000/v1'
 export const imagesStorage = `http://localhost:8000/images/forphotos/`
 
 Pusher.logToConsole = false;

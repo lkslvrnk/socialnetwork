@@ -1,9 +1,7 @@
 import React from "react";
 
 const calculateBoundingBoxes = children => {
-  // Вызов этого метода происходит в useEffect(), 
   const boundingBoxes = {};
-  // console.log(children)
 
   React.Children.forEach(children, child => {
     

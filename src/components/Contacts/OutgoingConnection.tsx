@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import { ConnectionType } from '../../types/types';
-import { Avatar, Typography } from '@material-ui/core';
+import { Typography } from '@material-ui/core';
 import { useStyles } from './ConnectionsStyles';
 import ButtonWithCircularProgress from '../Common/ButtonWithCircularProgress';
+import NavLinkAvatar from '../Common/NavLinkAvatar';
 
 type OutgoingConnectionPropsType = {
   connection: ConnectionType
@@ -32,28 +33,34 @@ const OutgoingConnection: React.FC<OutgoingConnectionPropsType> = React.memo((pr
 
   return (
     <div className={ classes.connection } key={connection.id} >
-      <Avatar
-        component={NavLink}
-        to={userLink}
-        className={classes.avatar}
-        src={userPicture}
-      />
+      <div className={classes.avatar}>
+        <NavLinkAvatar
+          width={80}
+          picture={userPicture}
+          name={userFullName}
+          to={userLink}
+        />
+      </div>
 
-      <div className={classes.grow} >
+      <div className='grow' >
         <div className={classes.nameAndMenu}>
           <Typography
             color='textPrimary'
             component={NavLink}
             to={userLink}
-            variant='body2'
-            children={<b>{ userFullName }</b>}
+            variant='subtitle2'
+            children={userFullName}
           />
         </div>
 
-        { connection.deleted ?
-          t('Request canceled')
+        { connection.deleted
+          ?
+          <Typography variant='body2'>
+            {t('Request canceled')}
+          </Typography>
           :
           <ButtonWithCircularProgress
+            disableElevation
             enableProgress={isDeleting}
             variant='contained'
             disabled={isDeleting}

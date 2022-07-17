@@ -2,7 +2,9 @@ import { makeStyles } from "@material-ui/core/styles";
 
 export const useStyles = makeStyles(theme => {
 
-  let smallHeaderQuery = `@media (max-width: ${500}px)`
+  let smallWidthQuery = `@media (max-width: 599px)`
+  const mediumWidthQuery = `@media (min-width: 600px)`
+  const largeWidthQuery = `@media (min-width: 861px)`
 
   return {
     profile: {
@@ -10,7 +12,7 @@ export const useStyles = makeStyles(theme => {
       position: "relative"
     },
     noPosts: {
-      padding: 16,
+      padding: theme.spacing(2),
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center'
@@ -20,49 +22,117 @@ export const useStyles = makeStyles(theme => {
     },
     headerRoot: {
       flexGrow: 1,
-      marginBottom: 16,
-      overflow: 'hidden'
-    },
-    header: {
-      position: 'relative',
-      minHeight: 180,
-      display: 'flex',
-      padding: 16,
-      [smallHeaderQuery]: {
-        flexDirection: 'column',
-        alignItems: 'center',
-        //justifyContent: ''
-      },
-    },
-    buttonsSection: {
-      flexGrow: 1,
-      alignSelf: 'end',
-      display: 'flex',
-      alignItems: 'end', 
-      flexDirection: 'column',
-      marginLeft: 'auto',
-      '& > div': {
-        marginTop: 8
-      },
-      '& div:first-child': {
-        marginTop: 0
+      overflow: 'hidden',
+      [largeWidthQuery]: {
+        marginBottom: theme.spacing(2),
       }
     },
-    buttonsSectionMobile: {
-      padding: 8,
-      display: 'flex',
-      //flexDirection: 'column',
-      // alignItems: 'center',
-      justifyContent: 'center',
-      flexWrap: 'wrap',
-      '& > *': {
-        marginRight: 8,
-        marginBottom: 8
+    header: {
+      [mediumWidthQuery]: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'scretch',
+        position: 'sticky',
+        top: -102,
+      },
+      [smallWidthQuery]: {
+        flexDirection: 'column',
+        alignItems: 'center',
+        position: 'relative',
+        top: '0px'
+      },
+      marginBottom: theme.spacing(2)
+    },
+    miniHeader: {
+      [mediumWidthQuery]: {
+        position: 'absolute',
+        bottom: 0,
+        right: 0,
+        left: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        background: theme.palette.grey[400]
+      },
+      [smallWidthQuery]: {
+        display: 'none'
       },
     },
-    buttonSkeleton: {
-      borderRadius: 3
+    miniHeaderPicture: {
+      marginLeft: 16,
+      marginRight: 16
     },
+    ownProfileHeader: {
+      [mediumWidthQuery]: {
+        top: -48
+      }
+    },
+    miniHeaderWrapper: {
+      position: 'relative',
+      // background: theme.palette.divider,
+      zIndex: 1
+    },
+    toProfileTop: {
+      position: 'absolute',
+      left: 0, right: 0, bottom: 0,
+      height: 60, cursor: 'pointer',
+    },
+    [mediumWidthQuery]: {
+      miniHeaderVisible: {
+        /* Когда этот класс применяется к элементу, то изменения height, opacity, background будут сделаны уже с учётом этого transition
+          То есть я делал неправильно, всего лишь нужно было ОДНОВРЕМЕННО изменять стили и ставить нужный transition для перехода к этим стилям.
+        */
+        transition: `opacity .2s .15s,height 0s 0s,background-color .15s`,
+        height: '60px',
+        opacity: 1,
+        // background: 'gray'
+      },
+      miniHeaderHidden: {
+        transition: `opacity .15s 0s,height .3s 0s,background-color .15s`,
+        height: '0px',
+        opacity: 0,
+        background: theme.palette.background.paper,
+      },
+      headerBodyHidden: {
+        transition: `opacity .15s 0s`,
+        opacity: 0,
+      },
+      headerBodyVisible: {
+        transition: `opacity .15s .15s`,
+        opacity: 1,
+      },
+      miniHeaderBottom: {
+        height: 3,
+        background: theme.palette.background.default,
+      },
+      miniHeaderBottomWrapper: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0, right: 0,
+        display: 'flex',
+        justifyContent: 'center',
+      },
+      miniHeaderBottomVisible: {
+        transition: 'width .3s .2s',
+        width: '100%'
+      },
+      miniHeaderBottomHidden: {
+        transition: 'width .3s 0s',
+        width: '0%'
+      },
+    },
+    avatarNameAndContacts: {
+      display: 'flex',
+      flexGrow: 1,
+      minHeight: 150,
+      [smallWidthQuery]: {
+        flexDirection: 'column',
+        alignItems: 'center',
+        minHeight: 'auto'
+      },
+    },
+
     profileInfoMobile: {
       marginBottom: theme.spacing(2)
     },
@@ -73,59 +143,97 @@ export const useStyles = makeStyles(theme => {
     avatarSection: {
       position: 'relative',
       marginLeft: 0,
-      marginRight: 16,
-      width: 150,
+      marginRight: 32,
+      // width: 150,
       '@media (min-width: 861px)': {
-        marginLeft: 16,
-        marginRight: 32,
-        width: 210,
+        // marginLeft: 16,
+        // marginRight: 16,
+        // width: 182,
+        // minHeight: 150,
       },
-      [smallHeaderQuery]: {
+      [smallWidthQuery]: {
         marginRight: 0
       },
       flexShrink: 0
     },
     avatarContainer: {
       userSelect: 'none',
-      position: 'absolute',
-      top: 0,
+      // position: 'absolute',
+      // top: 0,
       '@media (min-width: 861px)': {
-        top: -56,
+        // top: -26,
       },
-      [smallHeaderQuery]: {
+      border: `1px solid ${theme.palette.background.default}`,
+      borderRadius: 1000,
+      marginTop: 0,
+      marginLeft: 32,
+      marginBottom: 0,
+      [smallWidthQuery]: {
         flexDirection: 'column',
         alignItems: 'center',
         position: 'relative',
+        marginLeft: 0
       },
+      // marginRight: 32
     },
+    // avatarFrame: {
+    //   position: 'absolute',
+    //   width: 182,
+    //   height: 182,
+    //   background: theme.palette.type === 'dark' ? '#424242' : 'white',
+    //   borderRadius: '10em',
+    //   display: 'flex',
+    //   justifyContent: 'center',
+    //   alignItems: 'center'
+    // },
     nameAndContacts: {
-      [smallHeaderQuery]: {
+      marginTop: 32,
+      flexGrow: 1,
+      [smallWidthQuery]: {
         display: 'flex',
         flexDirection: 'column',
-        alignItems: 'center'
+        alignItems: 'center',
+        marginTop: 0
       },
+      // [largeWidthQuery]: {
+      //   display: 'flex',
+      //   flexDirection: 'column',
+      //   alignItems: 'center'
+      // }
     },
     name: {
       maxWidth: 300,
       display: 'flex',
       flexWrap: 'wrap',
-      [smallHeaderQuery]: {
-        marginTop: 16
+      [smallWidthQuery]: {
+        marginTop: 8,
       },
+      fontSize: '1.5625rem',
+      fontWeight: 500
+    },
+    contacts: {
+      display: 'flex',
+      // flexDirection: 'column',
+      alignItems: 'flex-start',
+      [smallWidthQuery]: {
+        display: 'flex',
+        // flexDirection: 'row',
+        // alignItems: 'center',
+        marginBottom: theme.spacing(1),
+        flexWrap: 'wrap'
+      },
+    },
+    contactsAvatars: {
+      [smallWidthQuery]: {
+        
+      },
+      position: 'relative',
+      zIndex: 0,
+      marginLeft: 8
     },
     avatarAndName: {
       textAlign: 'center',
       padding: theme.spacing(2),
-    },
-    avatarFrame: {
-      position: 'absolute',
-      width: 212,
-      height: 212,
-      background: theme.palette.type === 'dark' ? '#424242' : 'white',
-      borderRadius: '10em',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center'
     },
     skeletonBackground: {
       borderRadius: '10em',
@@ -158,20 +266,25 @@ export const useStyles = makeStyles(theme => {
     root: {
     },
     media: {
-      height: '256px'
+      height: theme.spacing(32)
     },
     wall: {
       flexGrow: 1,
       marginRight: 0,
       '@media (min-width: 861px)': {
-        marginRight: 16,
+        marginRight: theme.spacing(2),
       },
       width: '100%',
-      display: 'grid',
-      gridGap: '16px',
     },
+    postsList: {
+      display: 'grid',
+      gridGap: theme.spacing(2),
+    },
+    newPostWrapper: {
+      marginBottom: theme.spacing(2)
+    }, 
     newPostActions: {
-      margin: '0 8px'
+      margin: `0 ${theme.spacing(1)}px`
     },
     addMedia: {
       '& > *': {
@@ -181,21 +294,42 @@ export const useStyles = makeStyles(theme => {
     input: {
       display: 'none'
     },
+    photosMobileSection: {
+      padding: 0, marginBottom: 16
+    },
     photosMobile: {
       display: 'flex',
-      justifyContent: 'center',
+      // justifyContent: 'center',
       '& > div': {
-        marginRight: 8
+        marginRight: theme.spacing(1)
       },
       '& div:last-child': {
         marginRight: 0
       },
+      padding: '0 16px 16px 16px',
+    },
+    photo: {
+      flexShrink: 0,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      borderRadius: 4,
+      overflow: 'hidden',
+      cursor: 'pointer'
+    },
+    photoXS: {
+      width: '19%',
+      paddingBottom: '19%'
+    },
+    photoSM: {
+      width: '24%',
+      paddingBottom: '24%',
     },
     postFormSkeleton: {
-      padding: 8
+      padding: theme.spacing(1),
+      marginBottom: theme.spacing(2)
     },
     postFormSkeletonInput: {
-      marginBottom: 8,
+      marginBottom: theme.spacing(1),
       display: 'flex',
       justifyContent: 'space-between'
     },
@@ -206,10 +340,20 @@ export const useStyles = makeStyles(theme => {
       borderRadius: 100,
       background: theme.palette.background.paper,
       border: `2px solid ${theme.palette.divider}`,
+      position: 'absolute',
+      bottom: 5,
+      right: 5
     },
     resize: theme.typography.body2,
-    paper: {
-      minWidth: 300
-    }
+
+    profileNotFound: {
+      display: 'flex',
+      flexGrow: 1,
+      flexDirection: 'column',
+      padding: 16,
+      justifyContent: 'center',
+      alignItems: 'center',
+      textAlign: 'center'
+    },
   }
 })

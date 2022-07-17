@@ -41,7 +41,10 @@ let initialState = {
   totalPhotosCount: null as number | null
 }
 
-const photosReducer = (state: InitialStateType = initialState, action: ActionsType): InitialStateType => {
+const photosReducer = (
+  state: InitialStateType = initialState,
+  action: ActionsType
+): InitialStateType => {
   switch (action.type) {
     case SET_ALBUM:
       action.photos.forEach(photo => photo.src = `${baseUrl}/images/${photo.src}`)
@@ -49,7 +52,6 @@ const photosReducer = (state: InitialStateType = initialState, action: ActionsTy
     case SET_ALBUMS:
       return { ...state, albumsAreLoaded: true, albums: action.albums }
     case SET_NEW_PHOTO:
-      console.log(action.photo)
       action.photo.src = `${baseUrl}/images/${action.photo.src}`
       return { ...state, newPhotos: [...state.newPhotos, action.photo] }
     case CLEAN_NEW_PHOTOS:
@@ -65,7 +67,10 @@ const photosReducer = (state: InitialStateType = initialState, action: ActionsTy
         state.photos.push(photo)
       })
       
-      return { ...state, photosAreLoaded: true, photos: [...state.photos], totalPhotosCount: action.totalCount}
+      return {
+        ...state, photosAreLoaded: true, photos: [...state.photos],
+        totalPhotosCount: action.totalCount
+      }
     case SET_ALBUM_PHOTOS:
       action.photos.forEach(photo => photo.src = `${baseUrl}/images/${photo.src}`)
       return { ...state, albumPhotosAreLoaded: true, albumPhotos: action.photos }
@@ -81,15 +86,29 @@ const photosReducer = (state: InitialStateType = initialState, action: ActionsTy
 
 const actions = {
   cleanViewerPhotos: () => ({ type: CLEAN_VIEWER_PHOTOS } as const),
-  setAlbums: (albums: Array<AlbumType>) => ({ type: SET_ALBUMS, albums: albums } as const),
-  setPhotos: (photos: Array<PhotoType>, totalCount: number) => ({ type: SET_PHOTOS, photos: photos, totalCount: totalCount } as const),
-  setPhoto: (photo: PhotoType) => ({ type: SET_PHOTO, photo: photo } as const),
-  setAlbum: (album: AlbumType, photos: Array<PhotoType>) => ({ type: SET_ALBUM, album: album, photos: photos } as const),
-  setNewPhotoCreating: (value: boolean) => ({ type: SET_NEW_PHOTO_CREATING, value: value } as const),
+  setAlbums: (albums: Array<AlbumType>) => ({
+    type: SET_ALBUMS, albums: albums
+  } as const),
+  setPhotos: (photos: Array<PhotoType>, totalCount: number) => ({
+    type: SET_PHOTOS, photos, totalCount
+  } as const),
+  setPhoto: (photo: PhotoType) => ({ type: SET_PHOTO, photo } as const),
+  setAlbum: (album: AlbumType, photos: Array<PhotoType>) => ({
+    type: SET_ALBUM, album, photos
+  } as const),
+  setNewPhotoCreating: (value: boolean) => ({
+    type: SET_NEW_PHOTO_CREATING, value
+  } as const),
   cleanNewPhotos: () => ({ type: CLEAN_NEW_PHOTOS } as const),
-  setNewPhoto: (photo: PhotoType) => ({ type: SET_NEW_PHOTO, photo: photo } as const),
-  setAlbumPhotos: (photos: Array<PhotoType>) => ({ type: SET_ALBUM_PHOTOS, photos: photos } as const),
-  setViewerPhotos: (photos: Array<PhotoType>) => ({ type: SET_VIEWER_PHOTOS, photos: photos } as const)
+  setNewPhoto: (photo: PhotoType) => ({
+    type: SET_NEW_PHOTO, photo
+  } as const),
+  setAlbumPhotos: (photos: Array<PhotoType>) => ({
+    type: SET_ALBUM_PHOTOS, photos
+  } as const),
+  setViewerPhotos: (photos: Array<PhotoType>) => ({
+    type: SET_VIEWER_PHOTOS, photos
+  } as const)
 }
 
 export let cleanViewerPhotos = (): ThunkType => {
@@ -104,7 +123,9 @@ export let cleanNewPhotos = (): ThunkType => {
   }
 }
 
-export let addPhoto = (file: any, addCreator: string, albumID: string, options: any): ThunkType => {
+export let addPhoto = (
+  file: any, addCreator: string, albumID: string, options: any
+): ThunkType => {
   return async (dispatch) => {
     let response = await photosAPI.addPhoto(file, addCreator, albumID, options)
     
@@ -119,7 +140,9 @@ export let addPhoto = (file: any, addCreator: string, albumID: string, options: 
   }
 }
 
-export let getAlbums = (userId: string, limit: number | null = null, page: number | null = null): ThunkType => {
+export let getAlbums = (
+  userId: string, limit: number | null = null, page: number | null = null
+): ThunkType => {
   return async (dispatch) => {
     let response = await photosAPI.getAlbums(userId, page, limit)
     if(response.status === HttpStatusCode.OK) {
@@ -142,7 +165,9 @@ export let getAlbum = (albumID: string): ThunkType => {
   }
 }
 
-export let getProfilePhotosForViewer = (userId: string, limit: number | null = null, page: number | null = null): ThunkType => {
+export let getProfilePhotosForViewer = (
+  userId: string, limit: number | null = null, page: number | null = null
+): ThunkType => {
   return async (dispatch) => {
     let response = await photosAPI.getPhotos(userId, limit)
     if(response.status === HttpStatusCode.OK) {
@@ -162,9 +187,11 @@ export let getAlbumPhotos = (albumID: string): ThunkType => {
   }
 }
 
-export let getPhotos = (userId: string, limit: number | null = null, lastPhotoTimestamp: number | null = null): ThunkType => {
+export let getPhotos = (
+  userId: string, limit: number | null = null,
+  lastPhotoTimestamp: number | null = null
+): ThunkType => {
   return async (dispatch) => {
-    console.log('getPhotos in reducer')
     let response = await photosAPI.getPhotos(userId, limit, lastPhotoTimestamp)
     if(response.status === HttpStatusCode.OK) {
       dispatch(actions.setPhotos(response.data.items, response.data.totalCount));

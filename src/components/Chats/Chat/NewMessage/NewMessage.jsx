@@ -1,27 +1,25 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react'
-import {makeStyles} from "@material-ui/core/styles";
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import IconButton from '@material-ui/core/IconButton';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import SendIcon from '@material-ui/icons/Send';
 import { useTheme } from '@material-ui/core/styles'
-import {change} from 'redux-form'
-import {connect, useSelector} from 'react-redux'
-import {compose} from 'redux'
-import AttachFileIcon from '@material-ui/icons/AttachFile';
-import { Popper, Paper, MenuList, MenuItem, Grow, Collapse, Fade, Zoom, Tooltip, withWidth, TextField, CircularProgress, Divider, Typography } from '@material-ui/core';
-import PhotoCameraRoundedIcon from '@material-ui/icons/PhotoCameraRounded';
-import TheatersRoundedIcon from '@material-ui/icons/TheatersRounded';
-import AudiotrackRoundedIcon from '@material-ui/icons/AudiotrackRounded';
-import { debounce } from '../../../../helper/helperFunctions.js';
+import { TextField, Typography } from '@material-ui/core';
+// import AttachFileIcon from '@material-ui/icons/AttachFile';
+// import PhotoCameraRoundedIcon from '@material-ui/icons/PhotoCameraRounded';
+// import TheatersRoundedIcon from '@material-ui/icons/TheatersRounded';
+// import AudiotrackRoundedIcon from '@material-ui/icons/AudiotrackRounded';
 import { chatsAPI } from '../../../../api/chats_api';
 import removeEmptyLines from "remove-blank-lines"
-import {useStyles} from "./NewMessageStyles"
-import EmojiPicker from '../../../Common/EmojiPicker.jsx';
+import { useStyles } from "./NewMessageStyles"
 import SentimentSatisfiedRoundedIcon from '@material-ui/icons/SentimentSatisfiedRounded'
 import CloseIcon from '@material-ui/icons/Close';
 import { onRepliedOrEditedClick } from '../Chat';
+import EmojiPicker2 from '../../../Common/EmojiPicker2.jsx';
 
-const NewMessage = ({ isDisabled, onSubmit, isAcceptsMessages, chatId, isInitialized, editingMessage, closeEditMode, onEditSave, repliedMesage: repliedMessage, onCloseReplying }) => {
+const NewMessage = ({
+  isDisabled, onSubmit, isAcceptsMessages, chatId, isInitialized, editingMessage,
+  closeEditMode, onEditSave, repliedMesage: repliedMessage, onCloseReplying
+}) => {
   const theme = useTheme()
   let classes = useStyles()
   const { t } = useTranslation();
@@ -33,10 +31,11 @@ const NewMessage = ({ isDisabled, onSubmit, isAcceptsMessages, chatId, isInitial
   const typingTimeout = useRef(false) // Пока эта переменная === true, не оповещаем собеседника о том, что текущий пользователь что-то печатает
 
   const sendMessageIsTyping = useCallback(() => {
-    if(typingTimeout.current) {
-      return
+    if (typingTimeout.current) return
+  
+    if (chatId !== '-1') {
+      chatsAPI.typeMessage(chatId)
     }
-    if(chatId !== '-1') chatsAPI.typeMessage(chatId)
     typingTimeout.current = true
     setTimeout(() => {
       typingTimeout.current = false
@@ -44,7 +43,7 @@ const NewMessage = ({ isDisabled, onSubmit, isAcceptsMessages, chatId, isInitial
   }, [chatId])
 
   useEffect(() => {
-    if(editingMessage) {
+    if (editingMessage) {
       setText(editingMessage.text)
       setEditMode(true)
       textInput.current.focus()
@@ -54,7 +53,7 @@ const NewMessage = ({ isDisabled, onSubmit, isAcceptsMessages, chatId, isInitial
   }, [editingMessage])
 
   useEffect(() => {
-    if(repliedMessage) {
+    if (repliedMessage) {
       textInput.current.focus()
     }
   }, [repliedMessage])
@@ -64,13 +63,13 @@ const NewMessage = ({ isDisabled, onSubmit, isAcceptsMessages, chatId, isInitial
     setText(e.target.value)
     sendMessageIsTyping()
   }
-  const form = useRef(null)
-
   const focusTimeout = useRef(null)
 
   const onSendButtonClick = async (e) => {
-    if(!editMode) {
-      if(textInputInFocus.current) { // При нажатии на кнопку поле перестаёт быть в фокусе. Если до нажатия кнопки поле было в фокусе, нужно сфокусироваться на нём обратно
+    if (!editMode) {
+      if (textInputInFocus.current) {
+        // При нажатии на кнопку поле перестаёт быть в фокусе. Если до нажатия
+        // кнопки поле было в фокусе, нужно сфокусироваться на нём обратно
         clearTimeout(focusTimeout.current)
         textInput.current.focus()
       }
@@ -97,41 +96,38 @@ const NewMessage = ({ isDisabled, onSubmit, isAcceptsMessages, chatId, isInitial
   const [showEmojiPicker, setShowEmojiPicker] = React.useState(false);
   const emojiPickerPopperAnchor = useRef(null)
 
-  const onEmojiSelect = e => {
+  const handleEmojiSelect = e => {
     setText(prev => prev += e.native)
   }
 
-  const toggleEmojiPicker = () => setShowEmojiPicker((prev) => !prev);
-  const handleEmojiPickerClose = () => setShowEmojiPicker(false);
+  const handleToggleEmojiPicker = () => {
+    setShowEmojiPicker((prev) => !prev)
+  }
 
-  let emojiPopper = (
-    <div>
-      <Popper
-        open={showEmojiPicker}
-        anchorEl={emojiPickerPopperAnchor.current}
-        transition
-        modifiers={{ offset: { enabled: true, offset: '0, 10' } }}
-        style={{zIndex: 1}}
-      >
-        <EmojiPicker
-          show={true}
-          onSelect={onEmojiSelect}
-          onClose={handleEmojiPickerClose}
-        />
-      </Popper>
-    </div>
-  )
+  const handleEmojiPickerClose = () => {
+    setShowEmojiPicker(false)
+  }
 
   let pickEmoji = (
-    <div style={{marginRight: 8}}>
-      <SentimentSatisfiedRoundedIcon
-        onClick={toggleEmojiPicker}
-        color={showEmojiPicker ? 'action' : 'disabled'}
-        style={{cursor: 'pointer', display: 'block'}}
-        ref={emojiPickerPopperAnchor}
-      />
-      { emojiPopper }
-    </div>
+    <SentimentSatisfiedRoundedIcon
+      onClick={handleToggleEmojiPicker}
+      color={showEmojiPicker ? 'primary' : 'disabled'}
+      disabled={showEmojiPicker}
+      style={{ cursor: 'pointer', display: 'block' }}
+      ref={emojiPickerPopperAnchor}
+    />
+  )
+
+  let emojiPopper = (
+    <EmojiPicker2
+      isOpened={showEmojiPicker}
+      onSelect={handleEmojiSelect}
+      onClose={handleEmojiPickerClose}
+      button={pickEmoji}
+      buttonWrapperStyles={{
+        marginRight: 8
+      }}
+    />
   )
 
   // const [openAttachFileTooltip, setOpenAttachFileTooltip] = React.useState(false);
@@ -155,59 +151,77 @@ const NewMessage = ({ isDisabled, onSubmit, isAcceptsMessages, chatId, isInitial
   //   </IconButton>
   // )
 
-  const onEnterPress = (event) => {
+  const handleEnterPress = (event) => {
     if (event.key === 'Enter' && !event.shiftKey && !buttonIsDisabled) {
       event.preventDefault()
       onSendButtonClick()
     }
   }
 
-  const onEditingClick = () => {
-    if(editingMessage) {
+  const handleOnEditingMessageClick = () => {
+    if (editingMessage) {
       onRepliedOrEditedClick(editingMessage.id, theme.palette.divider)
     }
   }
 
-  
-  const onReplyingClick = () => {
-    if(repliedMessage) {
+
+  const handleOnReplyingMessageClick = () => {
+    if (repliedMessage) {
       onRepliedOrEditedClick(repliedMessage.id, theme.palette.divider)
     }
   }
 
-  const closeEditing = () => {
+  const handleDisableEditing = () => {
     closeEditMode()
     setEditMode(false)
   }
 
-  const closeReplying = () => {
+  const handleCloseReplying = () => {
     onCloseReplying()
   }
 
-  const trimmedText = text.trim() // Убираем пробелы и переносы, чтобы узнать есть ли в тексте, что-то кроме пробелов и переносов, если нет, то кнопка создания будет неактивна
+  const trimmedText = text.trim()
+  // Убираем пробелы и переносы, чтобы узнать есть ли в тексте, что-то кроме
+  // пробелов и переносов, если нет, то кнопка создания будет неактивна
+
+  const handleTextFieldFocus = e => {
+    textInputInFocus.current = true
+    e.currentTarget.setSelectionRange(
+      text.length,
+      text.length
+    )
+  }
+
+  const handleTextFieldBlur = e => {
+    focusTimeout.current = setTimeout(() => {
+      textInputInFocus.current = false
+    }, 150)
+    e.preventDefault()
+  }
+
   const buttonIsDisabled = isSaving || isDisabled || !trimmedText || !isInitialized
 
   return (
-    <div style={{
-      
-    }}>
-      { editMode && editingMessage &&
+    <div>
+      {editMode && editingMessage &&
         <div className={classes.editMessage}>
           <div
             className={classes.editMessageClose}
-            onClick={closeEditing}
+            onClick={handleDisableEditing}
           >
             <IconButton
               size='small'
-              children={<CloseIcon style={{display: 'block'}}/>}
+              children={
+                <CloseIcon style={{ display: 'block' }} />
+              }
             />
           </div>
           <div
             className={classes.editingMessageWrapper}
-            onClick={onEditingClick}
+            onClick={handleOnEditingMessageClick}
           >
-            <div className={classes.editBorder}/>
-            <div style={{maxWidth: '97%'}}>
+            <div className={classes.editBorder} />
+            <div style={{ maxWidth: '97%' }}>
               <Typography
                 className={classes.editHeader}
                 variant='subtitle2'
@@ -220,23 +234,24 @@ const NewMessage = ({ isDisabled, onSubmit, isAcceptsMessages, chatId, isInitial
           </div>
         </div>
       }
-      { repliedMessage &&
+
+      {repliedMessage &&
         <div className={classes.editMessage}>
           <div
             className={classes.editMessageClose}
-            onClick={closeReplying}
+            onClick={handleCloseReplying}
           >
             <IconButton
               size='small'
-              children={<CloseIcon style={{display: 'block'}}/>}
+              children={<CloseIcon style={{ display: 'block' }} />}
             />
           </div>
           <div
             className={classes.editingMessageWrapper}
-            onClick={onReplyingClick}
+            onClick={handleOnReplyingMessageClick}
           >
-            <div className={classes.editBorder}/>
-            <div style={{maxWidth: '97%'}}>
+            <div className={classes.editBorder} />
+            <div style={{ maxWidth: '97%' }}>
               <Typography
                 className={classes.editHeader}
                 variant='subtitle2'
@@ -249,77 +264,50 @@ const NewMessage = ({ isDisabled, onSubmit, isAcceptsMessages, chatId, isInitial
           </div>
         </div>
       }
-      <div style={{ width: '100%', display: 'flex', alignItems: 'end'}}>
+
+      <div className={classes.newMessageForm}>
         <div className={classes.fieldCont}>
           <div className={classes.appendix} >
-            <div/>
+            <div />
           </div>
+
           <TextField
             maxRows={6}
             inputRef={textInput}
-            onKeyPress={onEnterPress}
+            onKeyPress={handleEnterPress}
             size='small'
-            placeholder={ isInitialized ? t('New message') : '' }
+            placeholder={isInitialized ? t('New message') : ''}
             multiline
             fullWidth
-            value={ text }
-            onChange={ onTextChange }
+            value={text}
+            onChange={onTextChange}
             InputProps={{
               classes: {
                 input: classes.font,
                 underline: classes.underline,
                 root: classes.field
               },
-              style: {padding: 12},
-              startAdornment: pickEmoji
+              style: { padding: 12 },
+              startAdornment: emojiPopper
             }}
-            onFocus={ e => {
-              console.log('on focus')
-              textInputInFocus.current = true
-              e.currentTarget.setSelectionRange(
-                text.length,
-                text.length
-              )
-            }}
-            onBlur={e => {
-              focusTimeout.current = setTimeout(() => {
-                console.log()
-                textInputInFocus.current = false
-              }, 150)
-              e.preventDefault()
-            }}
+            onFocus={handleTextFieldFocus}
+            onBlur={handleTextFieldBlur}
           />
         </div>
-        <div className={classes.buttonWrapper}>
-          {isInitialized &&
-            <IconButton
-              size='medium'
-              color='secondary'
-              disabled={buttonIsDisabled}
-              onClick={onSendButtonClick}
-              children={<SendIcon />}
-            />
-          }
-          {/* { isDisabled && <CircularProgress style={{top: 0, left: 0, position: 'absolute'}}/> } */}
+
+        <div className={classes.sendButtonWrapper}>
+          <IconButton
+            size='medium'
+            color='secondary'
+            disabled={buttonIsDisabled}
+            onClick={onSendButtonClick}
+            children={<SendIcon />}
+          />
         </div>
+      </div>
     </div>
-  </div>
   )
 }
 
-
-// let mapStateToProps = state => {
-//   return {
-//   }
-// }
-
-// let functions = {
-//   change
-// }
-
 export default NewMessage
-// compose(
-//   connect(mapStateToProps, functions),
-//   withWidth()
-// )(NewMessage);
 

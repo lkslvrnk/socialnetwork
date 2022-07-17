@@ -11,23 +11,8 @@ import IconButton from "@material-ui/core/IconButton";
 import Divider from '@material-ui/core/Divider';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import Popover from '@material-ui/core/Popover';
-import {makeStyles} from "@material-ui/core/styles";
 import TranslateIcon from '@material-ui/icons/Translate';
-
-const useStyles = makeStyles(theme => ({
-  rightMenu: {
-    // minWidth: 250,
-    // width: 300
-  },
-  languageSelectorHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: 8,
-    "& > :first-child": {
-      marginRight: theme.spacing(1)
-    }
-  }
-}));
+import { useStyles } from './RightMenuStyles';
 
 const RightMenu = React.memo((
   {appearanceSwitcher, onSetLanguage, toggleRightMenu, renderExitListItem, languages, language, anchor}
@@ -42,7 +27,7 @@ const RightMenu = React.memo((
       
       <ListItem button onClick={() => setSection(1)}>
         <ListItemIcon><TranslateIcon /></ListItemIcon>
-        <ListItemText>
+        <ListItemText style={{whiteSpace: 'nowrap'}}>
           {t('Change language')}
         </ListItemText>
       </ListItem>
@@ -54,14 +39,13 @@ const RightMenu = React.memo((
   const renderLanguageSelector = (
     <Fragment>
       <RightMenuHeader>
-        <div className={classes.languageSelectorHeader} style={{}}>
+        <div className={classes.languageSelectorHeader}>
           <IconButton
             size='small'
             onClick={() => setSection(0)}
-          >
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography>
+            children={<ArrowBackIcon />}
+          />
+          <Typography variant='body2'>
             {t('Change language')}
           </Typography>
         </div>
@@ -69,20 +53,19 @@ const RightMenu = React.memo((
 
       <Divider />
       <List dense style={{paddingTop: 0}}>
-      {languages.map(item => {
-        return (
-          <ListItem
-            key={item.short}
-            button onClick={() => onSetLanguage(item.short)}
-            selected={language === item.short}
-            dense
-          >
-            <ListItemText>
-              <Typography>{item.name}</Typography>
-            </ListItemText>
 
-          </ListItem>
-        )})}
+      {languages.map(item => (
+        <ListItem
+          key={item.short}
+          button onClick={() => onSetLanguage(item.short)}
+          selected={language === item.short}
+          dense
+        >
+          <ListItemText>
+            {item.name}
+          </ListItemText>
+        </ListItem>
+      ))}
       </List>
     </Fragment>
   )

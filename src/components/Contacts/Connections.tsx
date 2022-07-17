@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useReducer } from 'react';
-import { NavLink, Redirect, useLocation } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
-import { getCurrentUserId } from '../../redux/auth_selectors';
+import { getCurrentUserId, selectNewRequestsCount } from '../../redux/auth_selectors';
 import { getCurrentUserUsername } from '../../redux/auth_selectors';
-import { ConnectionType, ContactType, ProfileType } from '../../types/types';
-import { Avatar, ClickAwayListener, FormControl, InputLabel, List, ListItem, ListItemText, MenuItem, MenuList, Paper, Popper, Select, Typography, useMediaQuery } from '@material-ui/core';
-import { imagesStorage } from '../../api/api';
+import { ConnectionType } from '../../types/types';
+import {
+  Avatar, FormControl, List, ListItem, ListItemText,
+  MenuItem, Paper, Select, Typography, useMediaQuery
+} from '@material-ui/core';
 import { Skeleton } from '@material-ui/lab';
 import { connectionAPI } from '../../api/connection_api'
 import StickyPanel from '../Common/StickyPanel';
@@ -15,13 +17,14 @@ import { useStyles } from './ConnectionsStyles';
 import AcceptedConnections from './AcceptedConnections'
 import PendingConnections from './PendingConnections'
 import { profileAPI } from '../../api/profile_api'
-import { AppStateType } from '../../redux/redux_store';
 import { withRedirectToLogin } from '../../hoc/withRedirectToLogin';
 import { compose } from 'redux';
 import ProfileNotFound from '../Common/ProfileNotFound';
-import {initialState, actions, reducer, SET_ACCEPTED_CONNS, ADD_OUTGOING_CONNS, SET_INCOMING_CONNS, ADD_INCOMING_CONNS, DELETE_ACCEPTED, DELETE_INCOMING, DELETE_OUTGOING, ACCEPT, ADD_ACCEPTED_CONNS} from './reducer'
+import {
+  initialState, actions, reducer, SET_ACCEPTED_CONNS, ADD_OUTGOING_CONNS, SET_INCOMING_CONNS, ADD_INCOMING_CONNS,
+  DELETE_ACCEPTED, DELETE_INCOMING, DELETE_OUTGOING, ACCEPT, ADD_ACCEPTED_CONNS
+} from './reducer'
 import { usePrevious } from '../../hooks/hooks_ts';
-
 
 const Connections: React.FC = React.memo((props) => {
   const classes = useStyles();
@@ -48,7 +51,7 @@ const Connections: React.FC = React.memo((props) => {
   const currentUserId: string | null = useSelector(getCurrentUserId)
   const currentUserUsername: string | null = useSelector(getCurrentUserUsername)
   const isOwnProfile = currentUserUsername === usernameFromParams
-  const newRequestsCount = useSelector((state: AppStateType) => state.auth.newRequestsCount)
+  const newRequestsCount = useSelector(selectNewRequestsCount)
   const prevOwnerUsername = usePrevious(usernameFromParams)
 
   useEffect(() => {
@@ -70,11 +73,8 @@ const Connections: React.FC = React.memo((props) => {
     }
   }, [])
 
-  const prevOwner = usePrevious<ProfileType | null>(state.owner)
-
   useEffect(() => { // Полноценно выполняется после загрузки владельца
     (async function() {
-      // console.log(state.owner)
       if(state.owner) {
         if(sectionNumber === 0) {
           getAccepted(SET_ACCEPTED_CONNS, state.owner.username, 8, null)
@@ -91,8 +91,6 @@ const Connections: React.FC = React.memo((props) => {
     })()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.owner])
-
-  const prevSectionNumber = usePrevious<number>(sectionNumber)
 
   useEffect(() => {
     if(!currentUserId || !state.owner) {
@@ -121,7 +119,9 @@ const Connections: React.FC = React.memo((props) => {
   }
 
   const getCommonContacts = async (cursor: string | null, count: number | null) => {
-    let response = await connectionAPI.getUserContacts(usernameFromParams, currentUserUsername, cursor, count)
+    let response = await connectionAPI.getUserContacts(
+        usernameFromParams, currentUserUsername, cursor, count
+      )
     if(response.status === 200) {
       let data = response.data
       dispatch(actions.setCommonContacts(data.items, data.count, data.cursor))
@@ -129,7 +129,9 @@ const Connections: React.FC = React.memo((props) => {
   }
 
   const getMoreCommonContacts = async (cursor: string, count: number | null) => {
-    let response = await connectionAPI.getUserContacts(usernameFromParams, currentUserUsername, cursor, count)
+    let response = await connectionAPI.getUserContacts(
+        usernameFromParams, currentUserUsername, cursor, count
+      )
     if(response.status === 200) {
       let data = response.data
       dispatch(actions.addCommonContacts(data.items, data.count, data.cursor))
@@ -142,22 +144,34 @@ const Connections: React.FC = React.memo((props) => {
     count: number | null,
     cursor: string | null
   ) => {
-    let response = await connectionAPI.getConnectionsOfUser(ownerUsername, count, cursor, null, false, true, null)
+    let response = await connectionAPI.getConnectionsOfUser(
+      ownerUsername, count, cursor, null, false, true, null
+    )
     if(response.status === 200) {
-      dispatch({type: actionType, connections: response.data.connections, allCount: response.data.allCount, cursor: response.data.cursor, ownerUsername: usernameFromParams })
+      dispatch({
+        type: actionType, connections: response.data.connections,
+        allCount: response.data.allCount, cursor: response.data.cursor,
+        ownerUsername: usernameFromParams
+      })
     }
   }
 
   const getOutgoing = async () => {
-    let response = await connectionAPI.getConnectionsOfUser(usernameFromParams, 10, null, 'outgoing', true, false, null)
+    let response = await connectionAPI.getConnectionsOfUser(
+      usernameFromParams, 10, null, 'outgoing', true, false, null
+    )
     if(response.status === 200) {
       let responseData = response.data
-      dispatch(actions.setOutgoingConnections(responseData.connections, responseData.allCount, responseData.cursor))
+      dispatch(actions.setOutgoingConnections(
+        responseData.connections, responseData.allCount, responseData.cursor
+      ))
     }
   }
 
   const getMoreOutgoing = async () => {
-    let response = await connectionAPI.getConnectionsOfUser(usernameFromParams, 10, state.outgoingCursor, 'outgoing', true, false, null)
+    let response = await connectionAPI.getConnectionsOfUser(
+      usernameFromParams, 10, state.outgoingCursor, 'outgoing', true, false, null
+    )
     if(response.status === 200) {
       let responseData = response.data
       dispatch({
@@ -170,7 +184,9 @@ const Connections: React.FC = React.memo((props) => {
   }
 
   const getIncoming = async () => {
-    let response = await connectionAPI.getConnectionsOfUser(usernameFromParams, 10, null, 'incoming', true, false, null)
+    let response = await connectionAPI.getConnectionsOfUser(
+      usernameFromParams, 10, null, 'incoming', true, false, null
+    )
     if(response.status === 200) {
       dispatch({
         type: SET_INCOMING_CONNS,
@@ -182,7 +198,9 @@ const Connections: React.FC = React.memo((props) => {
   }
 
   const getMoreIncoming = async () => {
-    let response = await connectionAPI.getConnectionsOfUser(usernameFromParams, 10, state.incomingCursor, 'incoming', true, false, null)
+    let response = await connectionAPI.getConnectionsOfUser(
+      usernameFromParams, 10, state.incomingCursor, 'incoming', true, false, null
+    )
     if(response.status === 200) {
       dispatch({
         type: ADD_INCOMING_CONNS,
@@ -192,7 +210,6 @@ const Connections: React.FC = React.memo((props) => {
       })
     }
   }
-
 
   const deleteAccepted = async (connection: ConnectionType, type: string) => {
     let response = await connectionAPI.deleteConnection(connection.id)
@@ -237,7 +254,6 @@ const Connections: React.FC = React.memo((props) => {
   }
   
   let body = null
-  let mobileNavSectionName = 'Contacts'
 
   if(sectionNumber === 0) {
     body = (
@@ -256,8 +272,7 @@ const Connections: React.FC = React.memo((props) => {
       />
     )
   }
-  else if(sectionNumber === 1 || sectionNumber === 2 && isOwnProfile) {
-    mobileNavSectionName = 'Requests'
+  else if(((sectionNumber === 1) || (sectionNumber === 2)) && isOwnProfile) {
     body = (
       <PendingConnections
         outgoing={ state.outgoingConns }
@@ -278,20 +293,21 @@ const Connections: React.FC = React.memo((props) => {
 
   const ownerInfo = ( !isOwnProfile &&
     <div className={classes.ownerInfo} >
-    { !!state.owner ?
+    { !!state.owner
+      ?
       <>
         <Avatar
           component={NavLink}
           to={`/i/${state.owner.username}`}
-          src={`${state.owner.picture ? state.owner.picture.versions.small : null}`}
-          style={{ width: 48, height: 48 }}
+          src={`${state.owner.picture
+            ? state.owner.picture.versions.small
+            : null}`
+          }
+          className={classes.ownerAvatar}
         />
         <NavLink
           to={`/i/${state.owner.username}`}
-          style={{
-            display: 'flex',
-            flexDirection: 'column'
-          }}
+          className={classes.toProfile}
         >
           <Typography
             component='span'
@@ -299,79 +315,77 @@ const Connections: React.FC = React.memo((props) => {
             variant='body1'
             color='textPrimary'
           >
-            { `${state.owner.firstName} ${state.owner.lastName}` }
+            {`${state.owner.firstName} ${state.owner.lastName}`}
           </Typography>
           <Typography
             style={{marginLeft: 16}}
             variant='caption'
             color='textSecondary'
           >
-            { t('To profile') }
+            {t('To profile')}
           </Typography>
         </NavLink>
       </>
       : 
       <>
         <Skeleton variant='circle' width={48} height={48} />
-        <Skeleton variant='text' width={100} height={20} style={{marginLeft: 16}} />
+        <Skeleton
+          variant='text' width={100} height={20}
+          style={{marginLeft: 16}}
+        />
       </>
     }
     </div>
   )
 
-  
-
   const mobileConnectionsNav = (
     <Paper component='nav' className={classes.topNav} >
-      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center',}} >
-        <div style={{padding: 8}}>
-          <FormControl >
-            <Select
-              labelId="demo-simple-select-label"
-              id="demo-simple-select"
-              value={sectionNumber === 0 ? 0 : 1}
-              MenuProps={{ disableScrollLock: true }}
-            >
-              <MenuItem value={0} style={{padding: 0}}>
+      <div style={{padding: 8}}>
+        <FormControl >
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={sectionNumber === 0 ? 0 : 1}
+            MenuProps={{ disableScrollLock: true }}
+          >
+            <MenuItem value={0} className={classes.navMenuItem}>
+              <Typography
+                className={classes.selectItemText}
+                color='textPrimary'
+                component={NavLink}
+                to={`/i/${usernameFromParams}/contacts`}
+                children={'Contacts'}
+              />
+            </MenuItem>
+            { isOwnProfile &&
+              <MenuItem value={1} className={classes.navMenuItem}>
                 <Typography
-                style={{padding: 8, width: '100%'}}
+                  className={classes.selectItemText}
                   color='textPrimary'
                   component={NavLink}
-                  to={`/i/${usernameFromParams}/contacts`}
-                  children={'Contacts'}
+                  to={`/i/${usernameFromParams}/contacts?section=incoming`}
+                  children={'Requests'}
                 />
               </MenuItem>
-              { isOwnProfile &&
-                <MenuItem value={1} style={{padding: 0}} >
-                  <Typography
-                    style={{padding: 8, width: '100%'}}
-                    color='textPrimary'
-                    component={NavLink}
-                    to={`/i/${usernameFromParams}/contacts?section=incoming`}
-                    children={'Requests'}
-                  />
-                  
-                </MenuItem>
-              }
-            </Select>
-          </FormControl>
-        </div>
-        {ownerInfo}
+            }
+          </Select>
+        </FormControl>
       </div>
+      {ownerInfo}
     </Paper>
   )
 
   return (
-    <div style={{display: 'flex'}}>
+    <div className={'content'}>
 
-      <main style={{ flexGrow: 1,}} >
+      <main className={'main-content'} >
         { mobile && mobileConnectionsNav }
         { body }
       </main>
 
-      <aside className={classes.rightPanel}>
+      <aside className={'aside-content'}>
         <StickyPanel top={55}  >
-          <Paper style={{width: 300}}>
+          <Paper>
             { ownerInfo }
 
             <List dense component="nav" >
@@ -380,14 +394,17 @@ const Connections: React.FC = React.memo((props) => {
                 selected={sectionNumber === 0}
                 component={NavLink} to={`/i/${usernameFromParams}/contacts`}
               >
-                <ListItemText primary={t(`${ isOwnProfile ? 'Contacts' : "User's contacts"}`)} />
+                <ListItemText
+                  primary={t(`${ isOwnProfile ? 'Contacts' : "User's contacts"}`)}
+                />
               </ListItem>
 
               { isOwnProfile &&
                 <ListItem
                   button
-                  selected={sectionNumber === 1}
-                  component={NavLink} to={`/i/${usernameFromParams}/contacts?section=incoming`}
+                  selected={sectionNumber === 1 || sectionNumber === 2}
+                  component={NavLink}
+                  to={`/i/${usernameFromParams}/contacts?section=incoming`}
                 >
                   <ListItemText primary={t('Requests')} />
                   { newRequestsCount > 0 &&

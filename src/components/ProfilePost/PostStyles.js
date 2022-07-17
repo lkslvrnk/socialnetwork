@@ -48,7 +48,11 @@ export const useStyles = makeStyles((theme) => ({
     display: 'block'
   },
   menuItemPreloader: {
-    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', justifyContent: 'center', alignItems: 'center'
+    position: 'absolute',
+    inset: 0,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   postActionsButtons: {
     fontSize: '24px' 
@@ -92,9 +96,6 @@ export const useStyles = makeStyles((theme) => ({
     display: 'flex',
     alignItems: 'center',
     height: 21
-  },
-  postCommentsInfo: {
-
   },
   postDivider: {
     padding: '0 16px'
@@ -151,5 +152,14 @@ export const useStyles = makeStyles((theme) => ({
   },
   hide: {
     display: 'none'
+  },
+  restoreError: {
+    color: 'red'
+  },
+  deleted: {
+    overflow: 'hidden'
+  },
+  deletedPostInfo: {
+    padding: 16
   }
 }))

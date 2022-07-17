@@ -67,12 +67,10 @@ export const authAPI = {
   },
   setJWT() {
     if(localStorage.getItem("JWT")) {
-      // console.log('setJWT')
       axiosInstance.defaults.headers.common.Authorization = `bearer ${localStorage.getItem("JWT")}`;
     }
   },
   removeJWT() {
-    // console.log('removeJwt')
     localStorage.removeItem("JWT")
   }
 }
