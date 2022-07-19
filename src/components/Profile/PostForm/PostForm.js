@@ -171,6 +171,7 @@ const PostForm = props => {
           <IconButton
             size='small'
             onClick={(e) => setPostSettingsAnchor(e.currentTarget)}
+            disabled={isSubmitting}
           >
             <SettingsIcon style={{ display: 'block' }} />
           </IconButton>
@@ -228,7 +229,14 @@ const PostForm = props => {
 
   const onEmojiSelect = e => setPostText(prev => prev += e.native)
   const handleOnChange = (e) => setPostText(e.target.value)
-  const toggleEmojiPicker = () => setShowEmojiPicker((prev) => !prev)
+  const toggleEmojiPicker = () => {
+    setShowEmojiPicker((prev) => {
+      if(isSubmitting) {
+        return false
+      }
+      return !prev
+    })
+  }
   const handleEmojiPickerClose = () => setShowEmojiPicker(false)
 
   let renderPickEmoji = (
@@ -261,6 +269,7 @@ const PostForm = props => {
     <div>
       <div className={classes.textFieldWrapper} >
         <TextField
+          disabled={isSubmitting}
           size='small'
           placeholder={!editMode ? t('New post') : ''}
           multiline
@@ -324,9 +333,13 @@ const PostForm = props => {
               size='small'
               style={{ marginRight: 16 }}
               onClick={openImageExplorer}
+              disabled={isSubmitting}
             >
               <AddAPhotoIcon
-                color={photoUploadError ? 'error' : 'action'}
+                color={photoUploadError
+                  ? 'error'
+                  : isSubmitting ? 'disabled' : 'action'
+                }
               />
             </IconButton>
           </div>

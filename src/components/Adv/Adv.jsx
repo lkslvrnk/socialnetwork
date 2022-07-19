@@ -18,9 +18,9 @@ function Adv(props) {
         {t('Advertising')}
       </Typography>
 
-      <NavLink to='/kek' >
+      <NavLink to='/kek' style={{display: 'flex', justifyContent: 'center'}}>
         <img
-          style={{width: '100%'}}
+          style={props.imageStyles}
           src={props.imageSrc}
           alt='adversting'
         />

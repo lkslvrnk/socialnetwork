@@ -56,7 +56,10 @@ const Feed = React.memo( props => {
   
   const panel = <aside className={'aside-content'}>
     <StickyPanel top={55}>
-      <Adv imageSrc={'/images/rekl/111.png'} />
+      <Adv
+        imageSrc={'/images/animals/panda.png'}
+        imageStyles={{width: '70%'}}
+      />
     </StickyPanel>
   </aside>
 

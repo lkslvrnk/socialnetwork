@@ -397,7 +397,10 @@ const Chats = React.memo((props) => {
           {!mobile && !chatIsOpen &&
             <div className={'aside-content'}>
               <StickyPanel top={55} >
-                <Adv imageSrc={'/images/rekl/222.jpeg'} />
+                <Adv
+                  imageSrc={'/images/animals/hippopotamus.png'}
+                  imageStyles={{width: '70%'}}
+                />
               </StickyPanel>
             </div>
           }

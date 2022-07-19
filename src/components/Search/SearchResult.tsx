@@ -15,7 +15,8 @@ const SearchResult: React.FC<SearchResultType> = React.memo((props: SearchResult
   const classes = useStyles()
   const { found } = props
 
-  const userPicture = found.picture ? `${found.picture.versions.cropped_small}` : ''
+  const userPicture = found.picture
+    ? `${found.picture.versions.cropped_small}` : ''
   const userFullName = `${found.firstName} ${found.lastName}`
   const userLink = `/i/${found.username}`
 
@@ -35,10 +36,10 @@ const SearchResult: React.FC<SearchResultType> = React.memo((props: SearchResult
           <Typography
             component={NavLink}
             to={userLink}
-            variant='body2'
+            variant='subtitle2'
             color={"textPrimary"}
           >
-            <b>{userFullName}</b>
+            {userFullName}
           </Typography>
         </div>
       </div>

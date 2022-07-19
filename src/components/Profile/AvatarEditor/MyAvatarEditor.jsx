@@ -43,7 +43,13 @@ const MyAvatarEditor = props => {
     const file = event.target.files[0]
     if(file) {
       const {type} = file
-      if(type && (type.endsWith('jpeg') || type.endsWith('png') || type.endsWith('jpg'))) {
+      if(type
+        && (
+          type.endsWith('jpeg')
+          || type.endsWith('png')
+          || type.endsWith('jpg')
+        )
+      ) {
         setSelectedImage(file)
       }
     }
@@ -201,7 +207,7 @@ const MyAvatarEditor = props => {
               variant='contained'
               onClick={() => input.current.click()}
             >
-              {t('Select a file')}
+              {t('Select image')}
             </Button>
           </div>
         }

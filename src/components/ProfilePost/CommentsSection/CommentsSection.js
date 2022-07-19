@@ -46,12 +46,18 @@ const CommentsSection = React.memo(props => {
   const commentsLength = comments.length
 
   const commentsSectionRef = useRef(null)
-  const prevHeight = useRef(commentsSectionRef.current?.getBoundingClientRect().height)
+  const prevHeight = useRef(commentsSectionRef.current
+    ? commentsSectionRef.current.getBoundingClientRect().height
+    : null
+  )
   const prevComments = usePrevious(comments)
 
   useLayoutEffect(() => {
-    const currentHeight = commentsSectionRef.current?.getBoundingClientRect().height
-    const prevLastCommentId = prevComments?.length ? prevComments[0].id : '0'
+    const currentHeight = commentsSectionRef.current 
+      ? commentsSectionRef.current.getBoundingClientRect().height
+      : null
+    const prevLastCommentId = prevComments && prevComments.length
+      ? prevComments[0].id : '0'
     const newCommentAdded = comments.length && comments[0].id > prevLastCommentId
     if(newCommentAdded && prevHeight.current && currentHeight
        && currentHeight > prevHeight.current
@@ -62,7 +68,9 @@ const CommentsSection = React.memo(props => {
   }, [commentsLength, comments, prevComments])
 
   useEffect(() => {
-    prevHeight.current = commentsSectionRef.current?.getBoundingClientRect().height
+    prevHeight.current = commentsSectionRef.current
+      ? commentsSectionRef.current.getBoundingClientRect().height
+      : null
   })
 
   useEffect(() => {

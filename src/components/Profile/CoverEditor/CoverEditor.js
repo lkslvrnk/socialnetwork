@@ -87,7 +87,10 @@ const CoverEditor = props => {
           () => setIsUpdating(false),
           (err) => {
             setIsUpdating(false)
-            enqueueSnackbar(t('Cover was not created'), {variant: 'error'})
+            enqueueSnackbar(
+              t('Cover was not created'),
+              {variant: 'error'}
+            )
           }
         )
     }
@@ -119,7 +122,7 @@ const CoverEditor = props => {
             autoCropArea={1}
             checkOrientation={false}
             onInitialized={(instance) => {
-              setCropper(instance);
+              setCropper(instance)
             }}
             guides={true}
             dragMode='move'
@@ -133,7 +136,7 @@ const CoverEditor = props => {
         {!selectedImage &&
           <div className={classes.uploadPhoto} >
             <div style={{marginBottom: 16}}>
-              {t('Please upload a photo')}
+              {t('upload a cover')}
             </div>
             
             <input
@@ -147,7 +150,7 @@ const CoverEditor = props => {
               variant='contained'
               onClick={() => input.current.click()}
             >
-              {t('Select a file')}
+              {t('Select image')}
             </Button>
           </div>
         }

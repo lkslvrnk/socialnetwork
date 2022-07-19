@@ -199,7 +199,7 @@ const NewComment = React.memo(props => {
         />
         {emojiPopper}
       </div>
-      
+
       <div className={classes.adornment} >
         <AddAPhotoIcon
           onClick={openImageExplorer}
@@ -257,7 +257,7 @@ const NewComment = React.memo(props => {
   }
 
   const createButtonIsDisabled = commentIsCreating
-    || (!text.length && !Boolean(attachments?.length))
+    || (!text.length && !Boolean(attachments ? attachments.length : 0))
 
   const handleAttachmentInputChange = (event) => {
     handleImageUpload(event)

@@ -97,8 +97,7 @@ const ProfilePost = React.memo(props => {
               color='textSecondary'
               component='span'
               children={`${t('Post was removed')}. `}
-            >
-            </Typography>
+            />
             <Typography
               style={{ cursor: 'pointer' }}
               onClick={handleRestore}

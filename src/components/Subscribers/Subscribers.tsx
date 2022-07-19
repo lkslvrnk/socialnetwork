@@ -118,7 +118,6 @@ const Subscriptions: React.FC = React.memo((props) => {
           data.subscribers, data.allCount, data.cursor, componentName
         ))
       } catch (error) {
-        // console.log(error)
       } finally {
         setMoreSubscribesLoading(false)
       }
@@ -127,7 +126,10 @@ const Subscriptions: React.FC = React.memo((props) => {
 
   const panel = <div className={classes.panel}>
     <StickyPanel top={55}>
-      <Adv imageSrc={'/images/rekl/333.jpg'} />
+      <Adv
+        imageSrc={'/images/animals/dolphin.png'} 
+        imageStyles={{width: '70%'}}
+      />
     </StickyPanel>
   </div>
 

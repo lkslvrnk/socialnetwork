@@ -51,7 +51,10 @@ function PostPage() {
       
       <aside className={'aside-content'}>
         <StickyPanel top={55}>
-          <Adv imageSrc={'/images/rekl/kd.png'} />
+          <Adv
+            imageSrc={'/images/animals/elephant.png'}
+            imageStyles={{width: '70%'}}
+          />
         </StickyPanel>
       </aside>
     </div>

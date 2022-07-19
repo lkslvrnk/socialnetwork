@@ -197,7 +197,9 @@ const Profile = React.memo(props => {
 
   const ownerFullName = !!profile && `${profile.firstName} ${profile.lastName}`
   const coverStubSrc = 'https://s1.1zoom.ru/big0/596/Evening_Forests_Mountains_Firewatch_Campo_Santo_549147_1280x720.jpg'
-  const isOwnProfile = profile?.username === currentUserUsername
+  const isOwnProfile = profile
+    ? profile.username === currentUserUsername
+    : false
   const onOwnWall = currentUserId === (profile ? profile.id : '-1')
 
   let postsList = posts.map(post => {
@@ -246,8 +248,8 @@ const Profile = React.memo(props => {
       onClick={onAvatarClick}
       isOwnProfile={onOwnWall}
       currentUserId={currentUserId}
-      userFirstName={profile?.firstName || 'Unknown'}
-      userLastName={profile?.lastName || 'Unknown'}
+      userFirstName={profile ? profile.firstName : 'Unknown'}
+      userLastName={profile ? profile.lastName : 'Unknown'}
       size={150}
       showEditButton={onOwnWall}
     />
@@ -258,8 +260,8 @@ const Profile = React.memo(props => {
       onClick={onAvatarClick}
       isOwnProfile={onOwnWall}
       currentUserId={currentUserId}
-      userFirstName={profile?.firstName || 'Unknown'}
-      userLastName={profile?.lastName || 'Unknown'}
+      userFirstName={profile ? profile.firstName : 'Unknown'}
+      userLastName={profile ? profile.lastName : 'Unknown'}
       size={45}
       showEditButton={false}
     />
